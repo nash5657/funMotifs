@@ -1,0 +1,10 @@
+Download expression level per tissue into ../datafiles/GeneExp/ from e.g GTEx (after logging in to your account): http://www.gtexportal.org/static/datasets/gtex_analysis_v6p/rna_seq_data/GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_median_rpkm.gct.gz
+It is assumed that gene names are in col2 and sample IDs are line 3. The first two lines are info headers.
+
+The src_helpers/GetTFExprperTissue module is used to get expression level per TF per tissue. 
+For the TFs listed in the given TF_family_matches_file, it retrieves expression level from all the tissues in the normal_gene_expression_inputfile
+
+Usage: python GetTFExprperTissue.py TF_family_matches_file normal_gene_expression_inputfile
+e.g:
+Usage: python GetTFExprperTissue.py  ../conft/TFNames_motifNames_mapping ../datafiles/GeneExp/GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_median_rpkm.gct
+

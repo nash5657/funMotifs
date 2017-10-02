@@ -1,0 +1,20 @@
+The CellInfo directory is to contain ChIP-seq, DNa-seq and ChromatinStates for the cell lines in the cell_names_to_consider.txt file.
+
+In order to generate the desired files use src_helpers/ParseCellInfo.py. This module as input takes conf/ParseCellInfo_params.conf and a directory name.
+
+Usage: python ParseCellInfo.py ../conf/ParseCellInfo_params.conf ../datafiles/CellInfo/
+
+Where:
+../datafiles/CellInfo/ : refers to the directory to store the downloaded and parsed files
+../conf/ParseCellInfo_params.conf : contains paths and links to the datafiles. 
+
+Please modify the ParseCellInfo_params.conf as desired. The file is structured according to the following format: 
+- Each block is designated for a single biosample (cell name, tissue name, etc.). The block should start with a has (sign) followed by the bio sample name.
+
+- Each following line should start with an assay name (ChIP-seq, DNase-seq or ChromatinStates). The assay name should be followed by an equal (=) sign and paths for corresponding datafiles. 
+- The assigned datafiles for each assay name should be separated by comma. 
+- Each datafile is a file path*, a web link* to a file or a metadata file**.
+
+*Paths or web links for data files should be specified in three fields separated by hash (#). The format is: AssayName#QualityLevel high|low#sources (links or file paths separated by ;). Replace AssayName with the transcription factor name in case of ChIP-seq peak files.
+
+**To generate metadata files please follow instructions given in ReadMe/ReadMe_Get_ENCODE_MetaData_files.txt. Sample metadafiles for ChIP-seq and DNase-seq can be found in the conf/ directory.

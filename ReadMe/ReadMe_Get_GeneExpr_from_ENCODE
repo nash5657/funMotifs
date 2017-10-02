@@ -1,0 +1,12 @@
+Download Genecode annotations in GFF3 format into datafiles/GeneExp/ENCODEGeneExpr. For instance the hg19 version could be download from: ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gff3.gz
+
+The src_helpers/GetDataSetsAPI.py module is used to get expression level per gene per cell. 
+From the ENCODE portal, it downloads RNA-seq datasets for cell types listed in ../conf/ParseCellInfo_params.conf.
+
+The mean of the values across the experiments in each respective cell type are reported.
+
+Usage: python GetDataSetsAPI.py Output_dir CellInfoDict_input_file Genecode_genes_input_file
+e.g:
+python GetDataSetsAPI.py ../datafiles/GeneExp/ENCODEGeneExpr ../conf/ParseCellInfo_params.conf ../GeneExp/gencode.v19.annotation.gff3
+
+

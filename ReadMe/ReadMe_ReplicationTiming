@@ -1,0 +1,14 @@
+Download and extract the following files to datafiles/ReplicationTiming. They contain segments in BED format that have been generated in GSE53984 by PMID: 26545821. 
+They have used Repli-seq data from ENCODE for all six states of 15 cells. Based on a DNA-HMM model they group DNA segments into four classes: ERD, short for early replication domain; DTZ, short for down transition zone; LRD, short for late replication domain; UTZ, short for up transition zone
+
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923441_Sknsh_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923442_Mcf7_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923445_Nhek_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923446_Hepg2_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923447_Imr90_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923448_K562_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923449_Helas3_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923451_Gm12878_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923452_Huvec_Rep1_segments.bed.gz
+ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923444_Bj_Rep1_segments.bed.gz
+

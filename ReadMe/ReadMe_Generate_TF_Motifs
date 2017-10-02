@@ -1,0 +1,23 @@
+To genrate TF motifs GenerateMotifsFIMO module can be used. 
+A Position Probability Matrix (PPM) file in the meme format is needed. Such file could be obtained from the JASPAR database e.g. JASPAR_CORE_2016_vertebrates.meme by downloading the motif database from: http://meme-suite.org/meme-software/Databases/motifs/motif_databases.12.15.tgz.
+
+A fasta file should also be provided to define the sequences that should be scanned for motif finding, e.g. from: https://usegalaxy.org/library_common/download_dataset_from_folder?library_id=f9ba60baa2e6ba6d&show_deleted=False&cntrller=library&use_panels=False&id=935e350f64eb748c
+
+The GenerateMotifsFIMO module reads the given PPM file and scans the given fasta file for each TF model included in the PPM file.
+
+Before running the module, FIMO from the meme suit has to be installed (http://meme-suite.org/doc/fimo.html?man_type=web).
+
+To generate TF Motifs run the following command (it is recommended to run it in a cluster using multiple cores):
+
+python GenerateMotifsFIMO.py jaspar_meme_PPMs_input_file.txt genome_fast_file.fa output_dir pval_threshold<float> limit_to_check<int> scores_sd_above_mean<float> percentage_highest_scored_isntances<int> #processes<int>
+
+Example: scan the human genome for all JASPAR TF motifs:
+python GenerateMotifsFIMO.py ../datafiles/Motifs/JASPAR_CORE_2016_vertebrates.meme ../datafiles/hg19.fa ../datafiles/Motifs/hg19_motifs_output 0.0001 1 1.0 10 16
+
+For each TF the program generates two resutls: a file name that ends with _sig, contains all significant motifs. Another file that ends with _highestranked contains only the top percentage_highest_scored_isntances from the generated significant motifs.
+
+Finally create a new directory and distribute the file predicted motifs of each TF by chromosome such that each new file contains all motifs of one chromosome. The following command could be used:
+mkdir motifs_per_chr
+cat ../datafiles/Motifs/hg19_motifs_output/*_sig.bed | awk '{print $0 >> "../datafiles/Motifs/motifs_per_chr/"$1".bed"}'
+
+

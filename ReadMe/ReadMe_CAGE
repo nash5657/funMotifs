@@ -1,0 +1,20 @@
+Downloaded expression level at promoter CAGE peaks per sample from (date: 5 May 2016) into datafiles/CAGE_data:
+http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt.gz
+
+Download Cell-line info for libraryIDs into datafiles/CAGE_data (used in the header of the peak file) from:
+http://fantom.gsc.riken.jp/5/datafiles/latest/extra/Enhancers/Human.sample_name2library_id.txt
+
+Extracted and grouped the cell line names and their samples (libraryIDs) using:
+awk 'BEGIN{FS=OFS="\t"}{if($1 ~ "cell line:"){split($1,ca, ":"); split(ca[2], cs, ","); split(cs[1], c, " "); print c[1],$2,$1}}' datafiles/CAGE_data/Human.sample_name2library_id.txt | sort -k1,1 | groupBy -g 1 -c 2,3 -o distinct,distinct > datafiles/CAGE_data/Human.sample_name2library_id_onlyCellLines_groupedLibrariesTheSameCellLines.txt 
+
+Summarized the peak file to report avergae activity for each cell line at each peak using a local script (ProcessCAGEExp.py <extract_expression_per_peak_per_cell>)
+python src_helpers/ProcessCAGEExp.py datafiles/CAGE_data/Human.sample_name2library_id_onlyCellLines_groupedLibrariesTheSameCellLines.txt datafiles/CAGE_data/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt 00Annotation 7
+
+Downloaded the set of permissive enhancers (CAGE Peaks) from (date: 13 Oct 2016) into datafiles/CAGE_data:
+http://fantom.gsc.riken.jp/5/datafiles/latest/extra/Enhancers/human_permissive_enhancers_phase_1_and_2_expression_tpm_matrix.txt.gz
+
+Generate bed4 format (expression per peak per cell):
+python src_helpers/ProcessCAGEExp.py datafiles/CAGE_data/Human.sample_name2library_id_onlyCellLines_groupedLibrariesTheSameCellLines.txt datafiles/CAGE_data/human_permissive_enhancers_phase_1_and_2_expression_tpm_matrix.txt Id 1
+
+Combine promoters and enhancers:
+cat datafiles/CAGE_data/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt_avgExprValueperCell.bed4 datafiles/CAGE_data/human_permissive_enhancers_phase_1_and_2_expression_tpm_matrix.txt_avgExprValueperCell.bed4 > datafiles/CAGE_data/CAGE_expr_per_peak_all_cells_promoters_enhancers.bed4
