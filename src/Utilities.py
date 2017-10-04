@@ -7,8 +7,6 @@ Utility functions
 -get parameters from the sys.argv and the given conf file
 '''
 
-import os, sys
-
 def get_value(str):
     if 'true' in str.lower() or 'yes' in str.lower():
         return True
