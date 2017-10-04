@@ -519,10 +519,9 @@ def split_motifs_parallel(db_name, db_user_name, db_host, motifs_table, chr, mot
     curs.close()
     conn.close()
 
-def split_motifs_table_by_chr(motifs_table, motif_cols, db_name):
-    
+def split_motifs_table_by_chr(motifs_table, motif_cols, db_name, chr_names):
+     
     chr_names = range(1,26)
-    print db_name, motifs_table
     p = Pool()
     for chr in chr_names:
         p.apply_async(split_motifs_parallel, args = (db_name, motifs_table, chr, motif_cols))
