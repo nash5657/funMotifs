@@ -463,11 +463,11 @@ def table_contains_data(conn, table_name):
         return True
     else:
         return False
-    
+
 def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
                                tissue, tissuecols, tissuemotifsimputed):
     
-    conn = open_connection(db_name, db_user_name=db_user_name, db_host_name=db_host_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     print "Loading for", tissue
     print tissuecols
@@ -494,7 +494,7 @@ def populate_table_per_tissue(tissues_table_name, db_name, db_user_name, db_host
     p = Pool()
     for tissue in tissues:
         #p.apply_async(create_table_stmt_parallel, args= (db_name, tissue, ','.join(tissues[tissue]), 'tissuemotifsimputed'))
-        create_table_stmt_parallel(db_name, db_user_name=db_user_name, db_host=db_host,
+        create_table_stmt_parallel(db_name, db_user_name, db_host,
                                     tissue, ','.join(tissues[tissue]), 'tissuemotifsimputed')   
     p.close()
     p.join()
