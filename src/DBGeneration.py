@@ -17,8 +17,9 @@ def db_setup(cells_assays_dict,
              assay_cells_datatypes, 
              db_name, cell_table, 
              db_user_name, db_host_name,
-             motif_cols = ['posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']): 
-    
+             motif_col_names, 
+             motif_cols
+             ):
     conn = ""
     curs = ""
     try:
@@ -46,7 +47,9 @@ def db_setup(cells_assays_dict,
             print "Successfully created and connected to DB: ", db_name
     
     field_names = []
+    col_names = []
     field_names.extend(motif_cols)
+    col_names.extend(motif_col_names )
     for cell in sorted(cells_assays_dict.keys()):
         for assay in sorted(cells_assays_dict[cell].keys()):
             data_type = 'text'
@@ -56,13 +59,15 @@ def db_setup(cells_assays_dict,
                 pass
             field_names.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
                                          .replace('-','__')).split()) + " " + data_type)
+            col_names.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
+                                         .replace('-','__')).split()))
     #curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     
     create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(cell_table, ' ,'.join(field_names))
     curs.execute(create_table_stmt)
     conn.commit()
     conn.close()
-    return field_names
+    return col_names
 
 def open_connection(db_name, db_user_name, db_host_name):
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
@@ -567,8 +572,8 @@ def generate_db(db_name,
                 number_processes_to_run_in_parallel,
                 header,
                 scored_motifs_overlapping_tracks_files,
-                motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
-                motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
+                motif_cols,
+                motif_cols_names,
                 cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
                 number_of_rows_to_load=50000
         ):
@@ -578,7 +583,8 @@ def generate_db(db_name,
              cell_table=cell_table, 
              db_user_name=db_user_name, 
              db_host_name=db_host_name,
-             motif_cols=motif_cols)
+             motif_cols=motif_cols,
+             motif_col_names=motif_cols_names)
     
     conn = open_connection(db_name, db_user_name, db_host_name)
     
