@@ -3,6 +3,7 @@ Created on 28 Sep 2017
 
 @author: husensofteng
 '''
+import os,sys
 from collections import Counter
 from itertools import islice
 from multiprocessing import Pool
@@ -12,7 +13,11 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from psycopg2.extras import DictCursor
 
-def db_setup(cells_assays_dict, assay_cells_datatypes, motif_cols = ['posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'], db_name = 'ActiveMotifs.db', cell_table='motifs', db_user_name='husen', db_host_name='localhost'):
+def db_setup(cells_assays_dict, 
+             assay_cells_datatypes, 
+             db_name, cell_table, 
+             db_user_name, db_host_name,
+             motif_cols = ['posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']): 
     
     conn = ""
     curs = ""
@@ -59,7 +64,7 @@ def db_setup(cells_assays_dict, assay_cells_datatypes, motif_cols = ['posrange i
     conn.close()
     return conn
 
-def open_connection(db_name = 'ActiveMotifs.db', db_user_name='husen', db_host_name='localhost'):
+def open_connection(db_name, db_user_name, db_host_name):
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
     #conn.row_factory = psycopg2.Row
     return conn
@@ -128,7 +133,11 @@ def insert_into_db(db_name, db_user_name, db_host_name,
     print "Data insertion into {} is done".format(cell_table)
     return
 
-def get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file, key_value_sep='=', values_sep=',', cell_assay_sepe=':',
+def get_tissue_cell_mappings(cell_assays, assay_names, 
+                             tissue_cell_mappings_file, 
+                             key_value_sep='=', 
+                             values_sep=',', 
+                             cell_assay_sepe=':',
                              motif_cols = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']):
     
     tissue_cell_allassays = {}
@@ -175,7 +184,10 @@ def get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file
                                 
     return col_list, tissue_cell_assays, tissue_cell_allassays
 
-def db_setup_tissues(tissue_cell_assays, assay_cells_datatypes, motif_cols = ['mid INTEGER'], db_name = 'ActiveMotifs.db', db_user_name='husen', db_host_name='localhost'):
+def db_setup_tissues(tissue_cell_assays, 
+                     assay_cells_datatypes, 
+                     db_name, db_user_name, db_host_name,
+                     motif_cols = ['mid INTEGER']):
     
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
     curs = conn.cursor()
@@ -311,9 +323,14 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, table_from,
-                           cols_to_write_to = [], cols_to_write_to_allassays = [],
+                           run_in_parallel_param, 
+                           number_processes_to_run_in_parallel,
+                           scored_motifs_overlapping_tracks_files,
+                           db_name, db_user_name, db_host_name,
+                           cols_to_write_to = [], 
+                           cols_to_write_to_allassays = [],
                            number_of_rows_to_load = 100000,
-                           db_name = "regmotifs", db_user_name='husen', db_host_name='localhost'):
+                           ):
     
     for tissue in sorted(tissue_cell_assays.keys()):
         for assay in sorted(tissue_cell_assays[tissue].keys()):
@@ -324,11 +341,11 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
             cols_to_write_to_allassays.append(tissue+'___'+assay)
     
     conn = open_connection(db_name, db_user_name, db_host_name)
-    #curs_for_count = conn.cursor(name = "countcurs", cursor_factory=DictCursor)
+    curs_for_count = conn.cursor(name = "countcurs", cursor_factory=DictCursor)
     thread_num = 0
-    #curs_for_count.execute('select count(posrange) from {}'.format(table_from))
+    curs_for_count.execute('select count(posrange) from {}'.format(table_from))
     num_rows = int(curs_for_count.fetchone()[0])#85459976
-    #curs_for_count.close()
+    curs_for_count.close()
     print 'total number of rows to be inserted: ', num_rows
     curs_for_selection = conn.cursor(name = "selectioncurs", cursor_factory=DictCursor)
     curs_for_selection.itersize = number_of_rows_to_load
@@ -340,11 +357,11 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     print 't_to_fetch: ', time.time()-t_for_fetch
     print "Selected {} rows for insertion.".format(str(number_of_rows_to_load))
     t_jobset = time.time()
-    if get_value(params['run_in_parallel_param']) and len(scored_motifs_overlapping_tracks_files)>1:
+    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         print 'Running in parallel'
         i = 0
-        num_cores = int(params['number_processes_to_run_in_parallel'])
-        p = Pool(int(params['number_processes_to_run_in_parallel']))
+        num_cores = number_processes_to_run_in_parallel
+        p = Pool(number_processes_to_run_in_parallel)
         while i<num_cores:
             p.apply_async(insert_into_tissues, args=(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                    cols_to_write_to, cols_to_write_to_allassays, thread_num,
@@ -364,7 +381,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
                 p.join()
                 print 't_jobset: ', time.time()-t_jobset
                 t_jobset = time.time()
-                p = Pool(int(params['number_processes_to_run_in_parallel']))
+                p = Pool(number_processes_to_run_in_parallel)
                 i=0
             i+=1
             thread_num+=1
@@ -396,7 +413,16 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     conn.close()
     return
     
-def update_table(conn, cell_table, update_chr_col = True, chr_col='chr', update_posrange_col = True, posrange_col = 'posrange', motifstart_col='motifstart', motifend_col='motifend', pval_score_update=True, score_col_name='score', pval_col_name = 'pval'):
+def update_table(conn, cell_table, 
+                 update_chr_col = True, 
+                 chr_col='chr', 
+                 update_posrange_col = True, 
+                 posrange_col = 'posrange', 
+                 motifstart_col='motifstart', 
+                 motifend_col='motifend', 
+                 pval_score_update=True, 
+                 score_col_name='score', 
+                 pval_col_name = 'pval'):
     curs = conn.cursor()
     curs.execute("alter table {} add column IF NOT EXISTS {} int4range".format(cell_table, posrange_col))
     
@@ -438,9 +464,10 @@ def table_contains_data(conn, table_name):
     else:
         return False
     
-def create_table_stmt_parallel(db_name, tissue, tissuecols, tissuemotifsimputed):
+def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
+                               tissue, tissuecols, tissuemotifsimputed):
     
-    conn = open_connection(db_name)
+    conn = open_connection(db_name, db_user_name=db_user_name, db_host_name=db_host_name)
     curs = conn.cursor()
     print "Loading for", tissue
     print tissuecols
@@ -452,9 +479,9 @@ def create_table_stmt_parallel(db_name, tissue, tissuecols, tissuemotifsimputed)
     curs.close()
     conn.close()
 
-def populate_table_per_tissue(tissues_table_name, db_name):
+def populate_table_per_tissue(tissues_table_name, db_name, db_user_name, db_host):
     
-    conn = open_connection(db_name)
+    conn = open_connection(db_name, db_user_name, db_host)
     tissues_col_names = get_col_names_from_table(tissues_table_name, conn)
     conn.close()
     tissues = {}
@@ -467,13 +494,14 @@ def populate_table_per_tissue(tissues_table_name, db_name):
     p = Pool()
     for tissue in tissues:
         #p.apply_async(create_table_stmt_parallel, args= (db_name, tissue, ','.join(tissues[tissue]), 'tissuemotifsimputed'))
-        create_table_stmt_parallel(db_name, tissue, ','.join(tissues[tissue]), 'tissuemotifsimputed')   
+        create_table_stmt_parallel(db_name, db_user_name=db_user_name, db_host=db_host,
+                                    tissue, ','.join(tissues[tissue]), 'tissuemotifsimputed')   
     p.close()
     p.join()
     print "All tables are added successfully"
 
-def split_motifs_parallel(db_name, motifs_table, chr, motif_cols):
-    conn = open_connection(db_name)
+def split_motifs_parallel(db_name, db_user_name, db_host, motifs_table, chr, motif_cols):
+    conn = open_connection(db_name, db_user_name, db_host)
     curs = conn.cursor()
     new_table_name = "chr"+str(chr)+"motifs"
     print new_table_name
@@ -500,9 +528,9 @@ def split_motifs_table_by_chr(motifs_table, motif_cols, db_name):
     return
 
 #to update motif tables
-def update_motif_pos_pertable(db_name, chr_table):
+def update_motif_pos_pertable(db_name, db_user_name, db_host_name, chr_table):
 
-    conn = open_connection(db_name=db_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     cmd =  'update {} set posrange=int4range(lower(posrange)+1,upper(posrange)+1), motifstart=motifstart+1,motifend=motifend+1;'.format(chr_table)
     print cmd
@@ -513,7 +541,7 @@ def update_motif_pos_pertable(db_name, chr_table):
     
     return
 
-def update_motif_pos(db_name):
+def update_motif_pos(db_name, db_user_name, db_host_name):
     
     p = Pool(8)
     chr_names = range(1,26)
@@ -544,12 +572,15 @@ def generate_db(db_name,
                 cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
                 number_of_rows_to_load=50000
         ):
-    db_setup(cells_assays_dict, assay_cells_datatypes, 
-             motif_cols, db_name = db_name, 
-             cell_table=cell_table, db_user_name=db_user_name, 
-             db_host_name=db_host_name)
+    db_setup(cells_assays_dict, 
+             assay_cells_datatypes, 
+             db_name = db_name, 
+             cell_table=cell_table, 
+             db_user_name=db_user_name, 
+             db_host_name=db_host_name,
+             motif_cols=motif_cols)
     
-    conn = open_connection(db_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     if not table_contains_data(conn, cell_table): #that is to avoid writing over an already existing table content
         print "Inserting data into: ", cell_table
         insert_into_db(db_name = db_name, 
@@ -568,15 +599,25 @@ def generate_db(db_name,
     #write results to the tissues (based on cell motifs) table
     if process_tissues:
         print 'Creating tissues tables'
-        col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file,  
-                                                                               motif_cols = motif_cols_names)
-        tissue_cols = db_setup_tissues(tissue_cell_allassays, assay_cells_datatypes, motif_cols = ['mid INTEGER'], 
-                         db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
+        col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, 
+                                                                                       assay_names, 
+                                                                                       tissue_cell_mappings_file,  
+                                                                                       motif_cols = motif_cols_names)
+        tissue_cols = db_setup_tissues(tissue_cell_allassays, 
+                                       assay_cells_datatypes, 
+                                       motif_cols = ['mid INTEGER'], 
+                                       db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
         col_list.append('mid')
         print 'Inserting data into tissues tables'
-        populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, table_from=cell_table, 
+        populate_tissue_values(tissue_cell_assays, 
+                               tissue_cell_allassays, 
+                               assay_names, col_list, table_from=cell_table, 
+                               run_in_parallel_param=run_in_parallel_param, 
+                               number_processes_to_run_in_parallel=number_processes_to_run_in_parallel, 
+                               scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
+                               db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name,
                                number_of_rows_to_load = number_of_rows_to_load,
-                               db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
+                               )
         
         print "Creating index on tissues tables"
         conn = open_connection(db_name, db_user_name, db_host_name)
@@ -592,5 +633,5 @@ def generate_db(db_name,
     
     update_motif_positions = False
     if update_motif_positions:
-        update_motif_pos(db_name)
+        update_motif_pos(db_name, db_user_name, db_host_name)
         
