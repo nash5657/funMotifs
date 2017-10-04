@@ -108,7 +108,7 @@ if __name__ == '__main__':
                 header,
                 scored_motifs_overlapping_tracks_files,
                 motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
-                motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+                motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
                 cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
                 number_of_rows_to_load=50000
         )
