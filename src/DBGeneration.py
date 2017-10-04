@@ -128,7 +128,7 @@ def insert_into_db(db_name, db_user_name, db_host_name,
     print "Data insertion into {} is done".format(cell_table)
     return
 
-def get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file=params['TissueCellInfo_matches_dict'], key_value_sep='=', values_sep=',', cell_assay_sepe=':',
+def get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file, key_value_sep='=', values_sep=',', cell_assay_sepe=':',
                              motif_cols = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']):
     
     tissue_cell_allassays = {}
@@ -534,6 +534,7 @@ def generate_db(db_name,
                 assay_cells_datatypes,
                 cell_assays,
                 assay_names,
+                tissue_cell_mappings_file,
                 run_in_parallel_param,
                 number_processes_to_run_in_parallel,
                 header,
@@ -567,7 +568,7 @@ def generate_db(db_name,
     #write results to the tissues (based on cell motifs) table
     if process_tissues:
         print 'Creating tissues tables'
-        col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, assay_names, 
+        col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, assay_names, tissue_cell_mappings_file,  
                                                                                motif_cols = motif_cols_names)
         tissue_cols = db_setup_tissues(tissue_cell_allassays, assay_cells_datatypes, motif_cols = ['mid INTEGER'], 
                          db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)

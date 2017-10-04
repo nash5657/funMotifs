@@ -94,7 +94,7 @@ if __name__ == '__main__':
     db_user_name = params['db_user_name']
     db_host_name = params['db_host_name'] 
     cell_table = 'cell_table'
-    
+    tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
     DBGeneration.generate_db(db_name,
                 cell_table,
                 db_user_name,
@@ -103,6 +103,7 @@ if __name__ == '__main__':
                 assay_cells_datatypes,
                 cell_assays,
                 assay_names,
+                tissue_cell_mappings_file,
                 run_in_parallel_param,
                 number_processes_to_run_in_parallel,
                 header,
