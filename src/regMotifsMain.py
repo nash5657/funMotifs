@@ -17,7 +17,6 @@ import DataProcessing
 import ProcessTFMotifs
 import MotifAnnotation
 import DBGeneration
-from src import Utilities
 
 if __name__ == '__main__':
     '''to run this program add param_file=main_parameters.conf as an argument'''
