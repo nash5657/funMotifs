@@ -62,7 +62,7 @@ def db_setup(cells_assays_dict,
     curs.execute(create_table_stmt)
     conn.commit()
     conn.close()
-    return conn
+    return field_names
 
 def open_connection(db_name, db_user_name, db_host_name):
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
@@ -77,7 +77,7 @@ def get_col_names_from_table(table_name, conn):
     curs.execute("select * FROM {} limit 1".format(table_name))
     return [desc[0] for desc in curs.description]
     
-def insert_from_file(i_file, n, db_name, db_user_name, 
+def insert_from_file(field_names, i_file, n, db_name, db_user_name, 
                      db_host_name, cell_table, header,
                      thread_num=0):
     
@@ -98,7 +98,7 @@ def insert_from_file(i_file, n, db_name, db_user_name,
             try:
                 value_marks = ['%s' for i in range(0, len(lines_as_lists[0]))]
                 try:
-                    curs.executemany('insert into {} values({})'.format(cell_table, ', '.join(value_marks)), lines_as_lists)
+                    curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ', '.join(value_marks)), lines_as_lists)
                     conn.commit()
                     print "Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)
                 except:
@@ -109,7 +109,7 @@ def insert_from_file(i_file, n, db_name, db_user_name,
     conn.close()
     return
 
-def insert_into_db(db_name, db_user_name, db_host_name,  
+def insert_into_db(field_names, db_name, db_user_name, db_host_name,  
                        cell_table, 
                        scored_motifs_overlapping_tracks_files, 
                        header,
@@ -123,9 +123,9 @@ def insert_into_db(db_name, db_user_name, db_host_name,
     for i_file in scored_motifs_overlapping_tracks_files:#[f for f in glob.glob('{}/*{}*'.format(dir_to_import, keyword_to_check))]
         if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
             thread_num+=1
-            p.apply_async(insert_from_file, args=[i_file, 1000000, db_name, db_user_name, db_host_name, cell_table, header, thread_num])
+            p.apply_async(insert_from_file, args=[field_names, i_file, 1000000, db_name, db_user_name, db_host_name, cell_table, header, thread_num])
         else:
-            insert_from_file(i_file, 1000000, db_name, db_user_name, db_host_name, cell_table, header)
+            insert_from_file(field_names, i_file, 1000000, db_name, db_user_name, db_host_name, cell_table, header)
     
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         p.close()
@@ -572,7 +572,7 @@ def generate_db(db_name,
                 cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
                 number_of_rows_to_load=50000
         ):
-    db_setup(cells_assays_dict, 
+    field_names = db_setup(cells_assays_dict, 
              assay_cells_datatypes, 
              db_name = db_name, 
              cell_table=cell_table, 
@@ -581,9 +581,10 @@ def generate_db(db_name,
              motif_cols=motif_cols)
     
     conn = open_connection(db_name, db_user_name, db_host_name)
+    
     if not table_contains_data(conn, cell_table): #that is to avoid writing over an already existing table content
         print "Inserting data into: ", cell_table
-        insert_into_db(db_name = db_name, 
+        insert_into_db(field_names, db_name = db_name, 
                        db_user_name=db_user_name, 
                        db_host_name=db_host_name, 
                        cell_table=cell_table, 
@@ -595,7 +596,7 @@ def generate_db(db_name,
         create_index(conn, cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)
     close_connection(conn)
     
-    process_tissues = True
+    process_tissues = False
     #write results to the tissues (based on cell motifs) table
     if process_tissues:
         print 'Creating tissues tables'
