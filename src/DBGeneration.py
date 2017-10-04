@@ -584,7 +584,7 @@ def generate_db(db_name,
              db_user_name=db_user_name, 
              db_host_name=db_host_name,
              motif_cols=motif_cols,
-             motif_col_names=motif_cols_names)
+             motif_col_names=motif_cols_names[1:])#the first column mid is auto-incremental
     
     conn = open_connection(db_name, db_user_name, db_host_name)
     
@@ -602,7 +602,7 @@ def generate_db(db_name,
         create_index(conn, cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)
     close_connection(conn)
     
-    process_tissues = False
+    process_tissues = True
     #write results to the tissues (based on cell motifs) table
     if process_tissues:
         print 'Creating tissues tables'
