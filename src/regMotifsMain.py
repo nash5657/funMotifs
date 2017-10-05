@@ -16,7 +16,6 @@ import Utilities
 import DataProcessing
 import ProcessTFMotifs
 import MotifAnnotation
-import DBGeneration
 
 if __name__ == '__main__':
     '''to run this program add param_file=main_parameters.conf as an argument'''
@@ -87,28 +86,30 @@ if __name__ == '__main__':
     
     #Section 4. DB generation, Next step 29 Sep
     #write results to the main cellmotifs table
-    run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
-    number_processes_to_run_in_parallel = Utilities.get_value(params['number_processes_to_run_in_parallel'])
-    db_name = params['db_name']
-    db_user_name = params['db_user_name']
-    db_host_name = params['db_host_name'] 
-    cell_table = 'cell_table'
-    tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
-    DBGeneration.generate_db(db_name,
-                cell_table,
-                db_user_name,
-                db_host_name,
-                cells_assays_dict,
-                assay_cells_datatypes,
-                cell_assays,
-                assay_names,
-                tissue_cell_mappings_file,
-                run_in_parallel_param,
-                number_processes_to_run_in_parallel,
-                header,
-                scored_motifs_overlapping_tracks_files,
-                motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
-                motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
-                cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
-                number_of_rows_to_load=50000
-        )
+    if Utilities.get_value(params['create_database']):
+        import DBGeneration
+        run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
+        number_processes_to_run_in_parallel = Utilities.get_value(params['number_processes_to_run_in_parallel'])
+        db_name = params['db_name']
+        db_user_name = params['db_user_name']
+        db_host_name = params['db_host_name'] 
+        cell_table = 'cell_table'
+        tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
+        DBGeneration.generate_db(db_name,
+                    cell_table,
+                    db_user_name,
+                    db_host_name,
+                    cells_assays_dict,
+                    assay_cells_datatypes,
+                    cell_assays,
+                    assay_names,
+                    tissue_cell_mappings_file,
+                    run_in_parallel_param,
+                    number_processes_to_run_in_parallel,
+                    header,
+                    scored_motifs_overlapping_tracks_files,
+                    motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
+                    motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
+                    cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
+                    number_of_rows_to_load=50000
+            )
