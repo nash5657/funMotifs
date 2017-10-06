@@ -53,17 +53,21 @@ def get_col_names_from_table(table_name, conn):
     return [desc[0] for desc in curs.description]
 
 
-def create_index(conn, cell_table, index_name='indexposrange', index_method = 'gist', index_cols = 'posrange'):
+def create_index(db_name, db_user_name, db_host_name, 
+                 cell_table, index_name='indexposrange', index_method = 'gist', index_cols = 'posrange'):
+    conn = open_connection(db_name, db_user_name, db_host_name)
+        
     curs = conn.cursor()
     curs.execute("DROP INDEX IF EXISTS {}".format(index_name))
     creat_index_stmt= "CREATE INDEX IF NOT EXISTS {} ON {} using {} ({})".format(index_name, cell_table, index_method, index_cols)
     print creat_index_stmt
     curs.execute(creat_index_stmt)
     conn.commit()
+    close_connection(conn)
     return
 
-def table_contains_data(conn, table_name):
-    
+def table_contains_data(db_name, db_user_name, db_host_name, table_name):
+    conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     try:
         curs.execute('select chr from {} limit 1'.format(table_name))
@@ -74,7 +78,7 @@ def table_contains_data(conn, table_name):
             return False
     except psycopg2.ProgrammingError:
         return False
-    
+    close_connection(conn)
 
 def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
                                tissue, tissuecols, tissuemotifsimputed):

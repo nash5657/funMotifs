@@ -8,13 +8,15 @@ from itertools import islice
 from multiprocessing import Pool
 import psycopg2
 import DBUtilities
+from src.DBUtilities import close_connection
 
-def create_cell_table(cells_assays_dict, 
-             assay_cells_datatypes, 
-             cell_table, 
-             motif_col_names, 
-             motif_cols,
-             conn):
+def create_cell_table(db_name, db_user_name, db_host_name,
+                      cells_assays_dict, 
+                         assay_cells_datatypes, 
+                         cell_table, 
+                         motif_col_names, 
+                         motif_cols,
+                         ):
     
     field_names = []
     col_names = []
@@ -32,12 +34,12 @@ def create_cell_table(cells_assays_dict,
             col_names.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
                                          .replace('-','__')).split()))
     #curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
-    #conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(cell_table, ' ,'.join(field_names))
     curs.execute(create_table_stmt)
     conn.commit()
-    #conn.close()
+    close_connection(conn)
     return col_names
 
 
@@ -112,12 +114,12 @@ def generate_cell_table(db_name,
                     cell_index_name, cell_index_method, cell_index_cols,
         ):
     
-    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
-    if not DBUtilities.table_contains_data(conn, cell_table): #that is to avoid writing over an already existing table content
+    if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name, 
+                                           cell_table): #that is to avoid writing over an already existing table content
         
-        field_names = create_cell_table(cells_assays_dict, assay_cells_datatypes, cell_table, motif_cols_names[1:], motif_cols, conn)
-        DBUtilities.close_connection(conn)
-    
+        field_names = create_cell_table(db_name, db_user_name, db_host_name,
+            cells_assays_dict, assay_cells_datatypes, cell_table, motif_cols_names[1:], motif_cols)
+        
         print "Inserting data into: ", cell_table
         insert_into_db(field_names, db_name = db_name, 
                        db_user_name=db_user_name, 
@@ -128,6 +130,6 @@ def generate_cell_table(db_name,
                        run_in_parallel_param=run_in_parallel_param,
                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)# dir_to_import=params['motifs_overlapping_tracks_output_dir'], keyword_to_check="_scored.bed10", header=header)
         print "Creating index on: ", cell_table
-        conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
-        DBUtilities.create_index(conn, cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)
-        DBUtilities.close_connection(conn)
+        DBUtilities.create_index(db_name, db_user_name, db_host_name, 
+                                 cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)
+        
