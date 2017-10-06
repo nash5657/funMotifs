@@ -110,6 +110,7 @@ def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr
     curs.close()
     conn.close()
 
+
 def split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
                               motifs_table, 
                               motif_cols, 
