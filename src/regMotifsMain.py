@@ -147,7 +147,7 @@ if __name__ == '__main__':
                 )
         
         #split motif table per chr
-        split_motifs = False
+        split_motifs = True
         if split_motifs:
             DBUtilities.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
                                                   motifs_table=cell_table, 
