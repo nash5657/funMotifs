@@ -100,7 +100,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                            db_name, db_user_name, db_host_name):
     
     print "Thread {} has started".format(thread_num)
-    conn = open_connection(db_name, db_user_name, db_host_name)
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs_for_insertion = conn.cursor()
     
     tissues_values = {}
