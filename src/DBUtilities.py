@@ -66,12 +66,16 @@ def create_index(conn, cell_table, index_name='indexposrange', index_method = 'g
 def table_contains_data(conn, table_name):
     
     curs = conn.cursor()
-    curs.execute('select chr from {} limit 1'.format(table_name))
-    if curs.fetchone() is not None:
-        print '{} contains data'.format(table_name)
-        return True
-    else:
+    try:
+        curs.execute('select chr from {} limit 1'.format(table_name))
+        if curs.fetchone() is not None:
+            print '{} contains data'.format(table_name)
+            return True
+        else:
+            return False
+    except psycopg2.ProgrammingError:
         return False
+    
 
 def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
                                tissue, tissuecols, tissuemotifsimputed):
