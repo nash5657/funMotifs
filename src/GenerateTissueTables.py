@@ -327,7 +327,7 @@ def generate_tissue_tables(db_name,
                            )
     
     print "Creating index on tissues tables"
-    conn = open_connection(db_name, db_user_name, db_host_name)
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     for tissue_table in sorted(tissue_cols.keys()):
-        create_index(conn, tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
+        DBUtilities.create_index(conn, tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
     conn.close()
