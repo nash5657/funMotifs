@@ -152,6 +152,6 @@ if __name__ == '__main__':
             DBUtilities.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
                                                   motifs_table=cell_table, 
                                                   motif_cols=motif_cols_names, 
-                                                  chr_names=range[1,26])
+                                                  chr_names=range(1,26))
         
         
