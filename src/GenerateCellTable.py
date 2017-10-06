@@ -112,11 +112,13 @@ def generate_cell_table(db_name,
                     motif_cols_names,
                     cell_index_name, cell_index_method, cell_index_cols,
         ):
-    field_names = create_cell_table(cells_assays_dict, assay_cells_datatypes, db_name, cell_table, db_user_name, db_host_name, motif_cols_names[1:], motif_cols)
     
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
-    
     if not DBUtilities.table_contains_data(conn, cell_table): #that is to avoid writing over an already existing table content
+        
+        field_names = create_cell_table(cells_assays_dict, assay_cells_datatypes, db_name, cell_table, db_user_name, db_host_name, motif_cols_names[1:], motif_cols)
+    
+    
         print "Inserting data into: ", cell_table
         insert_into_db(field_names, db_name = db_name, 
                        db_user_name=db_user_name, 
