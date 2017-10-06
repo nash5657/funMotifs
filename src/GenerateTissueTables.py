@@ -282,7 +282,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
             print 't_to_fetch: ', time.time()-t_for_fetch
             if num_rows<=0:
                 print "All rows are processed and inserted from {} into tissue tables".format(table_from)
-                sys.exit(0)
+                break
     
     if num_rows==0:
         print "All rows are processed and inserted from {} into tissue tables".format(table_from)
