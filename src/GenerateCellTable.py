@@ -112,10 +112,6 @@ def generate_cell_table(db_name,
                     motif_cols_names,
                     cell_index_name, cell_index_method, cell_index_cols,
         ):
-    created_db = DBUtilities.create_db(db_name, db_user_name, db_host_name)
-    if not created_db:
-        print "Failed to create a databse"
-        sys.exit(0)
     field_names = create_cell_table(cells_assays_dict, assay_cells_datatypes, db_name, cell_table, db_user_name, db_host_name, motif_cols_names[1:], motif_cols)
     
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
