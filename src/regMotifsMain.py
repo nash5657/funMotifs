@@ -127,7 +127,7 @@ if __name__ == '__main__':
                     cell_index_cols = 'posrange',
                     )
         
-        process_tissues = True
+        process_tissues = False
         #write results to the tissues (based on cell motifs) table
         if process_tissues:
             print 'Creating tissues tables'

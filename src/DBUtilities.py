@@ -117,8 +117,8 @@ def split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
      
     p = Pool()
     for chr in chr_names:
-        p.apply_async(split_motifs_parallel, args = (db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols))
-        #split_motifs_parallel(db_name, motifs_table, chr)
+        #p.apply_async(split_motifs_parallel, args = (db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols))
+        split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols)
     p.close()
     p.join()
     print 'All tables are created'

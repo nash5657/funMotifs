@@ -8,7 +8,6 @@ from itertools import islice
 from multiprocessing import Pool
 import psycopg2
 import DBUtilities
-from src.DBUtilities import close_connection
 
 def create_cell_table(db_name, db_user_name, db_host_name,
                       cells_assays_dict, 
@@ -39,7 +38,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
     create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(cell_table, ' ,'.join(field_names))
     curs.execute(create_table_stmt)
     conn.commit()
-    close_connection(conn)
+    DBUtilities.close_connection(conn)
     return col_names
 
 
