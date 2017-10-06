@@ -105,8 +105,8 @@ if __name__ == '__main__':
         cell_table = 'cell_table'
         tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
         
-        motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
-        motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
+        motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
+        motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
                     
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
