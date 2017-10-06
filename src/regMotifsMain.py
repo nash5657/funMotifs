@@ -107,9 +107,9 @@ if __name__ == '__main__':
         
         motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
         motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
-                    
+        
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
-
+        
         GenerateCellTable.generate_cell_table(db_name,
                     cell_table,
                     db_user_name,
@@ -149,6 +149,9 @@ if __name__ == '__main__':
         #split motif table per chr
         split_motifs = False
         if split_motifs:
-            DBUtilities.split_motifs_table_by_chr(motifs_table=cell_table, motif_cols=motif_cols_names, db_name=db_name)
+            DBUtilities.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
+                                                  motifs_table=cell_table, 
+                                                  motif_cols=motif_cols_names, 
+                                                  chr_names=range[1,26])
         
         

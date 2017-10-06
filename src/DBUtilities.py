@@ -89,8 +89,8 @@ def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
     conn.close()
 
 
-def split_motifs_parallel(db_name, db_user_name, db_host, motifs_table, chr, motif_cols):
-    conn = open_connection(db_name, db_user_name, db_host)
+def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols):
+    conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     new_table_name = "chr"+str(chr)+"motifs"
     print new_table_name
@@ -103,12 +103,14 @@ def split_motifs_parallel(db_name, db_user_name, db_host, motifs_table, chr, mot
     curs.close()
     conn.close()
 
-def split_motifs_table_by_chr(motifs_table, motif_cols, db_name, chr_names):
+def split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
+                              motifs_table, 
+                              motif_cols, 
+                              chr_names):
      
-    chr_names = range(1,26)
     p = Pool()
     for chr in chr_names:
-        p.apply_async(split_motifs_parallel, args = (db_name, motifs_table, chr, motif_cols))
+        p.apply_async(split_motifs_parallel, args = (db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols))
         #split_motifs_parallel(db_name, motifs_table, chr)
     p.close()
     p.join()
