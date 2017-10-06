@@ -60,7 +60,6 @@ def create_index(conn, cell_table, index_name='indexposrange', index_method = 'g
     print creat_index_stmt
     curs.execute(creat_index_stmt)
     conn.commit()
-    #conn.close()
     return
 
 def table_contains_data(conn, table_name):
