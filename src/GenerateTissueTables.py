@@ -306,6 +306,7 @@ def generate_tissue_tables(db_name,
                     motif_cols_names,
                     number_of_rows_to_load
                     ):
+    
     col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, 
                                                                                        assay_names, 
                                                                                        tissue_cell_mappings_file,  
@@ -327,7 +328,6 @@ def generate_tissue_tables(db_name,
                            )
     
     print "Creating index on tissues tables"
-    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     for tissue_table in sorted(tissue_cols.keys()):
-        DBUtilities.create_index(conn, tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
-    conn.close()
+        DBUtilities.create_index(db_name, db_user_name, db_host_name, 
+                                 tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
