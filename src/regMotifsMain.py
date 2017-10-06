@@ -23,6 +23,7 @@ if __name__ == '__main__':
     '''Get parameters from the sys.argv and the argument file'''
     params = Utilities.get_params(sys.argv)
     if len(params.keys())==0:
+        print "Usage: python regMotifsMain.py param_file==../conf/main_parameters.conf"
         sys.exit(0)
     
     '''set the temp dir for bedtools operations'''
@@ -83,11 +84,19 @@ if __name__ == '__main__':
     
     
     #Section 3: Score motifs
+    '''
+    Annotation Scores:
+    Collect motifs from the training sets
+    Use the cell_table above to annotate the motifs in the same cell lines
+    Run a log model to generate coeff for each annotation
+    '''
+    
+    
     
     #Section 4. DB generation, Next step 29 Sep
     #write results to the main cellmotifs table
     if Utilities.get_value(params['create_database']):
-        import DBGeneration
+        import DBUtilities, GenerateCellTable, GenerateTissueTables
         run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
         number_processes_to_run_in_parallel = Utilities.get_value(params['number_processes_to_run_in_parallel'])
         db_name = params['db_name']
@@ -95,21 +104,51 @@ if __name__ == '__main__':
         db_host_name = params['db_host_name'] 
         cell_table = 'cell_table'
         tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
-        DBGeneration.generate_db(db_name,
+        
+        motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
+        motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
+                    
+        DBUtilities.create_db(db_name, db_user_name, db_host_name)
+
+        GenerateCellTable.generate_cell_table(db_name,
                     cell_table,
                     db_user_name,
                     db_host_name,
                     cells_assays_dict,
+                    assay_cells_datatypes,
+                    run_in_parallel_param,
+                    number_processes_to_run_in_parallel,
+                    header,
+                    scored_motifs_overlapping_tracks_files,
+                    motif_cols = motif_cols,
+                    motif_cols_names = motif_cols_names,
+                    cell_index_name='indexposrange', 
+                    cell_index_method = 'gist', 
+                    cell_index_cols = 'posrange',
+                    )
+        
+        process_tissues = True
+        #write results to the tissues (based on cell motifs) table
+        if process_tissues:
+            print 'Creating tissues tables'
+            GenerateTissueTables.generate_tissue_tables(db_name,
+                    cell_table,
+                    db_user_name,
+                    db_host_name,
                     assay_cells_datatypes,
                     cell_assays,
                     assay_names,
                     tissue_cell_mappings_file,
                     run_in_parallel_param,
                     number_processes_to_run_in_parallel,
-                    header,
                     scored_motifs_overlapping_tracks_files,
-                    motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER', 'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)'],
-                    motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
-                    cell_index_name='indexposrange', cell_index_method = 'gist', cell_index_cols = 'posrange',
+                    motif_cols_names=motif_cols_names,
                     number_of_rows_to_load=50000
-            )
+                )
+        
+        #split motif table per chr
+        split_motifs = False
+        if split_motifs:
+            DBUtilities.split_motifs_table_by_chr(motifs_table=cell_table, motif_cols=motif_cols_names, db_name=db_name)
+        
+        
