@@ -3,7 +3,7 @@ Created on 6 Oct 2017
 
 @author: husensofteng
 '''
-import sys
+
 from collections import Counter
 from multiprocessing import Pool
 import time
@@ -11,7 +11,6 @@ import math
 import psycopg2
 from psycopg2.extras import DictCursor
 import DBUtilities
-from _pytest.runner import skip
 
 def get_tissue_cell_mappings(cell_assays, assay_names, 
                              tissue_cell_mappings_file, 
