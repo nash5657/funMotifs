@@ -149,6 +149,7 @@ if __name__ == '__main__':
                 )
         
         #split motif table per chr
+        DBUtilities.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table=cell_table, motif_cols=motif_cols_names, new_table_name="motifs")
         split_motifs = Utilities.get_value(params['generate_motif_tables'])
         if split_motifs:
             DBUtilities.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
