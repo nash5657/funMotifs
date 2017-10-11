@@ -11,6 +11,7 @@ import math
 import psycopg2
 from psycopg2.extras import DictCursor
 import DBUtilities
+from _pytest.runner import skip
 
 def get_tissue_cell_mappings(cell_assays, assay_names, 
                              tissue_cell_mappings_file, 
@@ -320,7 +321,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     conn.close()
     return
     
-def get_weights_per_feature(annotation_weights_inputfile):
+def get_weights_per_feature(annotation_weights_inputfile, skip_negative_weights):
     
     feature_weights = {}
     with open(annotation_weights_inputfile, 'r') as ifile:
@@ -331,7 +332,11 @@ def get_weights_per_feature(annotation_weights_inputfile):
             if len(sl)==2:
                 try:
                     for label in sl[0].strip().split(','):
-                        feature_weights[label.upper()]=float(sl[1].strip())
+                        if skip_negative_weights:
+                            if float(sl[1].strip())>=0:
+                                feature_weights[label.upper()]=float(sl[1].strip())
+                        else:
+                            feature_weights[label.upper()]=float(sl[1].strip())
                 except ValueError:
                     print "no weights is used for sl[0] because the assigned values is not a number"
                     continue
@@ -350,7 +355,8 @@ def generate_tissue_tables(db_name,
                     scored_motifs_overlapping_tracks_files,
                     motif_cols_names,
                     number_of_rows_to_load,
-                    annotation_weights_inputfile
+                    annotation_weights_inputfile,
+                    skip_negative_weights
                     ):
     col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, 
                                                                                        assay_names, 
@@ -361,8 +367,7 @@ def generate_tissue_tables(db_name,
                                    motif_cols = ['mid INTEGER', 'fscore NUMERIC'], 
                                    db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
     col_list.append('mid')
-    col_list.append('fscore')
-    feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile)
+    feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile,skip_negative_weights=skip_negative_weights)
     print 'Inserting data into tissues tables'
     populate_tissue_values(tissue_cell_assays, 
                            tissue_cell_allassays, 
@@ -370,7 +375,7 @@ def generate_tissue_tables(db_name,
                            run_in_parallel_param=run_in_parallel_param, 
                            number_processes_to_run_in_parallel=number_processes_to_run_in_parallel, 
                            scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
-                           feature_weights_dict,
+                           feature_weights_dict=feature_weights_dict,
                            db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name,
                            number_of_rows_to_load = number_of_rows_to_load,
                            )

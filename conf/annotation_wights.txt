@@ -1,4 +1,4 @@
-#Annotation weights per feature
+#Annotation weights per feature, annotations that are in the database but not listed here will be given no weights
 tfbinding=1.4158606485670644
 score=-0.088892214161300873
 dnase__seq=0.52326372227032913
@@ -13,7 +13,7 @@ UTZ=0.54075160333013095
 1_TssA,10_TssBiv,2_TssAFlnk,11_BivFlnk,4_Tx,3_TxFlnk,5_TxWk=0.91534619791870797
 14_ReprPCWk,13_ReprPC,9_Het=-0.74337114319743514
 15_Quies,8_ZNF/Rpts=-0.30162916453536626
-NaN=0.0
-NO=0.0
 contactingdomain=0.0
 loopdomain=0.0
+NaN=0.0
+NO=0.0

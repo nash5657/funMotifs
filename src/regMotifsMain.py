@@ -144,7 +144,8 @@ if __name__ == '__main__':
                     scored_motifs_overlapping_tracks_files,
                     motif_cols_names=motif_cols_names,
                     number_of_rows_to_load=50000,
-                    annotation_weights_inputfile=params['annotation_weights_inputfile']
+                    annotation_weights_inputfile=params['annotation_weights_inputfile'],
+                    skip_negative_weights=Utilities.get_value(params['skip_negative_weights'])
                 )
         
         #split motif table per chr
