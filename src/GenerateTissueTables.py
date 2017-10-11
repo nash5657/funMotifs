@@ -94,9 +94,28 @@ def db_setup_tissues(tissue_cell_assays,
     conn.close()
     return tissue_cols
 
+def get_score_from_value(value, assay, feature_weights_dict):
+    score = 0.0
+    try:
+        score  = feature_weights_dict[value]#where the value/label is present in the weights conf file
+    except KeyError:
+        try:
+            if float(value)>0:
+                score = feature_weights_dict[assay]#where the assay name is present in the weights conf file
+        except ValueError:#for number of items where each item adds a unit of the weight
+            if value!="" and value!=" ":
+                try:
+                    score = feature_weights_dict[assay]*len(value.split(','))
+                except KeyError:
+                    return score
+        except KeyError:
+            return score 
+    return score
+
 def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
                            cols_to_write_to,
-                           cols_to_write_to_allassays,thread_num,
+                           cols_to_write_to_allassays,thread_num, 
+                           feature_weights_dict, 
                            db_name, db_user_name, db_host_name):
     
     print "Thread {} has started".format(thread_num)
@@ -106,7 +125,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     tissues_values = {}
     tissues_fields = {}
     for tissue in sorted(tissue_cell_allassays.keys()):
-        tissues_fields[tissue] = ['mid']
+        tissues_fields[tissue] = ['mid', 'fscore']
         tissues_values[tissue] = []
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             tissues_fields[tissue].append(assay.encode('ascii','ignore').lower())
@@ -168,14 +187,22 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                     if value!='NaN':
                         for tissue in tissues_with_NaN_values:
                             tissue_cell_allassays[tissue][assay] = value
+        
         for tissue in sorted(tissue_cell_allassays.keys()):
-            values_selected_row = [row['mid']]
+            values_selected_row = [row['mid'], 0.0]
+            fscore = 0.0
             for assay in sorted(tissue_cell_allassays[tissue].keys()):
                 values_selected_row.append(tissue_cell_allassays[tissue][assay])
+                
+                #compute the final score
+                value = tissue_cell_allassays[tissue][assay]
+                fscore+=get_score_from_value(value, assay, feature_weights_dict)
+                
+            values_selected_row[1]=fscore
             tissues_values[tissue].append(values_selected_row)
     print 't_process (func): ', time.time()-t_process
     
-    #insert all collected values to their perspective tables/tissues
+    #insert all collected values to their respective tables/tissues
     t_insert = time.time()
     for tissue in sorted(tissues_values.keys()):
         s_chars = ','.join('%s' for i in range(0, len(tissues_fields[tissue])))
@@ -205,6 +232,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
                            run_in_parallel_param, 
                            number_processes_to_run_in_parallel,
                            scored_motifs_overlapping_tracks_files,
+                           feature_weights_dict,
                            db_name, db_user_name, db_host_name,
                            cols_to_write_to = [], 
                            cols_to_write_to_allassays = [],
@@ -243,7 +271,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
         p = Pool(number_processes_to_run_in_parallel)
         while i<num_cores:
             p.apply_async(insert_into_tissues, args=(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
-                                   cols_to_write_to, cols_to_write_to_allassays, thread_num,
+                                   cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                    db_name, db_user_name, db_host_name))
             num_rows -=len(selected_rows)
             print 'num_rows remaining: ', num_rows
@@ -269,7 +297,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
         while selected_rows:
             t_to_insert = time.time()
             insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
-                                   cols_to_write_to, cols_to_write_to_allassays, thread_num,
+                                   cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                    db_name, db_user_name, db_host_name)
             
             print 't_to_insert: ', time.time()-t_to_insert
@@ -292,6 +320,23 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     conn.close()
     return
     
+def get_weights_per_feature(annotation_weights_inputfile):
+    
+    feature_weights = {}
+    with open(annotation_weights_inputfile, 'r') as ifile:
+        lines = ifile.readlines()
+    for l in lines:
+        if not l.startswith('#') and not l.startswith('//'):
+            sl = l.split('#')[0].split('=')
+            if len(sl)==2:
+                try:
+                    for label in sl[0].strip().split(','):
+                        feature_weights[label.upper()]=float(sl[1].strip())
+                except ValueError:
+                    print "no weights is used for sl[0] because the assigned values is not a number"
+                    continue
+    return feature_weights
+
 def generate_tissue_tables(db_name,
                     cell_table,
                     db_user_name,
@@ -304,18 +349,20 @@ def generate_tissue_tables(db_name,
                     number_processes_to_run_in_parallel,
                     scored_motifs_overlapping_tracks_files,
                     motif_cols_names,
-                    number_of_rows_to_load
+                    number_of_rows_to_load,
+                    annotation_weights_inputfile
                     ):
-    
     col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, 
                                                                                        assay_names, 
                                                                                        tissue_cell_mappings_file,  
                                                                                        motif_cols = motif_cols_names)
     tissue_cols = db_setup_tissues(tissue_cell_allassays, 
                                    assay_cells_datatypes, 
-                                   motif_cols = ['mid INTEGER'], 
+                                   motif_cols = ['mid INTEGER', 'fscore NUMERIC'], 
                                    db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
     col_list.append('mid')
+    col_list.append('fscore')
+    feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile)
     print 'Inserting data into tissues tables'
     populate_tissue_values(tissue_cell_assays, 
                            tissue_cell_allassays, 
@@ -323,6 +370,7 @@ def generate_tissue_tables(db_name,
                            run_in_parallel_param=run_in_parallel_param, 
                            number_processes_to_run_in_parallel=number_processes_to_run_in_parallel, 
                            scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
+                           feature_weights_dict,
                            db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name,
                            number_of_rows_to_load = number_of_rows_to_load,
                            )
