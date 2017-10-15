@@ -3,10 +3,8 @@ Created on 6 Oct 2017
 
 @author: husensofteng
 '''
-from multiprocessing import Pool
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
 
 def create_db(db_name, db_user_name, db_host_name):
     conn = ""
@@ -89,52 +87,7 @@ def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
     print tissuecols
     print "create table if not exists {0} as (select {1} from {2})".format(tissue, tissuecols, tissuemotifsimputed)
     curs.execute("create table if not exists {0} as (select {1} from {2})".format(tissue, tissuecols, tissuemotifsimputed))
-    curs.execute('alter table {0} add column if not exists mid serial unique references motifs(mid);'.format(tissue))
     conn.commit()
     print "Created", tissue
     curs.close()
     conn.close()
-
-def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif_cols, new_table_name):
-    conn = open_connection(db_name, db_user_name, db_host_name)
-    curs = conn.cursor()
-    
-    curs.execute('drop table if exists {0};'.format(new_table_name))
-    print 'create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table)
-    curs.execute('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
-    curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format(new_table_name, new_table_name))
-    curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format(new_table_name, new_table_name))
-    curs.execute('create index if not exists {0}tfname on {1} using btree(name);'.format(new_table_name, new_table_name))
-    curs.execute('create index if not exists {0}chr on {1} using btree(chr);'.format(new_table_name, new_table_name))
-    conn.commit()
-    curs.close()
-    conn.close()
-
-def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols):
-    conn = open_connection(db_name, db_user_name, db_host_name)
-    curs = conn.cursor()
-    new_table_name = "chr"+str(chr)+"motifs"
-    curs.execute('drop table if exists {0};'.format(new_table_name))
-    print 'create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr)
-    curs.execute('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr))
-    curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format("chr"+str(chr), new_table_name))
-    curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format("chr"+str(chr), new_table_name))
-    conn.commit()
-    curs.close()
-    conn.close()
-
-
-def split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
-                              motifs_table, 
-                              motif_cols, 
-                              chr_names):
-    
-    p = Pool()
-    for chr in chr_names:
-        p.apply_async(split_motifs_parallel, args = (db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols))
-        #split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols)
-    p.close()
-    p.join()
-    print 'All tables are created'
-    return
-
