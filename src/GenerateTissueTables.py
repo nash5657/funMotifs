@@ -414,6 +414,6 @@ def generate_tissue_tables(db_name,
     print "Creating index on tissues tables"
     for tissue_table in sorted(tissue_cols.keys()):
         DBUtilities.create_index(db_name, db_user_name, db_host_name, 
-                                 tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
+                                 cell_table=tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
     DBUtilities.create_index(db_name, db_user_name, db_host_name, 
-                                 tissue_table=tissues_fscores_table, index_name='index'+tissues_fscores_table+'mid', index_method = 'btree', index_cols = 'mid')
+                                 cell_table=tissues_fscores_table, index_name='index'+tissues_fscores_table+'mid', index_method = 'btree', index_cols = 'mid')
