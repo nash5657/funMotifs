@@ -237,13 +237,9 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     #insert into tissues_fscores table
     tissues_names_for_fscores = ['mid']
     tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
-    print ', '.join(tissues_names_for_fscores)
     s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
-    print s_chars_for_fscores
-    print fscores_per_tissues_allrows
     t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
     fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
-    print fscores_per_tissues_dataText
     curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
         
     print 't_insert (func): ', time.time()-t_insert
