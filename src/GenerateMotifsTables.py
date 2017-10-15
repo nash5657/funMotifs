@@ -25,7 +25,7 @@ def generate_PFM_table(PFMs_dict, PFM_table_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     curs.execute('drop table if exists {0};'.format(PFM_table_name))
-    curs.execute('create table if not exists {0} ();'.format(PFM_table_name, ','.join(cols)))
+    curs.execute('create table if not exists {0} ({1});'.format(PFM_table_name, ','.join(cols)))
     conn.commit()
     curs.executemany('insert into {} ({}) values({})'.format(PFM_table_name, ', '.join(cols_names), ', '.join(value_marks)), rows_to_insert)
     curs.execute('create index if not exists {0}name on {1} using btree(name);'.format(PFM_table_name, PFM_table_name))
