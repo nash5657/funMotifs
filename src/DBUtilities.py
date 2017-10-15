@@ -105,7 +105,7 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}tfname on {1} using btree(name);'.format(new_table_name, new_table_name))
-    
+    curs.execute('create index if not exists {0}chr on {1} using btree(chr);'.format(new_table_name, new_table_name))
     conn.commit()
     curs.close()
     conn.close()
