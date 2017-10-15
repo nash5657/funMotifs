@@ -17,7 +17,6 @@ def generate_PFM_table(PFMs_dict, PFM_table_name,
     rows_to_insert = []
     for motif in PFMs_dict.keys():
         for pos in range(0, len(PFMs_dict[motif])):
-            print motif, pos+1
             PFMs_dict[motif][0]
             for allele in PFMs_dict[motif][pos].keys():
                 rows_to_insert.append([motif, pos+1, allele, PFMs_dict[motif][pos][allele]])
