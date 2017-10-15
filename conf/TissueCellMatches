@@ -13,4 +13,4 @@ Pancreas=Panc1,NOR-P1,Pancreas
 CNS=SK-N-SH,Brain - Cerebellar Hemisphere
 Prostate=LNCaP clone FGC,DU145,PC-3,Prostate
 Colorectal=HCT116,COLO-320,CACO-2,TT1TKB,Colon - Sigmoid
-Uterus-AdenoCA=Ishikawa,urothelium cell line,OMC-2,Uterus
+Uterus=Ishikawa,urothelium cell line,OMC-2,Uterus

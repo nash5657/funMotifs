@@ -128,7 +128,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict, 
                            db_name, db_user_name, db_host_name, tissues_fscores_table):
-    
+            
     print "Thread {} has started".format(thread_num)
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs_for_insertion = conn.cursor()
@@ -199,7 +199,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                         for tissue in tissues_with_NaN_values:
                             tissue_cell_allassays[tissue][assay] = value
         
-        fscores_per_tissues = []
+        fscores_per_tissues = [row['mid']]
         for tissue in sorted(tissue_cell_allassays.keys()):
             values_selected_row = [row['mid'], 0.0]
             fscore = 0.0
@@ -235,13 +235,15 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
         curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText)) 
         
     #insert into tissues_fscores table
-    tissues_names_for_fscores = ','.join(sorted(tissue_cell_allassays.keys()))
-    
-    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
+    tissues_names_for_fscores = ['mid']
+    tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
+    print ', '.join(tissues_names_for_fscores)
+    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)+1))
+    print s_chars_for_fscores
     t_tissues_fscores_values = tuple(fscores_per_tissues)
     fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
      
-    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=','.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
+    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
         
     print 't_insert (func): ', time.time()-t_insert
     conn.commit()
@@ -323,7 +325,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
             t_to_insert = time.time()
             insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                    cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
-                                   db_name, db_user_name, db_host_name)
+                                   db_name, db_user_name, db_host_name, tissues_fscores_table)
             
             print 't_to_insert: ', time.time()-t_to_insert
             num_rows -=len(selected_rows)
