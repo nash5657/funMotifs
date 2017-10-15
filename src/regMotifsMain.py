@@ -128,6 +128,7 @@ if __name__ == '__main__':
                     )
         
         process_tissues = Utilities.get_value(params['generate_tissue_tables'])
+        tissues_fscores_table="tissues_fscores"
         #write results to the tissues (based on cell motifs) table
         if process_tissues:
             print 'Creating tissues tables'
@@ -135,6 +136,7 @@ if __name__ == '__main__':
                     cell_table,
                     db_user_name,
                     db_host_name,
+                    tissues_fscores_table,
                     assay_cells_datatypes,
                     cell_assays,
                     assay_names,

@@ -66,11 +66,15 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
 def db_setup_tissues(tissue_cell_assays, 
                      assay_cells_datatypes, 
                      db_name, db_user_name, db_host_name,
-                     motif_cols = ['mid INTEGER']):
+                     motif_cols = ['mid INTEGER'],
+                     tissues_fscores_table="tissues_fscores_table",
+                     motif_cols_for_tissues_fscores_table = ['mid INTEGER']):
     
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
     curs = conn.cursor()
     tissue_cols = {}
+    fields_tissues = []
+    fields_tissues.extend(motif_cols_for_tissues_fscores_table)
     for tissue in sorted(tissue_cell_assays.keys()):
         fields = []
         fields.extend(motif_cols)
@@ -89,6 +93,13 @@ def db_setup_tissues(tissue_cell_assays,
         create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(tissue, ' ,'.join(fields))
         print create_table_stmt
         curs.execute(create_table_stmt)
+        
+        fields_tissues.append(tissue + " numeric")#for the fscores table of all tissues
+    
+    curs.execute("DROP TABLE IF EXISTS {}".format(tissues_fscores_table))
+    create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(tissues_fscores_table, ' ,'.join(fields_tissues))
+    print create_table_stmt
+    curs.execute(create_table_stmt)
     curs.close()
     conn.commit()
     conn.close()
@@ -116,7 +127,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict, 
-                           db_name, db_user_name, db_host_name):
+                           db_name, db_user_name, db_host_name, tissues_fscores_table):
     
     print "Thread {} has started".format(thread_num)
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
@@ -188,6 +199,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                         for tissue in tissues_with_NaN_values:
                             tissue_cell_allassays[tissue][assay] = value
         
+        fscores_per_tissues = []
         for tissue in sorted(tissue_cell_allassays.keys()):
             values_selected_row = [row['mid'], 0.0]
             fscore = 0.0
@@ -200,6 +212,9 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                 
             values_selected_row[1]=fscore
             tissues_values[tissue].append(values_selected_row)
+            #for the tissues_fscores table
+            fscores_per_tissues.append(fscore)
+            
     print 't_process (func): ', time.time()-t_process
     
     #insert all collected values to their respective tables/tissues
@@ -219,6 +234,15 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
         dataText = ','.join('('+curs_for_insertion.mogrify(s_chars, row) + ')' for row in t_tissues_values)
         curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText)) 
         
+    #insert into tissues_fscores table
+    tissues_names_for_fscores = ','.join(sorted(tissue_cell_allassays.keys()))
+    
+    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
+    t_tissues_fscores_values = tuple(fscores_per_tissues)
+    fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
+     
+    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=','.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
+        
     print 't_insert (func): ', time.time()-t_insert
     conn.commit()
     del tissues_values
@@ -234,6 +258,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
                            scored_motifs_overlapping_tracks_files,
                            feature_weights_dict,
                            db_name, db_user_name, db_host_name,
+                           tissues_fscores_table,
                            cols_to_write_to = [], 
                            cols_to_write_to_allassays = [],
                            number_of_rows_to_load = 100000,
@@ -272,7 +297,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
         while i<num_cores:
             p.apply_async(insert_into_tissues, args=(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                    cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
-                                   db_name, db_user_name, db_host_name))
+                                   db_name, db_user_name, db_host_name, tissues_fscores_table))
             num_rows -=len(selected_rows)
             print 'num_rows remaining: ', num_rows
             
@@ -345,6 +370,7 @@ def generate_tissue_tables(db_name,
                     cell_table,
                     db_user_name,
                     db_host_name,
+                    tissues_fscores_table,
                     assay_cells_datatypes,
                     cell_assays,
                     assay_names,
@@ -355,7 +381,7 @@ def generate_tissue_tables(db_name,
                     motif_cols_names,
                     number_of_rows_to_load,
                     annotation_weights_inputfile,
-                    skip_negative_weights
+                    skip_negative_weights,
                     ):
     col_list, tissue_cell_assays, tissue_cell_allassays = get_tissue_cell_mappings(cell_assays, 
                                                                                        assay_names, 
@@ -364,7 +390,9 @@ def generate_tissue_tables(db_name,
     tissue_cols = db_setup_tissues(tissue_cell_allassays, 
                                    assay_cells_datatypes, 
                                    motif_cols = ['mid INTEGER', 'fscore NUMERIC'], 
-                                   db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name)
+                                   db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name,
+                                   tissues_fscores_table=tissues_fscores_table,
+                                   motif_cols_for_tissues_fscores_table = ['mid INTEGER'])
     col_list.append('mid')
     feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile,skip_negative_weights=skip_negative_weights)
     print 'Inserting data into tissues tables'
@@ -376,6 +404,7 @@ def generate_tissue_tables(db_name,
                            scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
                            feature_weights_dict=feature_weights_dict,
                            db_name = db_name, db_user_name=db_user_name, db_host_name=db_host_name,
+                           tissues_fscores_table=tissues_fscores_table,
                            number_of_rows_to_load = number_of_rows_to_load,
                            )
     
