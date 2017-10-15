@@ -140,7 +140,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
         tissues_values[tissue] = []
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             tissues_fields[tissue].append(assay.encode('ascii','ignore').lower())
-        
+    fscores_per_tissues_allrows = []
     #values_to_write = []
     t_process = time.time()
     for row in selected_rows:
@@ -214,7 +214,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
             tissues_values[tissue].append(values_selected_row)
             #for the tissues_fscores table
             fscores_per_tissues.append(fscore)
-            
+        fscores_per_tissues_allrows.append(fscores_per_tissues)
     print 't_process (func): ', time.time()-t_process
     
     #insert all collected values to their respective tables/tissues
@@ -238,11 +238,12 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     tissues_names_for_fscores = ['mid']
     tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
     print ', '.join(tissues_names_for_fscores)
-    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)+1))
+    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
     print s_chars_for_fscores
-    t_tissues_fscores_values = tuple(fscores_per_tissues)
+    print fscores_per_tissues_allrows
+    t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
     fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
-     
+    print fscores_per_tissues_dataText
     curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
         
     print 't_insert (func): ', time.time()-t_insert
