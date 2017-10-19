@@ -163,7 +163,6 @@ if __name__ == '__main__':
         
         #get PFM for motifs
         PFM_table_name = "motifs_pfm"
-        
         fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(motif_PFM_input_file=params['motif_PFM_file'])
         GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict , PFM_table_name, db_name, db_user_name, db_host_name, cols = ['name text', 'position integer', 'allele char(1)', 'freq numeric'], cols_names = ['name', 'position', 'allele', 'freq'])
         

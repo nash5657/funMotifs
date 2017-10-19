@@ -17,18 +17,22 @@ def collect_all_data(data_dir , data_tracks, sep='\t'):
         for data_track in data_tracks.split(','):
             print data_track
             if os.path.exists(data_track) or '*' in data_track:
-                for f in glob(data_track):
-                    #read the file content and add each line to the chrX file based on col1
-                    with open(f, 'r') as fi:
-                        l = fi.readline()
-                        sl = l.strip().split(sep)
-                        while len(sl)>1:
-                            with open(data_dir+'/'+sl[0]+'.bed', 'a') as fo:
-                                fo.write(l)
+                #on linux use awk to generate a file per chr
+                if sys.platform == "linux" or sys.platform == "linux2":
+                    print """awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track
+                    os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
+                else: #otherwise use readline (it is much slower than awk)
+                    for f in glob(data_track):
+                        #read the file content and add each line to the chrX file based on col1
+                        with open(f, 'r') as fi:
                             l = fi.readline()
                             sl = l.strip().split(sep)
-                #print """awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track
-                #os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
+                            while len(sl)>1:
+                                with open(data_dir+'/'+sl[0]+'.bed', 'a') as fo:
+                                    fo.write(l)
+                                l = fi.readline()
+                                sl = l.strip().split(sep)
+                    
         print "Combined data from the listed tracks."
     else:
         print "Using existing data tracks from: " + data_dir
