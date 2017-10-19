@@ -77,4 +77,14 @@ def split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
     return
 
                        
+def motif_names_table(db_name, db_user_name, db_host_name, 
+                      motifs_table,
+                      motif_names_table):
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
+    curs = conn.cursor()
+    curs.execute('drop table if exists {0};'.format(motif_names_table))
+    print 'create table if not exists {0} as (select distinct(name) from {2});'.format(motif_names_table, motifs_table)
+    curs.execute('create table if not exists {0} as (select distinct(name) from {2});'.format(motif_names_table, motifs_table))
+    conn.commit()
+    curs.close()
     

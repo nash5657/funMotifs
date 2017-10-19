@@ -24,7 +24,7 @@ if __name__ == '__main__':
     '''Get parameters from the sys.argv and the argument file'''
     params = Utilities.get_params(sys.argv)
     if len(params.keys())==0:
-        print "Usage: python regMotifsMain.py param_file==../conf/main_parameters.conf"
+        print "Usage: python regMotifsMain.py param_file=../conf/main_parameters.conf"
         sys.exit(0)
     
     '''set the temp dir for bedtools operations'''
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         import DBUtilities, GenerateCellTable, GenerateTissueTables
         run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
         number_processes_to_run_in_parallel = Utilities.get_value(params['number_processes_to_run_in_parallel'])
-        db_name = params['db_name']
+        db_name = params['db_name'].lower()
         db_user_name = params['db_user_name']
         db_host_name = params['db_host_name'] 
         cell_table = 'cell_table'
@@ -154,12 +154,18 @@ if __name__ == '__main__':
         #split motif table per chr
         new_table_name="motifs"
         GenerateMotifsTables.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table=cell_table, motif_cols=motif_cols_names, new_table_name=new_table_name)
+        GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name, 
+                                                  motifs_table=new_table_name,
+                                                  motif_names_table="motif_names" 
+                                                  )
+        
         split_motifs = Utilities.get_value(params['generate_motif_tables'])
         if split_motifs:
             GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
                                                   motifs_table=new_table_name, 
                                                   motif_cols=motif_cols_names, 
                                                   chr_names=range(1,26))
+        
         
         #get PFM for motifs
         PFM_table_name = "motifs_pfm"
