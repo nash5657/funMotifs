@@ -12,4 +12,4 @@ Brain=SK-N-SH,astrocyte,T98G,A172,Brain - Cerebellar Hemisphere
 Prostate=LNCaP clone FGC,DU145,PC-3,Prostate
 Skin=keratinocyte,NHEK,G-361,Skin - Sun Exposed (Lower leg)
 Uterus=Ishikawa,urothelium cell line,OMC-2,Uterus
-ColoRect=HCT116,COLO-320,CACO-2,TT1TKB,Colon - Sigmoid
+Colon=HCT116,COLO-320,CACO-2,TT1TKB,Colon - Sigmoid
