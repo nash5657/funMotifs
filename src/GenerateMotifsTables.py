@@ -83,8 +83,8 @@ def motif_names_table(db_name, db_user_name, db_host_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     curs.execute('drop table if exists {0};'.format(motif_names_table))
-    print 'create table if not exists {0} as (select distinct(name) from {2});'.format(motif_names_table, motifs_table)
-    curs.execute('create table if not exists {0} as (select distinct(name) from {2});'.format(motif_names_table, motifs_table))
+    print 'create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table)
+    curs.execute('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     conn.commit()
     curs.close()
     
