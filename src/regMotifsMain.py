@@ -125,7 +125,7 @@ if __name__ == '__main__':
                     motif_cols_names = motif_cols_names,
                     cell_index_name='indexposrange', 
                     cell_index_method = 'gist', 
-                    cell_index_cols = 'posrange',
+                    cell_index_cols = 'posrange'
                     )
         
         process_tissues = Utilities.get_value(params['generate_tissue_tables'])
