@@ -298,13 +298,17 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
     for motif_file in motif_files:
-        if motif_file.split('/')[-1] in chromatin_tracks_files:#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
+        
+        chr_n_file = motif_file.split('/')[-1]
+        with open(motif_files+'/'+motif_file) as f:
+            chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
+        if (chr_n_file in chromatin_tracks_files):#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
             scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
             if not (os.path.exists(motifs_overlapping_tracks_file) and os.path.exists(scored_motifs_chromatin_tracks_output_file)):
                 if run_in_parallel_param and len(motif_files)>1:
                     p.apply_async(overlay_resources_score_motifs, args=(motif_sites_dir+'/'+motif_file, 
-                                                                     all_chromatin_makrs_all_cells_combined_dir_path+'/'+motif_file.split('/')[-1], 
+                                                                     all_chromatin_makrs_all_cells_combined_dir_path+'/'+chr_n_file, 
                                                                      scored_motifs_chromatin_tracks_output_file, 
                                                                      motifs_overlapping_tracks_file,
                                                                      normal_expression_per_tissue_origin_per_TF, 
@@ -312,7 +316,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                                      cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes, header))
                 else:
                     overlay_resources_score_motifs(motif_sites_dir+'/'+motif_file, 
-                                                all_chromatin_makrs_all_cells_combined_dir_path+'/'+motif_file.split('/')[-1], 
+                                                all_chromatin_makrs_all_cells_combined_dir_path+'/'+chr_n_file, 
                                                 scored_motifs_chromatin_tracks_output_file, 
                                                 motifs_overlapping_tracks_file,
                                                 normal_expression_per_tissue_origin_per_TF,
@@ -324,4 +328,4 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         p.close()
         p.join()
     return motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files
-
+    
