@@ -92,14 +92,12 @@ if __name__ == '__main__':
     Run a log model to generate coeff for each annotation
     '''
     
-    
-    
     #Section 4. DB generation, Next step 29 Sep
     #write results to the main cellmotifs table
     if Utilities.get_value(params['create_database']):
         import DBUtilities, GenerateCellTable, GenerateTissueTables
         run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
-        number_processes_to_run_in_parallel = Utilities.get_value(params['number_processes_to_run_in_parallel'])
+        number_processes_to_run_in_parallel = int(params['number_processes_to_run_in_parallel'])
         db_name = params['db_name'].lower()
         db_user_name = params['db_user_name']
         db_host_name = params['db_host_name'] 
@@ -117,10 +115,10 @@ if __name__ == '__main__':
                     db_host_name,
                     cells_assays_dict,
                     assay_cells_datatypes,
-                    run_in_parallel_param,
-                    number_processes_to_run_in_parallel,
-                    header,
-                    scored_motifs_overlapping_tracks_files,
+                    run_in_parallel_param=run_in_parallel_param,
+                    number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
+                    header=header,
+                    scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
                     motif_cols = motif_cols,
                     motif_cols_names = motif_cols_names,
                     cell_index_name='indexposrange', 

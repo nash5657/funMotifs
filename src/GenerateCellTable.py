@@ -110,7 +110,7 @@ def generate_cell_table(db_name,
                     scored_motifs_overlapping_tracks_files,
                     motif_cols,
                     motif_cols_names,
-                    cell_index_name, cell_index_method, cell_index_cols,
+                    cell_index_name, cell_index_method, cell_index_cols
         ):
     
     if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name, 
@@ -127,7 +127,8 @@ def generate_cell_table(db_name,
                        scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
                        header=header,
                        run_in_parallel_param=run_in_parallel_param,
-                       number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)# dir_to_import=params['motifs_overlapping_tracks_output_dir'], keyword_to_check="_scored.bed10", header=header)
+                       number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
+        # dir_to_import=params['motifs_overlapping_tracks_output_dir'], keyword_to_check="_scored.bed10", header=header)
         print "Creating index on: ", cell_table
         DBUtilities.create_index(db_name, db_user_name, db_host_name, 
                                  cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)

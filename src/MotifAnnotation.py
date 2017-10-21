@@ -267,7 +267,6 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                        motifs_overlapping_tracks_output_dir,
                                        run_in_parallel_param,
                                        number_processes_to_run_in_parallel,
-                                       
                                        normal_expression_per_tissue_origin_per_TF,
                                        matching_cell_name_representative_dict, 
                                        motifTFName_TFNames_matches_dict, 
