@@ -81,7 +81,7 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
                        run_in_parallel_param,
                        number_processes_to_run_in_parallel
                        ):#, dir_to_import, keyword_to_check, header):
-    log_file = "log_file.txt"
+    log_file = open("log_file.txt", 'w')
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         p = Pool(number_processes_to_run_in_parallel)
     thread_num=0
