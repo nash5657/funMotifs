@@ -108,15 +108,15 @@ def db_setup_tissues(tissue_cell_assays,
 def get_score_from_value(value, assay, feature_weights_dict):
     score = 0.0
     try:
-        score  = feature_weights_dict[value]#where the value/label is present in the weights conf file
+        score  = feature_weights_dict[value.upper()]#where the value/label is present in the weights conf file
     except KeyError:
         try:
             if float(value)>0:
-                score = feature_weights_dict[assay]#where the assay name is present in the weights conf file
+                score = feature_weights_dict[assay.upper()]#where the assay name is present in the weights conf file
         except ValueError:#for number of items where each item adds a unit of the weight
             if value!="" and value!=" ":
                 try:
-                    score = feature_weights_dict[assay]*len(value.split(','))
+                    score = feature_weights_dict[assay.upper()]*len(value.split(','))
                 except KeyError:
                     return score
         except KeyError:
