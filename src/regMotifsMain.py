@@ -151,22 +151,24 @@ if __name__ == '__main__':
         
         #split motif table per chr
         new_table_name="motifs"
-        GenerateMotifsTables.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table=cell_table, motif_cols=motif_cols_names, new_table_name=new_table_name)
-        GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name, 
-                                                  motifs_table=new_table_name,
-                                                  motif_names_table="motif_names" 
-                                                  )
-        
-        split_motifs = Utilities.get_value(params['generate_motif_tables'])
-        if split_motifs:
-            GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
-                                                  motifs_table=new_table_name, 
-                                                  motif_cols=motif_cols_names, 
-                                                  chr_names=range(1,26))
-        
-        
-        #get PFM for motifs
-        PFM_table_name = "motifs_pfm"
-        fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(motif_PFM_input_file=params['motif_PFM_file'])
-        GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict , PFM_table_name, db_name, db_user_name, db_host_name, cols = ['name text', 'position integer', 'allele char(1)', 'freq numeric'], cols_names = ['name', 'position', 'allele', 'freq'])
-        
+        if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name, 
+                                           new_table_name): 
+            GenerateMotifsTables.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table=cell_table, motif_cols=motif_cols_names, new_table_name=new_table_name)
+            GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name, 
+                                                      motifs_table=new_table_name,
+                                                      motif_names_table="motif_names" 
+                                                      )
+            
+            split_motifs = Utilities.get_value(params['generate_motif_tables'])
+            if split_motifs:
+                GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
+                                                      motifs_table=new_table_name, 
+                                                      motif_cols=motif_cols_names, 
+                                                      chr_names=range(1,26))
+            
+            
+            #get PFM for motifs
+            PFM_table_name = "motifs_pfm"
+            fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(motif_PFM_input_file=params['motif_PFM_file'])
+            GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict , PFM_table_name, db_name, db_user_name, db_host_name, cols = ['name text', 'position integer', 'allele char(1)', 'freq numeric'], cols_names = ['name', 'position', 'allele', 'freq'])
+            
