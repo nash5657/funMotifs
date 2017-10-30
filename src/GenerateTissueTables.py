@@ -91,14 +91,12 @@ def db_setup_tissues(tissue_cell_assays,
         #print curs.fetchone()[0]
         curs.execute("DROP TABLE IF EXISTS {}".format(tissue))
         create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(tissue, ' ,'.join(fields))
-        print create_table_stmt
         curs.execute(create_table_stmt)
         
         fields_tissues.append(tissue + " numeric")#for the fscores table of all tissues
     
     curs.execute("DROP TABLE IF EXISTS {}".format(tissues_fscores_table))
     create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(tissues_fscores_table, ' ,'.join(fields_tissues))
-    print create_table_stmt
     curs.execute(create_table_stmt)
     curs.close()
     conn.commit()

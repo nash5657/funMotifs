@@ -58,7 +58,7 @@ def create_index(db_name, db_user_name, db_host_name,
     curs = conn.cursor()
     curs.execute("DROP INDEX IF EXISTS {}".format(index_name))
     creat_index_stmt= "CREATE INDEX IF NOT EXISTS {} ON {} using {} ({})".format(index_name, cell_table, index_method, index_cols)
-    print creat_index_stmt
+    #print creat_index_stmt
     curs.execute(creat_index_stmt)
     conn.commit()
     close_connection(conn)
@@ -83,11 +83,11 @@ def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
     
     conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
-    print "Loading for", tissue
-    print tissuecols
-    print "create table if not exists {0} as (select {1} from {2})".format(tissue, tissuecols, tissuemotifsimputed)
+    #print "Loading for", tissue
+    #print tissuecols
+    #print "create table if not exists {0} as (select {1} from {2})".format(tissue, tissuecols, tissuemotifsimputed)
     curs.execute("create table if not exists {0} as (select {1} from {2})".format(tissue, tissuecols, tissuemotifsimputed))
     conn.commit()
-    print "Created", tissue
+    #print "Created", tissue
     curs.close()
     conn.close()

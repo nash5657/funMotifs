@@ -130,7 +130,7 @@ if __name__ == '__main__':
         tissues_fscores_table="tissues_fscores"
         #write results to the tissues (based on cell motifs) table
         if process_tissues:
-            print 'Creating tissues tables'
+            print 'Dropping and Creating tissues tables'
             GenerateTissueTables.generate_tissue_tables(db_name,
                     cell_table,
                     db_user_name,
