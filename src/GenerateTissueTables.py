@@ -114,7 +114,10 @@ def get_score_from_value(value, assay, feature_weights_dict):
         except ValueError:#for number of items where each item adds a unit of the weight
             if value!="" and value!=" ":
                 try:
-                    score = feature_weights_dict[assay.upper()]*len(value.split(','))
+                    num_events = len(value.split(';'))
+                    if num_events > 3:
+                        num_events = 3
+                    score = feature_weights_dict[assay.upper()]*num_events
                 except KeyError:
                     return score
         except KeyError:
