@@ -117,7 +117,16 @@ def get_score_from_value(value, assay, feature_weights_dict):
                     if v>3.0:
                         v = 3.0
                     score = feature_weights_dict[assay.upper()]*v
-        except KeyError:
+        except (KeyError, ValueError):#for number of items where each item adds a unit of the weight
+            if value!="" and value!=" ":
+                try:
+                    num_events = len(value.split(';'))
+                    if num_events > 3:
+                        num_events = 3
+                    score = feature_weights_dict[assay.upper()]*num_events
+                except KeyError:
+                    return score
+        except (KeyError, ValueError):
             return score 
     return score
 
@@ -206,10 +215,8 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                 
                 #compute the final score
                 value = tissue_cell_allassays[tissue][assay]
-                s=get_score_from_value(value, assay, feature_weights_dict)
-                print "assay,value,s: ", assay,value,s
-                fscore+=s
-            print 'fscore: ', fscore
+                fscore+=get_score_from_value(value, assay, feature_weights_dict)
+                
             values_selected_row[1]=fscore
             tissues_values[tissue].append(values_selected_row)
             #for the tissues_fscores table
@@ -241,7 +248,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
     fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
     curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
-        
+    
     print 't_insert (func): ', time.time()-t_insert
     conn.commit()
     del tissues_values
