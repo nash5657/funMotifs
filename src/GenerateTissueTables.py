@@ -109,8 +109,14 @@ def get_score_from_value(value, assay, feature_weights_dict):
         score  = feature_weights_dict[value.upper()]#where the value/label is present in the weights conf file
     except (KeyError,AttributeError):
         try:
-            if float(value)>0:
-                score = feature_weights_dict[assay.upper()]#where the assay name is present in the weights conf file
+            if float(value)>0.0:
+                if assay!="numothertfbinding":
+                    score = feature_weights_dict[assay.upper()]#where the assay name is present in the weights conf file
+                else:
+                    v = float(value)
+                    if v>3.0:
+                        v = 3.0
+                    score = feature_weights_dict[assay.upper()]*v
         except ValueError:#for number of items where each item adds a unit of the weight
             if value!="" and value!=" ":
                 try:
@@ -129,7 +135,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict, 
                            db_name, db_user_name, db_host_name, tissues_fscores_table):
-            
+    
     print "Thread {} has started".format(thread_num)
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs_for_insertion = conn.cursor()
