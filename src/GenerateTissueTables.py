@@ -107,7 +107,7 @@ def get_score_from_value(value, assay, feature_weights_dict):
     score = 0.0
     try:
         score  = feature_weights_dict[value.upper()]#where the value/label is present in the weights conf file
-    except KeyError:
+    except (KeyError,AttributeError):
         try:
             if float(value)>0:
                 score = feature_weights_dict[assay.upper()]#where the assay name is present in the weights conf file
