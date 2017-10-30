@@ -91,7 +91,7 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
             p.apply_async(insert_from_file, args=[field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table, header, thread_num])
         else:
             insert_from_file(field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table, header)
-        log_file.write(i_file)
+        log_file.write(i_file+'\n')
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         p.close()
         p.join()
