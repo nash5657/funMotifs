@@ -206,8 +206,10 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                 
                 #compute the final score
                 value = tissue_cell_allassays[tissue][assay]
-                fscore+=get_score_from_value(value, assay, feature_weights_dict)
-                
+                s=get_score_from_value(value, assay, feature_weights_dict)
+                print "assay,value,s: ", assay,value,s
+                fscore+=s
+            print 'fscore: ', fscore
             values_selected_row[1]=fscore
             tissues_values[tissue].append(values_selected_row)
             #for the tissues_fscores table
