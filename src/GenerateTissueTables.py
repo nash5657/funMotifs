@@ -110,22 +110,13 @@ def get_score_from_value(value, assay, feature_weights_dict):
     except (KeyError,AttributeError):
         try:
             if float(value)>0.0:
-                if assay!="numothertfbinding":
+                if assay.lower()!="numothertfbinding":
                     score = feature_weights_dict[assay.upper()]#where the assay name is present in the weights conf file
                 else:
                     v = float(value)
                     if v>3.0:
                         v = 3.0
                     score = feature_weights_dict[assay.upper()]*v
-        except ValueError:#for number of items where each item adds a unit of the weight
-            if value!="" and value!=" ":
-                try:
-                    num_events = len(value.split(';'))
-                    if num_events > 3:
-                        num_events = 3
-                    score = feature_weights_dict[assay.upper()]*num_events
-                except KeyError:
-                    return score
         except KeyError:
             return score 
     return score
