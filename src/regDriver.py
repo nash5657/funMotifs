@@ -12,7 +12,8 @@ from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
 
-params = {'-sep': '\t', '-cols_to_retrieve':'mid,fscore', '-number_rows_select':'all',
+params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
+          '-restart_conn_after_n_queries':100000, '-variant':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
@@ -67,11 +68,17 @@ def read_infile():
         line = infile.readline()
         while line:
             sline = line.strip().split(params['-sep'])
-            if ( (line.startswith('#') or line.startswith('//') or len(sline)<3) or 
-                ( ((int(float(sline[params['-end']])) - int(float(sline[params['-start']]))) + 1 != len(sline[params['-ref']]) and sline[params['-ref']]!='-' and sline[params['-alt']]!='-'))):#skip mis appropriate lines
-                print 'Warning -- skipped line: ', line
+            if (line.startswith('#') or line.startswith('//') or len(sline)<3):
                 line = infile.readline()
                 continue
+            if params['-variant']:#the input is variant
+                if ( #check if the number of ref/alt alleles match the variant length
+                    (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
+                     sline[params['-ref']]!='-' and sline[params['-alt']]!='-')):#skip mis appropriate lines
+                        print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
+                        line = infile.readline()
+                        continue
+            
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
             chr_table = updated_chr+'motifs'
             if not updated_chr.startswith('chr'):
@@ -80,20 +87,20 @@ def read_infile():
                 start=int(float(sline[params['-start']])), 
                 end=int(float(sline[params['-end']])), 
                 tissue_table=params['-tissue'], 
-                motif_table=chr_table) + ')')
+                motif_table=chr_table))
             
             rows = run_query(params['-cols_to_retrieve'], params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
+            print rows
             line = infile.readline()
             
             number_lines_processed+=1
-            if number_lines_processed % 100000 == 0:
+            if number_lines_processed % int(params['-restart_conn_after_n_queries']) == 0:
                 print '{} Lines are processed from {}'.format(number_lines_processed, params['-f'])
                 print time.time()-t
                 t = time.time()
                 conn.close()
                 conn = open_connection()
-            
-    return
+    return number_lines_processed
     
     
 def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, motif_start, motif_end, mut_start, mut_end, ref_allele, alt_allele):
@@ -192,7 +199,7 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python regDriver.py input_file [options]"
         sys.exit(0)
-    get_params(sys.argv[1:])
+    get_params(sys.argv[1:], params_without_value=['-variant'])
     print params
     try:
         read_infile()
