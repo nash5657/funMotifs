@@ -17,7 +17,7 @@ params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
-def get_params(params_list, params_without_value=[]):
+def get_params(params_list, params_without_value):
     global params
     for i, arg in enumerate(params_list):#priority is for the command line
         if arg.startswith('-'): 
@@ -25,6 +25,10 @@ def get_params(params_list, params_without_value=[]):
                 params[arg] = True
             else:
                 try:
+                    if params_list[i+1].lower()=='yes' or params_list[i+1].lower()=='true':
+                        params_list[i+1]=True
+                    elif params_list[i+1].lower()=='no' or params_list[i+1].lower()=='false':
+                        params_list[i+1]=False
                     params[arg] =  params_list[i+1]
                 except IndexError:
                     print "no value is given for parameter: ", arg 
@@ -80,7 +84,7 @@ def read_infile():
                             line = infile.readline()
                             continue
                 except IndexError:
-                    print 'Warning -- skipped line: it is not a variant, has fewer than 4 columns (chr,start,end,ref,alt): ', line
+                    print 'Warning -- line is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
                     params['-variant'] = False
                     
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
@@ -203,7 +207,7 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python regDriver.py input_file [options]"
         sys.exit(0)
-    get_params(sys.argv[1:], params_without_value=['-variant', '-region'])
+    get_params(sys.argv[1:], params_without_value=[])
     print params
     try:
         read_infile()
