@@ -13,7 +13,7 @@ from psycopg2.extras import DictCursor
 import time
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
-          '-restart_conn_after_n_queries':100000, '-variant':True,
+          '-restart_conn_after_n_queries':100000, '-variant':False, '-region':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
@@ -72,13 +72,17 @@ def read_infile():
                 line = infile.readline()
                 continue
             if params['-variant']:#the input is variant
-                if ( #check if the number of ref/alt alleles match the variant length
-                    (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
-                     sline[params['-ref']]!='-' and sline[params['-alt']]!='-')):#skip mis appropriate lines
-                        print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
-                        line = infile.readline()
-                        continue
-            
+                try:
+                    if ( #check if the number of ref/alt alleles match the variant length
+                        (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
+                         sline[params['-ref']]!='-' and sline[params['-alt']]!='-')):#skip mis appropriate lines
+                            print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
+                            line = infile.readline()
+                            continue
+                except IndexError:
+                    print 'Warning -- skipped line: it is not a variant, has fewer than 4 columns (chr,start,end,ref,alt): ', line
+                    line = infile.readline()
+                    continue
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
             chr_table = updated_chr+'motifs'
             if not updated_chr.startswith('chr'):
@@ -199,7 +203,7 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python regDriver.py input_file [options]"
         sys.exit(0)
-    get_params(sys.argv[1:], params_without_value=['-variant'])
+    get_params(sys.argv[1:], params_without_value=['-variant', '-region'])
     print params
     try:
         read_infile()
