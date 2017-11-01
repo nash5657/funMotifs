@@ -25,11 +25,12 @@ def get_params(params_list, params_without_value):
                 params[arg] = True
             else:
                 try:
-                    if params_list[i+1].lower()=='yes' or params_list[i+1].lower()=='true':
-                        params_list[i+1]=True
-                    elif params_list[i+1].lower()=='no' or params_list[i+1].lower()=='false':
-                        params_list[i+1]=False
-                    params[arg] =  params_list[i+1]
+                    v = params_list[i+1]
+                    if v.lower()=='yes' or v.lower()=='true':
+                        v=True
+                    elif v.lower()=='no' or v.lower()=='false':
+                        v=False
+                    params[arg] =  v
                 except IndexError:
                     print "no value is given for parameter: ", arg 
     return params
