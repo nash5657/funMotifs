@@ -13,7 +13,7 @@ from psycopg2.extras import DictCursor
 import time
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
-          '-restart_conn_after_n_queries':100000, '-variant':False,
+          '-restart_conn_after_n_queries':100000, '-variant':True, '-region':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
@@ -81,8 +81,8 @@ def read_infile():
                             continue
                 except IndexError:
                     print 'Warning -- skipped line: it is not a variant, has fewer than 4 columns (chr,start,end,ref,alt): ', line
-                    line = infile.readline()
-                    continue
+                    params['-variant'] = False
+                    
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
             chr_table = updated_chr+'motifs'
             if not updated_chr.startswith('chr'):
