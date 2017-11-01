@@ -127,7 +127,7 @@ if __name__ == '__main__':
                     )
         
         process_tissues = Utilities.get_value(params['generate_tissue_tables'])
-        tissues_fscores_table="all_tisues"
+        tissues_fscores_table="all_tissues"
         #write results to the tissues (based on cell motifs) table
         if process_tissues:
             print 'Dropping and Creating tissues tables'
