@@ -12,8 +12,8 @@ from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
 
-params = {'-sep': '\t', 'cols_to_retrieve':'mid,fscore',
-          '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4,
+params = {'-sep': '\t', '-cols_to_retrieve':'mid,fscore', '-number_rows_select':'all',
+          '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
 def get_params(params_list, params_without_value=[]):
@@ -39,17 +39,18 @@ def get_col_names_from_table(table_name, conn):
     curs.execute("select * FROM {} limit 1".format(table_name))
     return [desc[0] for desc in curs.description]
 
-def get_limit_smt(number_rows_select='all'):
+def get_limit_smt():
     limit_number_rows_select_stmt = ""
-    if number_rows_select!="all":
-        if number_rows_select>0:
-            limit_number_rows_select_stmt = ' limit {}'.format(str(number_rows_select))
+    if params['-number_rows_select']!="all":
+        if int(params['-number_rows_select'])>0:
+            limit_number_rows_select_stmt = ' limit {}'.format(str(params['-number_rows_select']))
     return limit_number_rows_select_stmt
 
 
-def run_query(cols_to_retrieve, cond_statement, conn, n):
+def run_query(cols_to_retrieve, from_tabes, cond_statement, conn, n):
     curs = conn.cursor(name = "countcurs"+n, cursor_factory=DictCursor)
-    curs.execute('select {} from {}{} {}'.format(cols_to_retrieve, params['-tissue_table']+',' + params['-motifs_table'], cond_statement, get_limit_smt(params['-number_rows_select'])))
+    stmt = 'select {} from {}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, get_limit_smt())
+    curs.execute(stmt)
     if curs is not None:
         return curs.fetchall()
         curs.close()
@@ -75,13 +76,13 @@ def read_infile():
             chr_table = updated_chr+'motifs'
             if not updated_chr.startswith('chr'):
                 chr_table = 'chr'+updated_chr+'motifs'
-            cond_statement = (" where (posrange && int4range({start},{end},'[]')) and ({{tissue_table}.mid={motif_table}.mid)".format(
+            cond_statement = (" where (posrange && int4range({start},{end},'[]')) and ({tissue_table}.mid={motif_table}.mid)".format(
                 start=int(float(sline[params['-start']])), 
                 end=int(float(sline[params['-end']])), 
                 tissue_table=params['-tissue'], 
                 motif_table=chr_table) + ')')
             
-            rows = run_query(params['-cols_to_retrieve'], cond_statement, conn, str(number_lines_processed))
+            rows = run_query(params['-cols_to_retrieve'], params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
             line = infile.readline()
             
             number_lines_processed+=1
@@ -197,6 +198,7 @@ if __name__ == '__main__':
         read_infile()
     except KeyError:
         print "No value was found for one or more of the arguments:\n", params
+        print "Usage: python regDriver.py -f file_name -tissue tissue_name"
         sys.exit(0)
     
     
