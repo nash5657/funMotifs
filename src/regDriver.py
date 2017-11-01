@@ -13,7 +13,7 @@ from psycopg2.extras import DictCursor
 import time
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
-          '-restart_conn_after_n_queries':100000, '-variant':False, '-region':True,
+          '-restart_conn_after_n_queries':100000, '-variant':False,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
