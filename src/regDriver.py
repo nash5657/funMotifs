@@ -13,7 +13,7 @@ from psycopg2.extras import DictCursor
 import time
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
-          '-restart_conn_after_n_queries':100000, '-variant':True, '-region':True,
+          '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
     
@@ -76,7 +76,7 @@ def read_infile():
             if (line.startswith('#') or line.startswith('//') or len(sline)<3):
                 line = infile.readline()
                 continue
-            if params['-variant']:#the input is variant
+            if params['-variants']:#the input is variant
                 try:
                     if ( #check if the number of ref/alt alleles match the variant length
                         (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
@@ -86,7 +86,7 @@ def read_infile():
                             continue
                 except IndexError:
                     print 'Warning -- line is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
-                    params['-variant'] = False
+                    params['-variants'] = False
                     
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
             chr_table = updated_chr+'motifs'
