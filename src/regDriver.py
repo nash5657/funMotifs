@@ -254,6 +254,23 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg')
     return
 
+def plot_heatmap(min_fscore = 2.5, motifs_table,tissue_table, fig_name):
+    conn = open_connection()
+    curs = conn.cursor()#cursor_factory=DictCursor)
+    
+    stmt_all = "select chromhmm,split_part(name,'_', 1) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {tissue}.fscore>{min_fscore}".format(
+        motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
+    print stmt_all
+    curs.execute(stmt_all)
+    scores_all = curs.fetchall()
+    curs.close()
+    df = pd.DataFrame(scores_all, columns=['Chromatin States', 'TFs'])
+    print df.head()
+    s = sns.heatmap(data=df)
+    ss = s.get_figure()
+    ss.savefig(fig_name+'.pdf')
+    ss.savefig(fig_name+'.svg')
+    
 if __name__ == '__main__':
     
     if len(sys.argv)<=0:
@@ -269,10 +286,12 @@ if __name__ == '__main__':
     if '-plot' in params.keys():
         if '-fig1' in params.keys():
             print 'plotting figure 1'
+            tissue_table = 'liver'
+            motifs_table = 'motifs'
             tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263']
             tfs_freq = []
             for tf in sorted(tfs):
-                tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = 'liver', motifs_table = 'motifs'))
+                tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table))
             df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
             fig = plt.figure()
             s = sns.barplot(x='tf', y='frequency', hue='activity', data=df, estimator=sum)
@@ -281,8 +300,17 @@ if __name__ == '__main__':
             ss.savefig('fig1.svg')
         if '-fig2' in params.keys():
             tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+            motifs_table = 'motifs'
+            tfs = ['CTCF', 'FOXA1']
             #tissue_names = ['liver','breast','brain','myeloid','blood']
             print 'plotting figure 2'
-            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='motifs', tissue_names=tissue_names, fig_name='fig2_ctcf')
-            plot_fscore(tf_name='FOXA1', tissue_table='all_tissues', motifs_table='motifs', tissue_names=tissue_names, fig_name='fig2_foxa1')
+            for tf in sorted(tfs):
+                fig = plt.figure(width=12,height=6)
+                plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_names, fig_name='fig2_'+tf)
+        if '-fig3' in params.keys():
+            print 'plotting figure 3'
+            motifs_table='chr24motifs'
+            tissue_table = 'liver'
+            plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3')
+            
             
