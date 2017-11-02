@@ -343,3 +343,8 @@ if __name__ == '__main__':
             all_dfs = pd.concat(dfs)
             print all_dfs
             print all_dfs.shape
+            fig = plt.figure(figsize=(12,8))
+            s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
+            ss = s.get_figure()
+            ss.savefig('fig4.pdf')
+            ss.savefig('fig4.svg')
