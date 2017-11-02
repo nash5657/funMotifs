@@ -254,11 +254,11 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg')
     return
 
-def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf=10000):
+def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     
-    stmt_all = "select chromhmm,split_part(name,'_', 1),count(name) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {tissue}.fscore>{min_fscore} group by chromhmm,name order by chromhmm".format(
+    stmt_all = "select chromhmm, upper(split_part(name,'_', 1)), count(name) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by chromhmm,name order by chromhmm".format(
         motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
     print stmt_all
     curs.execute(stmt_all)
@@ -276,6 +276,22 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_i
     ss.savefig(fig_name+'.pdf')
     ss.savefig(fig_name+'.svg')
     
+def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
+    conn = open_connection()
+    curs = conn.cursor()#cursor_factory=DictCursor)
+    
+    stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by name order by freq".format(
+        motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
+    print stmt_all
+    curs.execute(stmt_all)
+    scores_all = curs.fetchall()
+    curs.close()
+    df = pd.DataFrame(scores_all, columns=['TFs', 'Frequency'])
+    df['tissue']=[tissue_table for i in range(0,len(df))]
+    print df.head()
+    print df.shape
+    return df
+
 if __name__ == '__main__':
     
     if len(sys.argv)<=0:
@@ -314,10 +330,19 @@ if __name__ == '__main__':
                 plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_names, fig_name='fig2_'+tf)
         if '-fig3' in params.keys():
             print 'plotting figure 3'
-            tissue_tables = ['liver', 'breast']
+            threshold_to_include_tf = 20000
+            tissue_tables = ['liver', 'breast', 'blood']
             for tissue_table in tissue_tables:
                 fig = plt.figure(figsize=(12,6))
-                plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table)
+                plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf)
         if '-fig4' in params.keys():
             print 'plotting figure 4' 
+            tissue_tables=['liver', 'breast']
+            df = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
+            if len(tissue_tables)>1:
+                for tissue_table in tissue_tables[1:]:
+                    df_i = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
+                    df.append(df_i)  
+            print df
+            print df.shape
             
