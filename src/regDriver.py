@@ -237,11 +237,15 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names):
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     
-    stmt_all = "select {tissue_names} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(tissue_names=tissue_names, motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    stmt_all = "select {tissue_names} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(
+        tissue_names=','.join(sorted(tissue_names)), motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     print stmt_all
     curs.execute(stmt_all)
     scores_all = curs.fetchall()
     curs.close()
+    df = pd.DataFrame(scores_all, columns=tissue_names)
+    print df.head()
+    sns.boxplot(data=df)
     print scores_all
     return
 
@@ -274,6 +278,6 @@ if __name__ == '__main__':
             tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
             tissue_names = ['liver','breast','brain','myeloid','blood']
             print 'plotting figure 2'
-            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='chr24motifs', tissue_names=','.join(sorted(tissue_names)))
+            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='chr24motifs', tissue_names=tissue_names)
             
             
