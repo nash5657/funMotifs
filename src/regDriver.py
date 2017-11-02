@@ -208,7 +208,7 @@ def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, mo
     
     return breaking_score, breaking_score_cumulative, mut_sig, motif_mut_pos
 
-def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs'):
+def plot_motif_freq(tf_name, tissue_table, motifs_table):
     
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
@@ -232,8 +232,17 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
             [tf_name, tissue_table, 'dnase', int(dnase[0][0])], 
             [tf_name, tissue_table, 'active', int(active[0][0])]]
 
-def plot_bar_charts(list_items):
+def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names):
     
+    conn = open_connection()
+    curs = conn.cursor()#cursor_factory=DictCursor)
+    
+    stmt_all = "select {tissue_names} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(tissue_names=tissue_names, motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    print stmt_all
+    curs.execute(stmt_all)
+    scores_all = curs.fetchall()
+    curs.close()
+    print scores_all
     return
 
 if __name__ == '__main__':
@@ -249,15 +258,18 @@ if __name__ == '__main__':
             print "No value was found for one or more of the arguments:\n", params
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     if '-plot' in params.keys():
-        tfs_freq = []
-        tfs_freq.extend(plot_motif_freq(tf_name="CTCF"))
-        tfs_freq.extend(plot_motif_freq(tf_name="CEBPB"))
-        tfs_freq.extend(plot_motif_freq(tf_name="FOXA1"))
-        tfs_freq.extend(plot_motif_freq(tf_name="KLF14"))
-        print tfs_freq 
-        df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
-        print df
-        fig = plt.figure()
-        s = sns.barplot(x='tfs', y='frequency', hue='activity')
-        s.savefig('te.pdf')
-    
+        if '-fig1' in params.keys():
+            print 'plotting figure 1'
+            tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263']
+            tfs_freq = []
+            for tf in sorted(tfs):
+                tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = 'liver', motifs_table = 'motifs'))
+            df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
+            fig = plt.figure()
+            s = sns.barplot(x='tfs', y='frequency', hue='activity')
+            s.savefig('te.pdf')
+        if '-fig2' in params.keys():
+            tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+            tissue_names = ['liver,breast,brain,myeloid,blood']
+            print 'plotting figure 2'
+            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='chr24motifs', tissue_names=','.join(sorted(tissue_names)))
