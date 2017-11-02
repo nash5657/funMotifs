@@ -280,7 +280,7 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     
-    stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by name order by freq".format(
+    stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by name order by freq desc".format(
         motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
     print stmt_all
     curs.execute(stmt_all)
@@ -336,11 +336,10 @@ if __name__ == '__main__':
         if '-fig4' in params.keys():
             print 'plotting figure 4' 
             tissue_tables=['liver', 'breast', 'blood']
-            df_all = plot_scatter_plot(min_fscore, motifs_table, tissue_table=tissue_tables[0])
-            if len(tissue_tables)>1:
-                for tissue_table in tissue_tables[1:]:
-                    df_i = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
-                    df_all.append(df_i)  
-            print df_all
-            print df_all.shape
-            
+            dfs = []
+            for tissue_table in tissue_tables[1:]:
+                dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
+                  
+            all_dfs = pd.concat(dfs)
+            print all_dfs
+            print all_dfs.shape
