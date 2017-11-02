@@ -305,12 +305,12 @@ if __name__ == '__main__':
             print "No value was found for one or more of the arguments:\n", params
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     if '-plot' in params.keys():
-        motifs_table='motifs'
+        motifs_table='chr24motifs'
+        min_fscore = 2.5
         if '-fig1' in params.keys():
             print 'plotting figure 1'
             tissue_table = 'liver'
             tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263']
-            min_fscore = 2.5
             tfs_freq = []
             for tf in sorted(tfs):
                 tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table, min_fscore = min_fscore))
@@ -338,7 +338,7 @@ if __name__ == '__main__':
         if '-fig4' in params.keys():
             print 'plotting figure 4' 
             tissue_tables=['liver', 'breast']
-            df = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
+            df = plot_scatter_plot(min_fscore, motifs_table, tissue_table=tissue_tables[0])
             if len(tissue_tables)>1:
                 for tissue_table in tissue_tables[1:]:
                     df_i = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
