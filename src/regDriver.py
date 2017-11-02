@@ -209,24 +209,19 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     
     stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
-    print stmt_tfbinding
     stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and (fscore>2.5 or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
-    print motifs_all
     curs.execute(stmt_tfbinding)
     tfbinding = curs.fetchall()
-    print tfbinding
     curs.execute(stmt_dnase)
     dnase = curs.fetchall()
-    print dnase
     curs.execute(stmt_active)
     active = curs.fetchall()
-    print active
     curs.close()
-    return tf_name, tissue_table, motifs_all, tfbinding, dnase, active
+    return [tf_name, tissue_table, int(motifs_all[0][0].strip('L')), int(tfbinding[0][0].strip('L')), int(dnase[0][0].strip('L')), int(active[0][0].strip('L'))]
 
 
 if __name__ == '__main__':
@@ -242,10 +237,11 @@ if __name__ == '__main__':
             print "No value was found for one or more of the arguments:\n", params
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     if '-plot' in params.keys():
-        plot_motif_freq(tf_name="CTCF")
-        plot_motif_freq(tf_name="CEBPB")
-        plot_motif_freq(tf_name="FOXA1")
-        plot_motif_freq(tf_name="HNF4A")
-        
+        tfs_freq = []
+        tfs_freq.append(plot_motif_freq(tf_name="CTCF"))
+        tfs_freq.append(plot_motif_freq(tf_name="CEBPB"))
+        tfs_freq.append(plot_motif_freq(tf_name="FOXA1"))
+        tfs_freq.append(plot_motif_freq(tf_name="KLF14"))
+        print tfs_freq 
     
     
