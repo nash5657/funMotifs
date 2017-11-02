@@ -307,12 +307,12 @@ if __name__ == '__main__':
         motifs_table='motifs'
         min_fscore = 2.5
         tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
-        tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263', 'MAFK']
+        tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
         threshold_to_include_tf_in_heatmap = 20000
         
         if '-fig1' in params.keys():
             print 'plotting figure 1'
-            for tissue_table in tissue_tables:
+            for tissue_table in ['blood', 'liver']:
                 fig = plt.figure()
                 tfs_freq = []
                 for tf in sorted(tfs):
@@ -332,7 +332,7 @@ if __name__ == '__main__':
         
         if '-fig3' in params.keys():
             print 'plotting figure 3'
-            for tissue_table in tissue_tables:
+            for tissue_table in ['liver', 'blood', 'breast']:
                 fig = plt.figure(figsize=(12,6))
                 plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap)
         
@@ -341,7 +341,7 @@ if __name__ == '__main__':
             dfs = []
             for tissue_table in tissue_tables:
                 dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
-                  
+                
             all_dfs = pd.concat(dfs)
             fig = plt.figure(figsize=(12,8))
             s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
