@@ -270,10 +270,11 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_i
             if df_pivot[c].sum()>threshold_to_include_tf:
                 df_pivot_filtered[c] = df_pivot[c] 
     print df_pivot_filtered.head()
-    s = sns.heatmap(data=df_pivot_filtered, square=True, cbar=True)
-    ss = s.get_figure()
-    ss.savefig(fig_name+'.pdf')
-    ss.savefig(fig_name+'.svg')
+    if len(df_pivot_filtered)>0:
+        s = sns.heatmap(data=df_pivot_filtered, square=True, cbar=True)
+        ss = s.get_figure()
+        ss.savefig(fig_name+'.pdf')
+        ss.savefig(fig_name+'.svg')
     
 def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     conn = open_connection()
