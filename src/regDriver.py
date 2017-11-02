@@ -207,15 +207,22 @@ def plot_motif_freq():
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     #get CTCF motifs in liver
-    stmt_all = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%'"
-    stmt_tfbinding = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and tfbinding>0"
-    stmt_dnase = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and dnase__seq>0"
-    stmt_active = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and (fscore>2.5 or tfbinding>0)"
+    motifs_table = 'chr24motifs'
+    tissue_table = 'liver'
+    stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%'".format(motifs=motifs_table, tissue=tissue_table)
+    stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and {tissue}.tfbinding>0".format(motifs=motifs_table, tissue=tissue_table)
+    stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and {tissue}.dnase__seq>0".format(motifs=motifs_table, tissue=tissue_table)
+    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and (fscore>2.5 or tfbinding>0)".format(motifs=motifs_table, tissue=tissue_table)
     
-    motifs_all = curs.execute(stmt_all).fetchall()
+    curs.execute(stmt_all)
+    motifs_all = curs.fetchall()
+    print motifs_all
     tfbinding = curs.execute(stmt_tfbinding).fetchall()
+    print tfbinding
     dnase = curs.execute(stmt_dnase).fetchall()
+    print dnase
     active = curs.execute(stmt_active).fetchall()
+    print active
     curs.close()
     print motifs_all, tfbinding, dnase, active
     return 
@@ -226,7 +233,6 @@ if __name__ == '__main__':
         print "Usage: python regDriver.py input_file [options]"
         sys.exit(0)
     get_params(sys.argv[1:], params_without_value=[])
-    print params
     if '-f' in params.keys():
         try:
             read_infile()
