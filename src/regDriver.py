@@ -304,10 +304,10 @@ if __name__ == '__main__':
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     
     if '-plot' in params.keys():
-        motifs_table='chr24motifs'
+        motifs_table='motifs'
         min_fscore = 2.5
-        tissue_tables=['blood', 'brain']#, 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
-        tfs = ['CTCF', 'CEBPB']#, 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263', 'MAFK']
+        tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+        tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263', 'MAFK']
         threshold_to_include_tf_in_heatmap = 20000
         
         if '-fig1' in params.keys():
