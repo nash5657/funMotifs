@@ -221,7 +221,10 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     curs.execute(stmt_active)
     active = curs.fetchall()
     curs.close()
-    return [tf_name, tissue_table, int(motifs_all[0][0]), int(tfbinding[0][0]), int(dnase[0][0]), int(active[0][0])]
+    return [[tf_name, tissue_table, int(motifs_all[0][0])], 
+            [tf_name, tissue_table, int(tfbinding[0][0])], 
+            [tf_name, tissue_table, int(dnase[0][0])], 
+            [tf_name, tissue_table, int(active[0][0])]]
 
 def plot_bar_charts(list_items):
     
@@ -241,10 +244,10 @@ if __name__ == '__main__':
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     if '-plot' in params.keys():
         tfs_freq = []
-        tfs_freq.append(plot_motif_freq(tf_name="CTCF"))
-        tfs_freq.append(plot_motif_freq(tf_name="CEBPB"))
-        tfs_freq.append(plot_motif_freq(tf_name="FOXA1"))
-        tfs_freq.append(plot_motif_freq(tf_name="KLF14"))
+        tfs_freq.extend(plot_motif_freq(tf_name="CTCF"))
+        tfs_freq.extend(plot_motif_freq(tf_name="CEBPB"))
+        tfs_freq.extend(plot_motif_freq(tf_name="FOXA1"))
+        tfs_freq.extend(plot_motif_freq(tf_name="KLF14"))
         print tfs_freq 
         df = pd.DataFrame(tfs_freq) 
         print df
