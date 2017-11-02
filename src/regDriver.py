@@ -310,7 +310,8 @@ if __name__ == '__main__':
                 plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_names, fig_name='fig2_'+tf)
         if '-fig3' in params.keys():
             print 'plotting figure 3'
-            motifs_table='chr24motifs'
+            fig = plt.figure(width=12,height=6)
+            motifs_table='chr23motifs'
             tissue_table = 'liver'
             plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3')
             
