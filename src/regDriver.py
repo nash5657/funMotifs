@@ -17,6 +17,9 @@ import psycopg2
 from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
+#plt.style.use('ggplot')
+sns.set_style("white")
+sns.set_context("paper")#talk
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
@@ -232,7 +235,7 @@ def plot_motif_freq(tf_name, tissue_table, motifs_table):
             [tf_name, tissue_table, 'dnase', int(dnase[0][0])], 
             [tf_name, tissue_table, 'active', int(active[0][0])]]
 
-def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names):
+def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
@@ -247,8 +250,8 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names):
     print df.head()
     s = sns.boxplot(data=df)
     ss = s.get_figure()
-    ss.savefig('fig2.pdf')
-    ss.savefig('fig2.svg')
+    ss.savefig(fig_name+'.pdf')
+    ss.savefig(fig_name+'.svg')
     return
 
 if __name__ == '__main__':
@@ -280,6 +283,6 @@ if __name__ == '__main__':
             tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
             #tissue_names = ['liver','breast','brain','myeloid','blood']
             print 'plotting figure 2'
-            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='motifs', tissue_names=tissue_names)
-            
+            plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='motifs', tissue_names=tissue_names, fig_name='fig2_ctcf')
+            plot_fscore(tf_name='FOXA1', tissue_table='all_tissues', motifs_table='motifs', tissue_names=tissue_names, fig_name='fig2_foxa1')
             
