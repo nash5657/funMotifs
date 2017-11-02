@@ -230,10 +230,10 @@ def plot_motif_freq(tf_name, tissue_table, motifs_table, min_fscore):
     curs.execute(stmt_active)
     active = curs.fetchall()
     curs.close()
-    return [[tf_name, tissue_table, 'all', int(motifs_all[0][0])], 
-            [tf_name, tissue_table, 'tfbinding', int(tfbinding[0][0])], 
-            [tf_name, tissue_table, 'dnase', int(dnase[0][0])], 
-            [tf_name, tissue_table, 'active', int(active[0][0])]]
+    return [[tf_name, tissue_table, 'All Motifs', int(motifs_all[0][0])], 
+            [tf_name, tissue_table, 'DHSs', int(dnase[0][0])], 
+            [tf_name, tissue_table, 'Matching TFBSs', int(tfbinding[0][0])], 
+            [tf_name, tissue_table, 'Active Motifs', int(active[0][0])]]
 
 def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     
@@ -337,9 +337,11 @@ if __name__ == '__main__':
             print 'plotting figure 4' 
             tissue_tables=['liver', 'breast', 'blood']
             dfs = []
-            for tissue_table in tissue_tables[1:]:
-                dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
-                  
+            for tissue_table in tissue_tables:
+                df = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
+                print df.head(2)
+                print df.shape
+                dfs.append(df)
             all_dfs = pd.concat(dfs)
             print all_dfs
             print all_dfs.shape
