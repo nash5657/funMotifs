@@ -3,9 +3,15 @@ Created on 21 Oct 2017
 
 @author: husensofteng
 '''
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.pyplot import tight_layout
+import matplotlib.pyplot as plt
+
 import sys, os
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import string
 import psycopg2
 from multiprocessing import Pool
@@ -221,10 +227,10 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     curs.execute(stmt_active)
     active = curs.fetchall()
     curs.close()
-    return [[tf_name, tissue_table, int(motifs_all[0][0])], 
-            [tf_name, tissue_table, int(tfbinding[0][0])], 
-            [tf_name, tissue_table, int(dnase[0][0])], 
-            [tf_name, tissue_table, int(active[0][0])]]
+    return [[tf_name, tissue_table, 'all', int(motifs_all[0][0])], 
+            [tf_name, tissue_table, 'tfbinding', int(tfbinding[0][0])], 
+            [tf_name, tissue_table, 'dnase', int(dnase[0][0])], 
+            [tf_name, tissue_table, 'active', int(active[0][0])]]
 
 def plot_bar_charts(list_items):
     
@@ -249,6 +255,9 @@ if __name__ == '__main__':
         tfs_freq.extend(plot_motif_freq(tf_name="FOXA1"))
         tfs_freq.extend(plot_motif_freq(tf_name="KLF14"))
         print tfs_freq 
-        df = pd.DataFrame(tfs_freq) 
+        df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
         print df
+        fig = plt.figure()
+        s = sns.barplot(x='tfs', y='frequency', hue='activity')
+        s.savefig('te.pdf')
     
