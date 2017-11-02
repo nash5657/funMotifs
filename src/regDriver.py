@@ -338,10 +338,8 @@ if __name__ == '__main__':
             tissue_tables=['liver', 'breast', 'blood']
             dfs = []
             for tissue_table in tissue_tables:
-                df = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
-                print df.head(2)
-                print df.shape
-                dfs.append(df)
+                dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
+                  
             all_dfs = pd.concat(dfs)
             print all_dfs
             print all_dfs.shape
