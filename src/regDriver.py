@@ -217,11 +217,14 @@ def plot_motif_freq():
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
     print motifs_all
-    tfbinding = curs.execute(stmt_tfbinding).fetchall()
+    curs.execute(stmt_tfbinding)
+    tfbinding = curs.fetchall()
     print tfbinding
-    dnase = curs.execute(stmt_dnase).fetchall()
+    curs.execute(stmt_dnase)
+    dnase = curs.fetchall()
     print dnase
-    active = curs.execute(stmt_active).fetchall()
+    curs.execute(stmt_active)
+    active = curs.fetchall()
     print active
     curs.close()
     print motifs_all, tfbinding, dnase, active
