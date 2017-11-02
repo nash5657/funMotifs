@@ -217,10 +217,10 @@ def plot_motif_freq(tf_name, tissue_table, motifs_table, min_fscore):
     curs = conn.cursor()#cursor_factory=DictCursor)
     
     stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    print stmt_all
     stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
     stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and (fscore>{min_fscore} or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name, min_fscore=min_fscore)
-    
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
     curs.execute(stmt_tfbinding)
@@ -247,7 +247,6 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     scores_all = curs.fetchall()
     curs.close()
     df = pd.DataFrame(scores_all, columns=tissue_names)
-    print df.head()
     s = sns.boxplot(data=df, color='grey')
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf')
@@ -302,47 +301,47 @@ if __name__ == '__main__':
         except KeyError:
             print "No value was found for one or more of the arguments:\n", params
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
+    
     if '-plot' in params.keys():
         motifs_table='chr24motifs'
         min_fscore = 2.5
+        tissue_tables=['blood', 'brain']#, 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+        tfs = ['CTCF', 'CEBPB']#, 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263', 'MAFK']
+        threshold_to_include_tf_in_heatmap = 20000
+        
         if '-fig1' in params.keys():
             print 'plotting figure 1'
-            tissue_table = 'liver'
-            tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'ZNF263']
-            tfs_freq = []
-            for tf in sorted(tfs):
-                tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table, min_fscore = min_fscore))
-            df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
-            fig = plt.figure()
-            s = sns.barplot(x='tf', y='frequency', hue='activity', data=df, estimator=sum)
-            ss = s.get_figure()
-            ss.savefig('fig1.pdf')
-            ss.savefig('fig1.svg')
+            for tissue_table in tissue_tables:
+                fig = plt.figure()
+                tfs_freq = []
+                for tf in sorted(tfs):
+                    tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table, min_fscore = min_fscore))
+                df = pd.DataFrame(tfs_freq, columns = ['TFs', 'Tissue', 'Activity', 'Frequency'])
+                fig = plt.figure()
+                s = sns.barplot(x='TFs', y='Frequency', hue='Activity', data=df, estimator=sum)
+                ss = s.get_figure()
+                ss.savefig('fig1_'+tissue_table+'.pdf')
+                ss.savefig('fig1_'+tissue_table+'.svg')
+               
         if '-fig2' in params.keys():
-            tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
-            tfs = ['CTCF', 'FOXA1', 'MAFK', 'HNF4A']
-            #tissue_names = ['liver','breast','brain','myeloid','blood']
             print 'plotting figure 2'
             for tf in sorted(tfs):
                 fig = plt.figure(figsize=(12,6))
-                plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_names, fig_name='fig2_'+tf)
+                plot_fscore(tf_name=tf, tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_tables, fig_name='fig2_'+tf)
+        
         if '-fig3' in params.keys():
             print 'plotting figure 3'
-            threshold_to_include_tf = 20000
-            tissue_tables = ['liver', 'breast', 'blood']
             for tissue_table in tissue_tables:
                 fig = plt.figure(figsize=(12,6))
-                plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf)
+                plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap)
+        
         if '-fig4' in params.keys():
             print 'plotting figure 4' 
-            tissue_tables=['liver', 'breast', 'blood']
             dfs = []
             for tissue_table in tissue_tables:
                 dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
                   
             all_dfs = pd.concat(dfs)
-            print all_dfs
-            print all_dfs.shape
             fig = plt.figure(figsize=(12,8))
             s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
             ss = s.get_figure()
