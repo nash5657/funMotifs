@@ -221,7 +221,7 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     curs.execute(stmt_active)
     active = curs.fetchall()
     curs.close()
-    return [tf_name, tissue_table, int(motifs_all[0][0].strip('L')), int(tfbinding[0][0].strip('L')), int(dnase[0][0].strip('L')), int(active[0][0].strip('L'))]
+    return [tf_name, tissue_table, int(motifs_all[0][0]), int(tfbinding[0][0]), int(dnase[0][0]), int(active[0][0])]
 
 
 if __name__ == '__main__':
