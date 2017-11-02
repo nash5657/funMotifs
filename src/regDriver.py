@@ -287,7 +287,7 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     scores_all = curs.fetchall()
     curs.close()
     df = pd.DataFrame(scores_all, columns=['TFs', 'Frequency'])
-    df['tissue']=[tissue_table for i in range(0,len(df))]
+    df['Tissue']=[tissue_table for i in range(0,len(df))]
     return df
 
 if __name__ == '__main__':
