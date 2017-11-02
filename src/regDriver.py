@@ -254,7 +254,7 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg')
     return
 
-def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name):
+def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf=1000):
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     
@@ -267,7 +267,11 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name):
     df = pd.DataFrame(scores_all, columns=['Chromatin States', 'TFs', 'Frequency'])
     df_pivot = df.pivot('Chromatin States', 'TFs', 'Frequency')
     print df_pivot.head()
-    s = sns.heatmap(data=df_pivot)
+    df_pivot_filtered = pd.DataFrame()
+    for c in df_pivot.columns:
+            if df_pivot[c].sum()>threshold_to_include_tf:
+                df_pivot_filtered[c] = df_pivot[c] 
+    s = sns.heatmap(data=df_pivot_filtered)
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf')
     ss.savefig(fig_name+'.svg')
