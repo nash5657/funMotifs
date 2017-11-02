@@ -288,8 +288,6 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     curs.close()
     df = pd.DataFrame(scores_all, columns=['TFs', 'Frequency'])
     df['tissue']=[tissue_table for i in range(0,len(df))]
-    print df.head()
-    print df.shape
     return df
 
 if __name__ == '__main__':
@@ -337,12 +335,12 @@ if __name__ == '__main__':
                 plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf)
         if '-fig4' in params.keys():
             print 'plotting figure 4' 
-            tissue_tables=['liver', 'breast']
-            df = plot_scatter_plot(min_fscore, motifs_table, tissue_table=tissue_tables[0])
+            tissue_tables=['liver', 'breast', 'blood']
+            df_all = plot_scatter_plot(min_fscore, motifs_table, tissue_table=tissue_tables[0])
             if len(tissue_tables)>1:
                 for tissue_table in tissue_tables[1:]:
                     df_i = plot_scatter_plot(min_fscore, motifs_table, tissue_table)
-                    df.append(df_i)  
-            print df
-            print df.shape
+                    df_all.append(df_i)  
+            print df_all
+            print df_all.shape
             
