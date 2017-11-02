@@ -202,17 +202,15 @@ def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, mo
     
     return breaking_score, breaking_score_cumulative, mut_sig, motif_mut_pos
 
-def plot_motif_freq():
+def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs'):
     
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
-    #get CTCF motifs in liver
-    motifs_table = 'chr24motifs'
-    tissue_table = 'liver'
-    stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%'".format(motifs=motifs_table, tissue=tissue_table)
-    stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and {tissue}.tfbinding>0".format(motifs=motifs_table, tissue=tissue_table)
-    stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and {tissue}.dnase__seq>0".format(motifs=motifs_table, tissue=tissue_table)
-    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%CTCF%' and (fscore>2.5 or tfbinding>0)".format(motifs=motifs_table, tissue=tissue_table)
+    
+    stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and {tissue}.tfbinding>0".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
+    stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and {tissue}.dnase__seq>0".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and (fscore>2.5 or tfbinding>0)".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
@@ -227,7 +225,7 @@ def plot_motif_freq():
     active = curs.fetchall()
     print active
     curs.close()
-    print motifs_all, tfbinding, dnase, active
+    print tf_name, tissue_table, motifs_all, tfbinding, dnase, active
     return 
 
 if __name__ == '__main__':
@@ -243,6 +241,10 @@ if __name__ == '__main__':
             print "No value was found for one or more of the arguments:\n", params
             print "Usage: python regDriver.py -f file_name -tissue tissue_name"
     if '-plot' in params.keys():
-        plot_motif_freq()
+        plot_motif_freq(tf_name="CTCF")
+        plot_motif_freq(tf_name="CEBPB")
+        plot_motif_freq(tf_name="FOXA1")
+        plot_motif_freq(tf_name="HNF4A")
+        
     
     
