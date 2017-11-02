@@ -208,9 +208,10 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     curs = conn.cursor()#cursor_factory=DictCursor)
     
     stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
-    stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and {tissue}.tfbinding>0".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
-    stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and {tissue}.dnase__seq>0".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
-    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and (fscore>2.5 or tfbinding>0)".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
+    print stmt_tfbinding
+    stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and (fscore>2.5 or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
     
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
@@ -225,8 +226,8 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     active = curs.fetchall()
     print active
     curs.close()
-    print tf_name, tissue_table, motifs_all, tfbinding, dnase, active
-    return 
+    return tf_name, tissue_table, motifs_all, tfbinding, dnase, active
+
 
 if __name__ == '__main__':
     
