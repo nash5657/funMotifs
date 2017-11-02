@@ -248,7 +248,7 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     curs.close()
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
-    s = sns.boxplot(data=df)
+    s = sns.boxplot(data=df, color='grey')
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf')
     ss.savefig(fig_name+'.svg')
