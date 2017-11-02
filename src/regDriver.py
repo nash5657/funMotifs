@@ -272,7 +272,7 @@ if __name__ == '__main__':
             ss.savefig('fig1.svg')
         if '-fig2' in params.keys():
             tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
-            tissue_names = ['liver,breast,brain,myeloid,blood']
+            tissue_names = ['liver','breast','brain','myeloid','blood']
             print 'plotting figure 2'
             plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='chr24motifs', tissue_names=','.join(sorted(tissue_names)))
             
