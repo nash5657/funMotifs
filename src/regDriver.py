@@ -30,10 +30,6 @@ def get_params(params_list, params_without_value):
                         v=True
                     elif v.lower()=='no' or v.lower()=='false':
                         v=False
-                    if ',' in v:
-                        v = v.split(',')
-                    elif ';' in v:
-                        v = v.split(';')
                     params[arg] =  v
                 except IndexError:
                     print "no value is given for parameter: ", arg 
