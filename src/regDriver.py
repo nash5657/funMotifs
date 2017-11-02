@@ -266,10 +266,14 @@ if __name__ == '__main__':
                 tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = 'liver', motifs_table = 'motifs'))
             df = pd.DataFrame(tfs_freq, columns = ['tf', 'tissue', 'activity', 'frequency'])
             fig = plt.figure()
-            s = sns.barplot(x='tfs', y='frequency', hue='activity')
-            s.savefig('te.pdf')
+            s = sns.barplot(x='tf', y='frequency', hue='activity', data=df, estimator=sum)
+            ss = s.get_figure()
+            ss.savefig('fig1.pdf')
+            ss.savefig('fig1.svg')
         if '-fig2' in params.keys():
             tissue_names = ['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
             tissue_names = ['liver,breast,brain,myeloid,blood']
             print 'plotting figure 2'
             plot_fscore(tf_name='CTCF', tissue_table='all_tissues', motifs_table='chr24motifs', tissue_names=','.join(sorted(tissue_names)))
+            
+            
