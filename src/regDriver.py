@@ -30,6 +30,10 @@ def get_params(params_list, params_without_value):
                         v=True
                     elif v.lower()=='no' or v.lower()=='false':
                         v=False
+                    if ',' in v:
+                        v = v.split(',')
+                    elif ';' in v:
+                        v = v.split(';')
                     params[arg] =  v
                 except IndexError:
                     print "no value is given for parameter: ", arg 
@@ -97,7 +101,7 @@ def read_infile():
                 end=int(float(sline[params['-end']])), 
                 tissue_table=params['-tissue'], 
                 motif_table=chr_table))
-            
+            #if params['-variants'] then also retreive the affinity change directly from the query (need for if and else in postgres)
             rows = run_query(params['-cols_to_retrieve'], params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
             print rows
             line = infile.readline()
@@ -110,7 +114,6 @@ def read_infile():
                 conn.close()
                 conn = open_connection()
     return number_lines_processed
-    
     
 def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, motif_start, motif_end, mut_start, mut_end, ref_allele, alt_allele):
     
@@ -203,6 +206,24 @@ def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, mo
     
     return breaking_score, breaking_score_cumulative, mut_sig, motif_mut_pos
 
+def plot_motif_freq():
+    
+    conn = open_connection()
+    curs = conn.cursor()#cursor_factory=DictCursor)
+    #get CTCF motifs in liver
+    stmt_all = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%'"
+    stmt_tfbinding = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and tfbinding>0"
+    stmt_dnase = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and dnase__seq>0"
+    stmt_active = "select count(mid) from motifs,liver where motifs.mid=liver.mid and motifs.name like '%CTCF%' and (fscore>2.5 or tfbinding>0)"
+    
+    motifs_all = curs.execute(stmt_all).fetchall()
+    tfbinding = curs.execute(stmt_tfbinding).fetchall()
+    dnase = curs.execute(stmt_dnase).fetchall()
+    active = curs.execute(stmt_active).fetchall()
+    curs.close()
+    print motifs_all, tfbinding, dnase, active
+    return 
+
 if __name__ == '__main__':
     
     if len(sys.argv)<=0:
@@ -210,11 +231,13 @@ if __name__ == '__main__':
         sys.exit(0)
     get_params(sys.argv[1:], params_without_value=[])
     print params
-    try:
-        read_infile()
-    except KeyError:
-        print "No value was found for one or more of the arguments:\n", params
-        print "Usage: python regDriver.py -f file_name -tissue tissue_name"
-        sys.exit(0)
+    if '-f' in params.keys():
+        try:
+            read_infile()
+        except KeyError:
+            print "No value was found for one or more of the arguments:\n", params
+            print "Usage: python regDriver.py -f file_name -tissue tissue_name"
+    if '-plot' in params.keys():
+        plot_motif_freq()
     
     
