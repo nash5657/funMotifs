@@ -254,11 +254,11 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg')
     return
 
-def plot_heatmap(min_fscore = 2.5, motifs_table,tissue_table, fig_name):
+def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name):
     conn = open_connection()
     curs = conn.cursor()#cursor_factory=DictCursor)
     
-    stmt_all = "select chromhmm,split_part(name,'_', 1) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {tissue}.fscore>{min_fscore}".format(
+    stmt_all = "select chromhmm,split_part(name,'_', 1),count(name) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {tissue}.fscore>{min_fscore} group by chromhmm,name order by chromhmm".format(
         motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
     print stmt_all
     curs.execute(stmt_all)
