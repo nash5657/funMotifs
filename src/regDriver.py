@@ -249,8 +249,8 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     df = pd.DataFrame(scores_all, columns=tissue_names)
     s = sns.boxplot(data=df, color='grey')
     ss = s.get_figure()
-    ss.savefig(fig_name+'.pdf')
-    ss.savefig(fig_name+'.svg')
+    ss.savefig(fig_name+'.pdf', bbox_inches='tight')
+    ss.savefig(fig_name+'.svg', bbox_inches='tight')
     return
 
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
@@ -273,8 +273,8 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_i
     if len(df_pivot_filtered)>0:
         s = sns.heatmap(data=df_pivot_filtered, square=True, cbar=True)
         ss = s.get_figure()
-        ss.savefig(fig_name+'.pdf')
-        ss.savefig(fig_name+'.svg')
+        ss.savefig(fig_name+'.pdf', bbox_inches='tight')
+        ss.savefig(fig_name+'.svg', bbox_inches='tight')
     
 def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     conn = open_connection()
@@ -321,8 +321,8 @@ if __name__ == '__main__':
                 fig = plt.figure()
                 s = sns.barplot(x='TFs', y='Frequency', hue='Activity', data=df, estimator=sum)
                 ss = s.get_figure()
-                ss.savefig('fig1_'+tissue_table+'.pdf')
-                ss.savefig('fig1_'+tissue_table+'.svg')
+                ss.savefig('fig1_'+tissue_table+'.pdf', bbox_inches='tight')
+                ss.savefig('fig1_'+tissue_table+'.svg', bbox_inches='tight')
                
         if '-fig2' in params.keys():
             print 'plotting figure 2'
@@ -341,10 +341,11 @@ if __name__ == '__main__':
             dfs = []
             for tissue_table in tissue_tables:
                 dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
-                
+            
             all_dfs = pd.concat(dfs)
             fig = plt.figure(figsize=(12,8))
             s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
+            plt.ylim(80000)
             ss = s.get_figure()
-            ss.savefig('fig4.pdf')
-            ss.savefig('fig4.svg')
+            ss.savefig('fig4.pdf', bbox_inches='tight')
+            ss.savefig('fig4.svg', bbox_inches='tight')
