@@ -223,6 +223,9 @@ def plot_motif_freq(tf_name, tissue_table = 'liver', motifs_table = 'chr24motifs
     curs.close()
     return [tf_name, tissue_table, int(motifs_all[0][0]), int(tfbinding[0][0]), int(dnase[0][0]), int(active[0][0])]
 
+def plot_bar_charts(list_items):
+    
+    return
 
 if __name__ == '__main__':
     
@@ -243,5 +246,6 @@ if __name__ == '__main__':
         tfs_freq.append(plot_motif_freq(tf_name="FOXA1"))
         tfs_freq.append(plot_motif_freq(tf_name="KLF14"))
         print tfs_freq 
-    
+        df = pd.DataFrame(tfs_freq) 
+        print df
     
