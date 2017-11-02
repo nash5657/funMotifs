@@ -266,12 +266,12 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_i
     curs.close()
     df = pd.DataFrame(scores_all, columns=['Chromatin States', 'TFs', 'Frequency'])
     df_pivot = df.pivot('Chromatin States', 'TFs', 'Frequency')
-    print df_pivot.head()
     df_pivot_filtered = pd.DataFrame()
     for c in df_pivot.columns:
             if df_pivot[c].sum()>threshold_to_include_tf:
                 df_pivot_filtered[c] = df_pivot[c] 
-    s = sns.heatmap(data=df_pivot_filtered)
+    print df_pivot_filtered.head()
+    s = sns.heatmap(data=df_pivot_filtered, square=True, cbar=True)
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf')
     ss.savefig(fig_name+'.svg')
@@ -315,7 +315,7 @@ if __name__ == '__main__':
         if '-fig3' in params.keys():
             print 'plotting figure 3'
             fig = plt.figure(figsize=(12,6))
-            motifs_table='chr23motifs'
+            motifs_table='motifs'
             tissue_table = 'liver'
             plot_heatmap(min_fscore = 2.5, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3')
             
