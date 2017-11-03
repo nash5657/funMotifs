@@ -18,9 +18,9 @@ from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
 #plt.style.use('ggplot')
-#sns.set_style("white")
+sns.set_style("white")
 #sns.set_context("paper")#talk
-plt.style.use('seaborn-ticks')
+#plt.style.use('seaborn-ticks')
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
@@ -346,7 +346,6 @@ if __name__ == '__main__':
             all_dfs = pd.concat(dfs)
             fig = plt.figure(figsize=(12,8))
             s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
-            plt.ylim([0,80000])
             ss = s.get_figure()
             ss.savefig('fig4.pdf', bbox_inches='tight')
             ss.savefig('fig4.svg', bbox_inches='tight')
