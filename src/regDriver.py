@@ -17,8 +17,8 @@ import psycopg2
 from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
-plt.style.use('ggplot')
-#sns.set_style("white")
+#plt.style.use('ggplot')
+sns.set_style("white")
 #sns.set_context("paper")#talk
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
