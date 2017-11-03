@@ -18,8 +18,9 @@ from multiprocessing import Pool
 from psycopg2.extras import DictCursor
 import time
 #plt.style.use('ggplot')
-sns.set_style("white")
+#sns.set_style("white")
 #sns.set_context("paper")#talk
+plt.style.use('seaborn-ticks')
 
 params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
@@ -309,7 +310,7 @@ if __name__ == '__main__':
         tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
         threshold_to_include_tf_in_heatmap = 20000
-        
+        sns.despine(right=True, top=True, bottom=False, left=False)
         if '-fig1' in params.keys():
             print 'plotting figure 1'
             for tissue_table in ['blood', 'liver']:
