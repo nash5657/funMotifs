@@ -345,7 +345,7 @@ if __name__ == '__main__':
             all_dfs = pd.concat(dfs)
             fig = plt.figure(figsize=(12,8))
             s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
-            plt.ylim(80000)
+            plt.ylim([0,80000])
             ss = s.get_figure()
             ss.savefig('fig4.pdf', bbox_inches='tight')
             ss.savefig('fig4.svg', bbox_inches='tight')
