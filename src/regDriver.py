@@ -22,7 +22,7 @@ sns.set_style("white")
 #sns.set_context("paper")#talk
 #plt.style.use('seaborn-ticks')
 
-params = {'-sep': '\t', '-cols_to_retrieve':'fscore', '-number_rows_select':'all',
+params = {'-sep': '\t', '-cols_to_retrieve':'chr,motifstart,motifend,strand,name,fscore', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
@@ -108,7 +108,13 @@ def read_infile():
                 tissue_table=params['-tissue'], 
                 motif_table=chr_table))
             #if params['-variants'] then also retreive the affinity change directly from the query (need for if and else in postgres)
-            rows = run_query(params['-cols_to_retrieve'], params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
+            mutation_position_stmt = ''
+            if params['-variants']:
+                mutation_position_stmt = ", (select case when (upper(posrange * int4range({start},{end},'[]')) - lower(posrange * int4range({start},{end},'[]'))>1 then 'multi' else case when strand = '-' then motifend-{start} else motifstart-{start} END END) as mutposition"
+            rows = run_query(params['-cols_to_retrieve']+mutation_position_stmt, params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
+            #for each row get the entropy
+            for row in rows:
+                print row
             print rows
             line = infile.readline()
             
@@ -169,7 +175,7 @@ def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, mo
         else:
             motif_mut_pos_start = 0
             motif_mut_pos_end = motif_end-mut_start
-        
+       
     elif mut_start < motif_start and mut_end > motif_end:#motif contains the mutation
         motif_mut_pos_start = 0
         motif_mut_pos_end = motif_length
