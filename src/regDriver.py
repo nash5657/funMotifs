@@ -106,7 +106,10 @@ def read_infile():
                 try:
                     if ( #check if the number of ref/alt alleles match the variant length
                         (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
-                         sline[params['-ref']]!='-' and sline[params['-alt']]!='-')):#skip mis appropriate lines
+                         sline[params['-ref']]!='-' and sline[params['-alt']]!='-' and
+                         sline[params['-ref']]!='deletion' and sline[params['-alt']]!='insertion' and
+                         sline[params['-ref']]!='del' and sline[params['-alt']]!='ins'
+                         )):#skip mis appropriate lines
                             print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
                             line = infile.readline()
                             continue
@@ -134,7 +137,10 @@ def read_infile():
             all_motifs = []
             for row in rows:
                 entropy = 0.0
-                if row['mutposition']==100:
+                if (row['mutposition']==100 or
+                    sline[params['-ref']]=='-' or sline[params['-ref']]=='deletion' or sline[params['-ref']]=='del' or
+                    sline[params['-alt']]=='-'  or sline[params['-alt']]=='insertion' or sline[params['-alt']]=='ins'
+                             ):
                     entropy=1
                 else:
                     rows_pfms = run_query_nocursorname(cols_to_retrieve="(select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{ref_allele}') - (select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{alt_allele}')".format(
