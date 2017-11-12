@@ -75,6 +75,18 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, conn, n):
         curs.close()
         return []
 
+def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, conn):
+    curs = conn.cursor()
+    stmt = 'select {} from {}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, get_limit_smt())
+    print stmt
+    curs.execute(stmt)
+    if curs is not None:
+        return curs.fetchall()
+        curs.close()
+    else:
+        curs.close()
+        return []
+
 def read_infile():
     conn = open_connection()
     
@@ -116,6 +128,15 @@ def read_infile():
             #for each row get the entropy
             for row in rows:
                 print row
+                entropy = '0'
+                if row['mutposition']==100:
+                    entropy=1
+                else:
+                    rows_pfms = run_query_nocursorname(cols_to_retrieve="(select freq from motifs_pfm where position={mutposition} and name = {motif_name} and allele={ref_allele}) - (select freq from motifs_pfm where position={mutposition} and name = {motif_name} and allele={alt_allele})".format(
+                        mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']], alt_allele=sline[params['-alt']]), 
+                                           from_tabes='motifs_pfm', cond_statement='where position={mutposition} and name={motif_name} and allele={ref_allele}'.format(
+                                               mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn)
+                    print rows_pfms
             print rows
             line = infile.readline()
             
