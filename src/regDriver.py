@@ -94,7 +94,9 @@ def read_infile():
     t = time.time()
     with open(params['-f'], 'r') as infile, open(params['-f']+'_annotated.tsv', 'w') as outfile:
         line = infile.readline()
-        outfile.write(params['-sep'].join((params['-cols_to_retrieve'] + ',mutposition,entropy').split(',')) + '\n')
+        cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['sep'])))]
+        outfile.write(params['-sep'].join(cols_from_file.append((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))) + '\n')
+        
         while line:
             sline = line.strip().split(params['-sep'])
             if (line.startswith('#') or line.startswith('//') or len(sline)<3):
