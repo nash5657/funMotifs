@@ -158,7 +158,7 @@ def read_infile():
                 if params['-all_motifs']:
                     outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in lrow) + '\n')
                 else:
-                    if row['tfbinding']>0.0:
+                    if float(row['tfbinding'])>0.0:
                         motifs_with_tfbinding.append(lrow)
                 all_motifs.append(lrow)
             if not params['-all_motifs']:
@@ -166,14 +166,14 @@ def read_infile():
                     for motif_tfbinding in motifs_with_tfbinding:
                         outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in motif_tfbinding) + '\n')
                 elif params['-max_score_motif']:#don't care about tfbinding just give the motif with the maximum score
-                    max_motif = sorted(all_motifs)[0]
+                    max_motif = all_motifs[0]
                     outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in max_motif) + '\n')
                 elif params['-motifs_tfbinding_otherwise_max_score_motif']:#if there is any motif with tfbinding return it otherwise return the motif that has the maximum score
                     if len(motifs_with_tfbinding)>0:
                         for motif_tfbinding in motifs_with_tfbinding:
                             outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in motif_tfbinding) + '\n')
                     else:
-                        max_motif = sorted(all_motifs)[0]
+                        max_motif = all_motifs[0]
                         outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in max_motif) + '\n')
             line = infile.readline()
             
