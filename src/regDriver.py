@@ -25,7 +25,8 @@ sns.set_style("white")
 params = {'-sep': '\t', '-cols_to_retrieve':'chr, motifstart, motifend, strand, name, score, pval, fscore, chromhmm, contactingdomain, dnase__seq, fantom, loopdomain, numothertfbinding, othertfbinding, replidomain, tfbinding, tfexpr', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
-          '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':''}
+          '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
+          '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False}
     
 def get_params(params_list, params_without_value):
     global params
@@ -63,9 +64,9 @@ def get_limit_smt():
     return limit_number_rows_select_stmt
 
 
-def run_query(cols_to_retrieve, from_tabes, cond_statement, conn, n):
+def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn, n):
     curs = conn.cursor(name = "countcurs"+n, cursor_factory=DictCursor)
-    stmt = 'select {} from {}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, get_limit_smt())
+    stmt = 'select {} from {}{}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, get_limit_smt())
     print stmt
     curs.execute(stmt)
     if curs is not None:
@@ -127,10 +128,13 @@ def read_infile():
                 motif_table=chr_table))
             #if params['-variants'] then also retreive the affinity change directly from the query (need for if and else in postgres)
             mutation_position_stmt = ''
+            order_by_stmt = ' order by fscore '
             if params['-variants']:
                 mutation_position_stmt = ", (CASE WHEN (UPPER(posrange * int4range({start}, {end})) - LOWER(posrange * int4range({start}, {end}))>1) THEN 100 ELSE (CASE when STRAND='-' THEN (motifend-{start})+1 ELSE ({start}-motifstart)+1 END) END) as mutposition ".format(start=int(float(sline[params['-start']])), end=int(float(sline[params['-end']])))
-            rows = run_query(params['-cols_to_retrieve']+mutation_position_stmt, params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
+            rows = run_query(params['-cols_to_retrieve']+mutation_position_stmt, params['-tissue']+',' + chr_table, cond_statement, order_by_stmt, conn, str(number_lines_processed))
             #for each row get the entropy
+            motifs_with_tfbinding = []
+            all_motifs = []
             for row in rows:
                 entropy = 0.0
                 if row['mutposition']==100:
@@ -148,10 +152,29 @@ def read_infile():
                         pass
                 if row['numothertfbinding']<=0.0:
                     row['othertfbinding'] = "None"
+                
                 lrow=list(row)
                 lrow.append(entropy)
-                outfile.write(line.strip() + params['-sep'] + 
-                                   params['-sep'].join(str(x) for x in lrow) + '\n')
+                if params['-all_motifs']:
+                    outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in lrow) + '\n')
+                else:
+                    if row['tfbinding']>0.0:
+                        motifs_with_tfbinding.append(lrow)
+                all_motifs.append(lrow)
+            if not params['-all_motifs']:
+                if params['-motifs_tfbining']:#only report motifs that have tfbinding
+                    for motif_tfbinding in motifs_with_tfbinding:
+                        outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in motif_tfbinding) + '\n')
+                elif params['-max_score_motif']:#don't care about tfbinding just give the motif with the maximum score
+                    max_motif = sorted(all_motifs)[0]
+                    outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in max_motif) + '\n')
+                elif params['-motifs_tfbinding_otherwise_max_score_motif']:#if there is any motif with tfbinding return it otherwise return the motif that has the maximum score
+                    if len(motifs_with_tfbinding)>0:
+                        for motif_tfbinding in motifs_with_tfbinding:
+                            outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in motif_tfbinding) + '\n')
+                    else:
+                        max_motif = sorted(all_motifs)[0]
+                        outfile.write(line.strip() + params['-sep'] + params['-sep'].join(str(x) for x in max_motif) + '\n')
             line = infile.readline()
             
             number_lines_processed+=1
