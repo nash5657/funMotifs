@@ -92,7 +92,7 @@ def read_infile():
     
     number_lines_processed = 0
     t = time.time()
-    with open(params['-f'], 'r') as infile:
+    with open(params['-f'], 'r') as infile, open(params['-f']+'_annotated.tsv', 'w') as outfile:
         line = infile.readline()
         while line:
             sline = line.strip().split(params['-sep'])
@@ -140,7 +140,8 @@ def read_infile():
                     entropy = float(rows_pfms[0][0])
                 lrow.append(entropy)
                 print lrow
-            print rows
+                outfile.write(line.strip() + params['-sep'] + 
+                                   '\t'.join([str(x)] for x in lrow) + '\n')
             line = infile.readline()
             
             number_lines_processed+=1
