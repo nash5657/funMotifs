@@ -75,21 +75,21 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, conn, n):
         curs.close()
         return []
 
-def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, conn):
-    curs = conn.cursor()
+def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, curs):
+    #curs = conn.cursor()
     stmt = 'select {} from {}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, get_limit_smt())
     print stmt
     curs.execute(stmt)
     if curs is not None:
         return curs.fetchall()
-        curs.close()
+        #curs.close()
     else:
-        curs.close()
+        #curs.close()
         return []
     
 def read_infile():
     conn = open_connection()
-    
+    curs_for_pfms = conn.cursor()
     number_lines_processed = 0
     t = time.time()
     with open(params['-f'], 'r') as infile, open(params['-f']+'_annotated.tsv', 'w') as outfile:
@@ -139,7 +139,7 @@ def read_infile():
                     rows_pfms = run_query_nocursorname(cols_to_retrieve="(select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{ref_allele}') - (select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{alt_allele}')".format(
                         mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']], alt_allele=sline[params['-alt']]), 
                                            from_tabes='motifs_pfm', cond_statement=" where position={mutposition} and name='{motif_name}' and allele='{ref_allele}'".format(
-                                               mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn=conn)
+                                               mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), curs=curs_for_pfms)
                     try:
                         entropy = float(rows_pfms[0][0])
                     except TypeError:
@@ -160,7 +160,9 @@ def read_infile():
                 print time.time()-t
                 t = time.time()
                 conn.close()
+                curs_for_pfms.close()
                 conn = open_connection()
+                curs_for_pfms = conn.cursor()
     return number_lines_processed
     
 def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, motif_start, motif_end, mut_start, mut_end, ref_allele, alt_allele):
