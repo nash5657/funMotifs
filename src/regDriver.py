@@ -132,10 +132,10 @@ def read_infile():
                 if row['mutposition']==100:
                     entropy=1
                 else:
-                    rows_pfms = run_query_nocursorname(cols_to_retrieve="(select freq from motifs_pfm where position={mutposition} and name = {motif_name} and allele={ref_allele}) - (select freq from motifs_pfm where position={mutposition} and name = {motif_name} and allele={alt_allele})".format(
+                    rows_pfms = run_query_nocursorname(cols_to_retrieve="(select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{ref_allele}') - (select freq from motifs_pfm where position={mutposition} and name = '{motif_name}' and allele='{alt_allele}')".format(
                         mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']], alt_allele=sline[params['-alt']]), 
-                                           from_tabes='motifs_pfm', cond_statement='where position={mutposition} and name={motif_name} and allele={ref_allele}'.format(
-                                               mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn)
+                                           from_tabes='motifs_pfm', cond_statement="where position={mutposition} and name='{motif_name}' and allele='{ref_allele}'".format(
+                                               mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn=conn)
                     print rows_pfms
             print rows
             line = infile.readline()
