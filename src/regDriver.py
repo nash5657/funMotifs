@@ -145,7 +145,6 @@ def read_infile():
                     row['othertfbinding'] = "None"
                 lrow=list(row)
                 lrow.append(entropy)
-                print lrow
                 outfile.write(line.strip() + params['-sep'] + 
                                    params['-sep'].join(str(x) for x in lrow) + '\n')
             line = infile.readline()
