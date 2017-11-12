@@ -26,7 +26,8 @@ params = {'-sep': '\t', '-cols_to_retrieve':'chr, motifstart, motifend, strand, 
           '-restart_conn_after_n_queries':100000, '-variants':True, '-regions':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
-          '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False}
+          '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False,
+          '-verbose': True}
     
 def get_params(params_list, params_without_value):
     global params
@@ -110,11 +111,13 @@ def read_infile():
                          sline[params['-ref']]!='deletion' and sline[params['-alt']]!='insertion' and
                          sline[params['-ref']]!='del' and sline[params['-alt']]!='ins'
                          )):#skip mis appropriate lines
-                            print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
+                            if params['-verbose']:
+                                print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
                             line = infile.readline()
                             continue
                 except IndexError:
-                    print 'Warning -- line is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
+                    if params['-verbose']:
+                        print 'Warning -- line is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
                     params['-variants'] = False
                     
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
@@ -151,7 +154,8 @@ def read_infile():
                         entropy = float(rows_pfms[0][0])
                     except TypeError:
                         entropy = 'NA'
-                        print 'Warning: ref/alt allele are not correctly given in: ' +  line
+                        if params['-verbose']:
+                            print 'Warning: ref/alt allele are not correctly given in: ' +  line
                         pass
                 if row['numothertfbinding']<=0.0:
                     row['othertfbinding'] = "None"
