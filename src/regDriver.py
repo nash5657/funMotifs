@@ -132,8 +132,6 @@ def read_infile():
             rows = run_query(params['-cols_to_retrieve']+mutation_position_stmt, params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
             #for each row get the entropy
             for row in rows:
-                print row
-                lrow=list(row)
                 entropy = 0.0
                 if row['mutposition']==100:
                     entropy=1
@@ -143,6 +141,9 @@ def read_infile():
                                            from_tabes='motifs_pfm', cond_statement=" where position={mutposition} and name='{motif_name}' and allele='{ref_allele}'".format(
                                                mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn=conn)
                     entropy = float(rows_pfms[0][0])
+                if row['numothertfbinding']<=0.0:
+                    row['othertfbinding'] = "None"
+                lrow=list(row)
                 lrow.append(entropy)
                 print lrow
                 outfile.write(line.strip() + params['-sep'] + 
