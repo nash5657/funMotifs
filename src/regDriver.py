@@ -67,7 +67,6 @@ def get_limit_smt():
 def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn, n):
     curs = conn.cursor(name = "countcurs"+n, cursor_factory=DictCursor)
     stmt = 'select {} from {}{}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, get_limit_smt())
-    print stmt
     curs.execute(stmt)
     if curs is not None:
         return curs.fetchall()
@@ -79,7 +78,6 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn,
 def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, curs):
     #curs = conn.cursor()
     stmt = 'select {} from {}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, get_limit_smt())
-    print stmt
     curs.execute(stmt)
     if curs is not None:
         return curs.fetchall()
@@ -97,7 +95,6 @@ def read_infile():
         line = infile.readline()
         cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['-sep'])))]
         cols_from_file.extend((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))
-        print cols_from_file
         outfile.write(params['-sep'].join(cols_from_file) + '\n')
         
         while line:
@@ -192,98 +189,7 @@ def read_infile():
                 curs_for_pfms.close()
                 conn = open_connection()
                 curs_for_pfms = conn.cursor()
-    return number_lines_processed
-    
-def get_motif_breaking_score(TF_motif_weights_dict, motif_name, motif_strand, motif_start, motif_end, mut_start, mut_end, ref_allele, alt_allele):
-    
-    if motif_strand=='-':
-        ref_allele = ref_allele.translate(string.maketrans('ACGT','TGCA'))
-        alt_allele = alt_allele.translate(string.maketrans('ACGT','TGCA'))
-    
-    breaking_score = 0.0
-    breaking_score_cumulative = 0.0
-    mut_sig = ""
-    motif_mut_pos_start = 0
-    motif_mut_pos_end = 0
-    motif_length = motif_end-motif_start
-    if mut_start >= motif_start and mut_end <=motif_end:#motif contains the mutation
-        if motif_strand=='+':
-            motif_mut_pos_start = mut_start-motif_start
-            motif_mut_pos_end = mut_end-motif_start
-        else:
-            motif_mut_pos_start = motif_end-mut_end
-            motif_mut_pos_end = motif_end-mut_start
-    elif mut_start < motif_start and (mut_end >=motif_start and mut_end <=motif_end):#mut stretches to the left of the motif
-        bp_to_strip = motif_start-mut_start
-        if motif_strand == '+':
-            motif_mut_pos_start = 0
-            motif_mut_pos_end = mut_end-motif_start
-        else:
-            motif_mut_pos_start = motif_end-mut_end
-            motif_mut_pos_end = motif_length
-        
-        if not ref_allele == '-':#if it is not insertion
-            ref_allele = ref_allele[bp_to_strip:]
-        if not alt_allele == '-' and not ref_allele == '-':#if it is not deletion nor insertion (don't touch insertions)
-            alt_allele = alt_allele[bp_to_strip:]
-            
-            
-    elif (mut_start >= motif_start and mut_start <= motif_end) and mut_end >motif_end:#mut stretches to the right of the motif
-        if not ref_allele == '-':
-            bp_to_strip = len(ref_allele)-(mut_end-motif_end)
-            ref_allele = ref_allele[:bp_to_strip]
-        if not alt_allele == '-' and not ref_allele == '-':
-            #bp_to_strip = len(ref_allele)-(mut_end-motif_end)
-            alt_allele = alt_allele[:bp_to_strip]
-        
-        if motif_strand=='+':
-            motif_mut_pos_start = mut_start-motif_start
-            motif_mut_pos_end = motif_length
-        else:
-            motif_mut_pos_start = 0
-            motif_mut_pos_end = motif_end-mut_start
-       
-    elif mut_start < motif_start and mut_end > motif_end:#motif contains the mutation
-        motif_mut_pos_start = 0
-        motif_mut_pos_end = motif_length
-        bp_to_strip = motif_start-mut_start
-        if not ref_allele == '-':
-            ref_allele = ref_allele[bp_to_strip:bp_to_strip+motif_length+1]
-        if not alt_allele == '-' and not ref_allele=='-':
-            alt_allele = alt_allele[bp_to_strip:bp_to_strip+motif_length+1]
-    
-    '''print TF_motif_weights_dict[motif_name]
-    print motif_name, len(TF_motif_weights_dict[motif_name]), motif_strand
-    print motif_start, motif_end
-    print mut_start, mut_end
-    print motif_mut_pos_start, motif_mut_pos_end
-    print breaking_score
-    print ref_allele, '>', alt_allele
-    print mut_sig
-    '''
-    if ref_allele == '-' or alt_allele == '-':
-        breaking_score = 1.0
-        breaking_score_cumulative = (motif_mut_pos_end-motif_mut_pos_start)+1#number of deleted or inserted bps
-        if breaking_score_cumulative>motif_length+1:#in cases where an insertion streches more than the motif then just count the number of bases in the motif and ignore the rest
-            breaking_score_cumulative = motif_length+1
-    else:
-        for i, mut_pos in enumerate(range(motif_mut_pos_start, motif_mut_pos_end+1)):
-            try:
-                breaking_score += abs(TF_motif_weights_dict[motif_name][mut_pos][ref_allele[i]] - TF_motif_weights_dict[motif_name][mut_pos][alt_allele[i]])
-                breaking_score_cumulative+=breaking_score
-            except KeyError:
-                continue
-            #keep the breaking_score at max 1
-        if breaking_score>=1.0:
-            breaking_score = 1.0
-    mut_sig = ref_allele+">"+alt_allele        
-    
-    
-    motif_mut_pos = str(motif_mut_pos_start+1) + '-' + str(motif_mut_pos_end+1)
-    if motif_mut_pos_start==motif_mut_pos_end:
-        motif_mut_pos = str(motif_mut_pos_start+1)
-    
-    return breaking_score, breaking_score_cumulative, mut_sig, motif_mut_pos
+    return number_lines_processed    
 
 def plot_motif_freq(tf_name, tissue_table, motifs_table, min_fscore):
     
