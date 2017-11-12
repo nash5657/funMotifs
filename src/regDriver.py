@@ -128,7 +128,7 @@ def read_infile():
             #if params['-variants'] then also retreive the affinity change directly from the query (need for if and else in postgres)
             mutation_position_stmt = ''
             if params['-variants']:
-                mutation_position_stmt = ", (CASE WHEN (UPPER(posrange * int4range({start}, {end})) - LOWER(posrange * int4range({start}, {end}))>1) THEN 100 ELSE (CASE when STRAND='-' THEN motifend-{start} ELSE {start}-motifstart END) END) as mutposition ".format(start=int(float(sline[params['-start']])), end=int(float(sline[params['-end']])))
+                mutation_position_stmt = ", (CASE WHEN (UPPER(posrange * int4range({start}, {end})) - LOWER(posrange * int4range({start}, {end}))>1) THEN 100 ELSE (CASE when STRAND='-' THEN (motifend-{start})+1 ELSE ({start}-motifstart)+1 END) END) as mutposition ".format(start=int(float(sline[params['-start']])), end=int(float(sline[params['-end']])))
             rows = run_query(params['-cols_to_retrieve']+mutation_position_stmt, params['-tissue']+',' + chr_table, cond_statement, conn, str(number_lines_processed))
             #for each row get the entropy
             for row in rows:
