@@ -86,7 +86,7 @@ def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, conn):
     else:
         curs.close()
         return []
-
+    
 def read_infile():
     conn = open_connection()
     
@@ -140,7 +140,12 @@ def read_infile():
                         mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']], alt_allele=sline[params['-alt']]), 
                                            from_tabes='motifs_pfm', cond_statement=" where position={mutposition} and name='{motif_name}' and allele='{ref_allele}'".format(
                                                mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn=conn)
-                    entropy = float(rows_pfms[0][0])
+                    try:
+                        entropy = float(rows_pfms[0][0])
+                    except TypeError:
+                        entropy = 'NA'
+                        print 'Warning: ref/alt allele are not correctly given in: ' +  line
+                        pass
                 if row['numothertfbinding']<=0.0:
                     row['othertfbinding'] = "None"
                 lrow=list(row)
