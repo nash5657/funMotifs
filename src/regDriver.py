@@ -128,7 +128,8 @@ def read_infile():
             #for each row get the entropy
             for row in rows:
                 print row
-                entropy = '0'
+                lrow=list(row)
+                entropy = 0.0
                 if row['mutposition']==100:
                     entropy=1
                 else:
@@ -136,7 +137,9 @@ def read_infile():
                         mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']], alt_allele=sline[params['-alt']]), 
                                            from_tabes='motifs_pfm', cond_statement=" where position={mutposition} and name='{motif_name}' and allele='{ref_allele}'".format(
                                                mutposition=row['mutposition'], motif_name=row['name'], ref_allele=sline[params['-ref']]), conn=conn)
-                    print rows_pfms
+                    entropy = float(rows_pfms[0][0])
+                lrow.append(entropy)
+                print lrow
             print rows
             line = infile.readline()
             
