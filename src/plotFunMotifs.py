@@ -136,15 +136,16 @@ def get_funmotifs():
     motifs_table = 'motifs'
     for tissue_table in tissues:
         print tissue_table
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 10".format(
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN'))".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         curs.execute(query_stmt)
         query_results = curs.fetchall()
         df = pd.DataFrame(query_results, columns=cols)
-        df.to_csv(tissue_table, sep='\t')
-        #df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6],o=['distinct','max', 'distinct'])
-        #df = BedTool.to_dataframe(df_bed, names=cols)
+        df.to_csv(tissue_table, sep='\t', index=False)
+        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5],o=['distinct','max'])
+        df = BedTool.to_dataframe(df_bed, names=cols)
+        df.to_csv(tissue_table+'_merged', sep='\t', index=False)
         print df.head()
     curs.close()
     conn.close()
