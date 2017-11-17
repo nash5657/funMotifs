@@ -132,15 +132,16 @@ def run_query(query_stmt, tissue_table, cols, conn):
     curs.execute(query_stmt)
     query_results = curs.fetchall()
     df = pd.DataFrame(query_results, columns=cols)
+    print df.head()
     df.to_csv(tissue_table, sep='\t', index=False)
-    df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8],o=['distinct','max', 'distinct', 'max','max', 'distinct', 'max'])
+    df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8,9],o=['distinct','max', 'distinct', 'max','max', 'distinct'])
     df = BedTool.to_dataframe(df_bed, names=cols)
-    df.to_csv(tissue_table+'_merged', sep='\t', index=False)
+    df.to_csv(tissue_table+'_merged', sep='\t', index=False, float)
     print df.head()
     curs.close()
     
 def get_funmotifs(tissue_tables):
-    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain','tfbinding']
+    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain']
     
     conn = open_connection()
     motifs_table = 'motifs'
