@@ -128,27 +128,27 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     return df
 
 def get_funmotifs():
+    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore']
+    tissues = ['liver', 'breast', 'brain', 'blood']
+    
     conn = open_connection()
     curs = conn.cursor()
-    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'strand']
     motifs_table = 'motifs'
-    tissues = ['liver', 'breast', 'brain', 'blood']
     for tissue_table in tissues:
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid limit 10".format(
+        print tissue_table
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 10".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         curs.execute(query_stmt)
         query_results = curs.fetchall()
-        
         df = pd.DataFrame(query_results, columns=cols)
-        print df
-        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6],o=['distinct','max', 'distinct'])
-        print df_bed
-        df = BedTool.to_dataframe(df_bed)
-        print df
+        df.to_csv(tissue_table, sep='\t')
+        #df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6],o=['distinct','max', 'distinct'])
+        #df = BedTool.to_dataframe(df_bed, names=cols)
+        print df.head()
     curs.close()
     conn.close()
-
+    
 if __name__ == '__main__':
     
     if len(sys.argv)<=0:
