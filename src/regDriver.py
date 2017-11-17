@@ -189,11 +189,11 @@ def read_infile(input_file):
                 curs_for_pfms = conn.cursor()
     return number_lines_processed    
 
-def run_regDriver(args):
-    if len(args)<=0:
+def run_regDriver(user_args):
+    if len(user_args)<=0:
         print "Usage: python regDriver.py -f input_file -tissue tissue_name [options]"
         sys.exit(0)
-    get_params(args, params_without_value=[])
+    get_params(user_args, params_without_value=[])
     
     if '-f' in params.keys():
         read_infile(params['-f'])
@@ -201,12 +201,13 @@ def run_regDriver(args):
         if params['-run_parallel']:
             p = Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
+            f_path = params['-dir'].strip()+'/'+f
             if f.endswith('_annotated.tsv'):
                 continue
             if params['-run_parallel']:
-                p.apply_async(read_infile, args= (params['-dir'].strip()+'/'+f))
+                p.apply_async(read_infile, args= (f_path))
             else:
-                read_infile(params['-dir'].strip()+'/'+f)
+                read_infile(f_path)
         if params['-run_parallel']:
             p.close()
             p.join()
