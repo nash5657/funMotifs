@@ -147,26 +147,17 @@ def run_query(query_stmt, tissue_table, cols):
 def get_funmotifs(tissue_tables):
     cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain']
     
-    #conn = open_connection()
     motifs_table = 'motifs'
-    #p = Pool(8)
-    processes = []
+    p = mp.Pool(8)
     for tissue_table in sorted(tissue_tables):
         print tissue_table
         query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
-        #curs.execute(query_stmt)
-        processes.append(mp.Process(target=run_query, args=(query_stmt, tissue_table, cols)))
-        #p.map_async(run_query, args=(query_stmt, tissue_table, cols, conn))
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+        p.map_async(run_query, args=(query_stmt, tissue_table, cols))
     
-    #p.close()
-    #p.join()
-    #conn.close()
+    p.close()
+    p.join()
     
 if __name__ == '__main__':
     
