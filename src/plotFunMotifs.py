@@ -154,7 +154,7 @@ def get_funmotifs(tissue_tables):
         query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
-        p.map_async(run_query, args=(query_stmt, tissue_table, cols))
+        p.apply_async(run_query, args=(query_stmt, tissue_table, cols))
     
     p.close()
     p.join()
