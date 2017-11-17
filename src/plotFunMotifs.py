@@ -127,26 +127,31 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     df['Tissue']=[tissue_table for i in range(0,len(df))]
     return df
 
+def run_query(query_stmt, tissue_table, cols, conn):
+    curs = conn.cursor()
+    curs.execute(query_stmt)
+    query_results = curs.fetchall()
+    df = pd.DataFrame(query_results, columns=cols)
+    df.to_csv(tissue_table, sep='\t', index=False)
+    df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8],o=['distinct','max', 'distinct', 'max','max', 'distinct', 'max'])
+    df = BedTool.to_dataframe(df_bed, names=cols)
+    df.to_csv(tissue_table+'_merged', sep='\t', index=False)
+    print df.head()
+    curs.close()
+    
 def get_funmotifs(tissue_tables):
     cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain','tfbinding']
     
     conn = open_connection()
-    curs = conn.cursor()
     motifs_table = 'motifs'
     for tissue_table in sorted(tissue_tables):
         print tissue_table
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN'))".format(
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
-        curs.execute(query_stmt)
-        query_results = curs.fetchall()
-        df = pd.DataFrame(query_results, columns=cols)
-        df.to_csv(tissue_table, sep='\t', index=False)
-        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8],o=['distinct','max', 'distinct', 'max','max', 'distinct', 'max'])
-        df = BedTool.to_dataframe(df_bed, names=cols)
-        df.to_csv(tissue_table+'_merged', sep='\t', index=False)
-        print df.head()
-    curs.close()
+        #curs.execute(query_stmt)
+        run_query(query_stmt, tissue_table, cols, conn)
+        
     conn.close()
     
 if __name__ == '__main__':
