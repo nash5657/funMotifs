@@ -127,14 +127,13 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     df['Tissue']=[tissue_table for i in range(0,len(df))]
     return df
 
-def get_funmotifs():
+def get_funmotifs(tissue_tables):
     cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore']
-    tissues = ['liver', 'breast', 'brain', 'blood']
     
     conn = open_connection()
     curs = conn.cursor()
     motifs_table = 'motifs'
-    for tissue_table in tissues:
+    for tissue_table in sorted(tissue_tables):
         print tissue_table
         query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN'))".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
@@ -156,13 +155,13 @@ if __name__ == '__main__':
         print "Usage: python plotFunMotifs -plot"
         sys.exit(0)
     get_params(sys.argv[1:], params_without_value=[])
-    
-    get_funmotifs()
+    tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+        
+    get_funmotifs(tissue_tables)
     
     if '-plot' in params.keys():
         motifs_table='motifs'
         min_fscore = 2.5
-        tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
         threshold_to_include_tf_in_heatmap = 20000
         sns.despine(right=True, top=True, bottom=False, left=False)
