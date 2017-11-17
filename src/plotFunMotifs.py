@@ -13,7 +13,7 @@ import pandas as pd
 import seaborn as sns
 import psycopg2
 sns.set_style("white")
-from multiprocessing import BedTools
+from multiprocessing import Pool
 from pybedtools import BedTool
 #plt.style.use('ggplot')
 #sns.set_context("paper")#talk
