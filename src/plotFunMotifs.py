@@ -147,15 +147,15 @@ if __name__ == '__main__':
         print query_stmt
         curs.execute(query_stmt)
         query_results = curs.fetchall()
-        curs.close()
+        
         df = pd.DataFrame(query_results, columns=cols)
         print df
         df_bed = BedTool.from_dataframe(df).sort().merge(c=[4],o=['max'])
         print df_bed
         df = BedTool.to_dataframe(df_bed)
         print df
-    
-    
+    curs.close()
+    conn.close()
     
     if '-plot' in params.keys():
         motifs_table='motifs'
