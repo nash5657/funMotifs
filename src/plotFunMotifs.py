@@ -128,7 +128,7 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     return df
 
 def get_funmotifs(tissue_tables):
-    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore']
+    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'tfbinding']
     
     conn = open_connection()
     curs = conn.cursor()
@@ -142,7 +142,7 @@ def get_funmotifs(tissue_tables):
         query_results = curs.fetchall()
         df = pd.DataFrame(query_results, columns=cols)
         df.to_csv(tissue_table, sep='\t', index=False)
-        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5],o=['distinct','max'])
+        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8],o=['distinct','max', 'distinct', 'max','max'])
         df = BedTool.to_dataframe(df_bed, names=cols)
         df.to_csv(tissue_table+'_merged', sep='\t', index=False)
         print df.head()
