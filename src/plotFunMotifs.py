@@ -127,18 +127,10 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     df['Tissue']=[tissue_table for i in range(0,len(df))]
     return df
 
-
-if __name__ == '__main__':
-    
-    if len(sys.argv)<=0:
-        print "Usage: python plotFunMotifs -plot"
-        sys.exit(0)
-    get_params(sys.argv[1:], params_without_value=[])
-    
-    
+def get_funmotifs():
     conn = open_connection()
     curs = conn.cursor()
-    cols = ['chr', 'motifstart', 'motifend', 'fscore']
+    cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'strand']
     motifs_table = 'motifs'
     tissues = ['liver', 'breast', 'brain', 'blood']
     for tissue_table in tissues:
@@ -150,12 +142,21 @@ if __name__ == '__main__':
         
         df = pd.DataFrame(query_results, columns=cols)
         print df
-        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4],o=['max'])
+        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6],o=['distinct','max', 'distinct'])
         print df_bed
         df = BedTool.to_dataframe(df_bed)
         print df
     curs.close()
     conn.close()
+
+if __name__ == '__main__':
+    
+    if len(sys.argv)<=0:
+        print "Usage: python plotFunMotifs -plot"
+        sys.exit(0)
+    get_params(sys.argv[1:], params_without_value=[])
+    
+    get_funmotifs()
     
     if '-plot' in params.keys():
         motifs_table='motifs'
