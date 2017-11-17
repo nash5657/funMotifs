@@ -15,7 +15,7 @@ params = {'-sep': '\t',
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
           '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False,
-          '-verbose': True, '-num_cores':1}
+          '-verbose': True, '-run_parallel': True, '-num_cores':1}
     
 def get_params(params_list, params_without_value):
     global params
@@ -198,11 +198,17 @@ def run_regDriver(args):
     if '-f' in params.keys():
         read_infile(params['-f'])
     elif '-dir' in params.keys():
-        p = Pool(int(params['-num_cores']))
+        if params['-run_parallel']:
+            p = Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
-            p.apply_async(read_infile, args= (params['-dir'].strip()+'/'+f))
-        p.close()
-        p.join()
+            if params['-run_parallel']:
+                p.apply_async(read_infile, args= (params['-dir'].strip()+'/'+f))
+            else:
+                read_infile(params['-dir'].strip()+'/'+f)
+        if params['-run_parallel']:
+            p.close()
+            p.join()
+            
 if __name__ == '__main__':
     
     try:
