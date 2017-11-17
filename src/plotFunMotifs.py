@@ -13,6 +13,7 @@ import pandas as pd
 import seaborn as sns
 import psycopg2
 sns.set_style("white")
+from pybedtools import BedTool
 #plt.style.use('ggplot')
 #sns.set_context("paper")#talk
 #plt.style.use('seaborn-ticks')
@@ -139,15 +140,21 @@ if __name__ == '__main__':
     curs = conn.cursor()
     cols = ['chr', 'motifstart', 'motifend', 'fscore']
     motifs_table = 'motifs'
-    tissue_table = 'liver'
-    query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid limit 10".format(
-        tissue_names=','.join(sorted(cols)), motifs=motifs_table, tissue=tissue_table)
-    print query_stmt
-    curs.execute(query_stmt)
-    query_results = curs.fetchall()
-    curs.close()
-    df = pd.DataFrame(query_results, columns=cols)
-    print df
+    tissues = ['liver', 'breast', 'brain', 'blood']
+    for tissue_table in tissues:
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid limit 10".format(
+            cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
+        print query_stmt
+        curs.execute(query_stmt)
+        query_results = curs.fetchall()
+        curs.close()
+        df = pd.DataFrame(query_results, columns=cols)
+        print df
+        df_bed = BedTool.from_dataframe(df).sort().merge(c=[4],o=['max'])
+        print df_bed
+        df = BedTool.to_dataframe(df_bed)
+        print df
+    
     
     
     if '-plot' in params.keys():
