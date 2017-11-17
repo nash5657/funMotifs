@@ -13,6 +13,7 @@ import pandas as pd
 import seaborn as sns
 import psycopg2
 sns.set_style("white")
+from multiprocessing import BedTools
 from pybedtools import BedTool
 #plt.style.use('ggplot')
 #sns.set_context("paper")#talk
@@ -145,14 +146,16 @@ def get_funmotifs(tissue_tables):
     
     conn = open_connection()
     motifs_table = 'motifs'
+    p = Pool(8)
     for tissue_table in sorted(tissue_tables):
         print tissue_table
         query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         #curs.execute(query_stmt)
-        run_query(query_stmt, tissue_table, cols, conn)
-        
+        p.apply_async(run_query, args=(query_stmt, tissue_table, cols, conn))
+    p.close()
+    p.join()
     conn.close()
     
 if __name__ == '__main__':
