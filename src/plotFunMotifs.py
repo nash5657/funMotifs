@@ -4,6 +4,7 @@ Created on 17 Nov 2017
 @author: husensofteng
 '''
 import matplotlib
+from buildtools import process
 matplotlib.use('Agg')
 from matplotlib.pyplot import tight_layout
 import matplotlib.pyplot as plt
@@ -13,7 +14,8 @@ import pandas as pd
 import seaborn as sns
 import psycopg2
 sns.set_style("white")
-from multiprocessing import Pool
+#from multiprocessing import Pool
+import multiprocessing as mp
 from pybedtools import BedTool
 #plt.style.use('ggplot')
 #sns.set_context("paper")#talk
@@ -146,16 +148,23 @@ def get_funmotifs(tissue_tables):
     
     conn = open_connection()
     motifs_table = 'motifs'
-    p = Pool(8)
+    #p = Pool(8)
+    processes = []
     for tissue_table in sorted(tissue_tables):
         print tissue_table
         query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         #curs.execute(query_stmt)
-        p.apply_async(run_query, args=(query_stmt, tissue_table, cols, conn))
-    p.close()
-    p.join()
+        processes.append(mp.Process(target=run_query, args=(query_stmt, tissue_table, cols, conn)))
+        #p.map_async(run_query, args=(query_stmt, tissue_table, cols, conn))
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+    
+    #p.close()
+    #p.join()
     conn.close()
     
 if __name__ == '__main__':
