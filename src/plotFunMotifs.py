@@ -4,7 +4,6 @@ Created on 17 Nov 2017
 @author: husensofteng
 '''
 import matplotlib
-from buildtools import process
 matplotlib.use('Agg')
 from matplotlib.pyplot import tight_layout
 import matplotlib.pyplot as plt
@@ -130,7 +129,8 @@ def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
     df['Tissue']=[tissue_table for i in range(0,len(df))]
     return df
 
-def run_query(query_stmt, tissue_table, cols, conn):
+def run_query(query_stmt, tissue_table, cols):
+    conn = open_connection()
     curs = conn.cursor()
     curs.execute(query_stmt)
     query_results = curs.fetchall()
@@ -142,11 +142,12 @@ def run_query(query_stmt, tissue_table, cols, conn):
     df.to_csv(tissue_table+'_merged', sep='\t', index=False)
     print df.head()
     curs.close()
+    conn.close()
     
 def get_funmotifs(tissue_tables):
     cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain']
     
-    conn = open_connection()
+    #conn = open_connection()
     motifs_table = 'motifs'
     #p = Pool(8)
     processes = []
@@ -156,7 +157,7 @@ def get_funmotifs(tissue_tables):
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         #curs.execute(query_stmt)
-        processes.append(mp.Process(target=run_query, args=(query_stmt, tissue_table, cols, conn)))
+        processes.append(mp.Process(target=run_query, args=(query_stmt, tissue_table, cols)))
         #p.map_async(run_query, args=(query_stmt, tissue_table, cols, conn))
     for p in processes:
         p.start()
@@ -165,7 +166,7 @@ def get_funmotifs(tissue_tables):
     
     #p.close()
     #p.join()
-    conn.close()
+    #conn.close()
     
 if __name__ == '__main__':
     
