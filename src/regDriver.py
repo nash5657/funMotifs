@@ -75,12 +75,12 @@ def run_query_nocursorname(cols_to_retrieve, from_tabes, cond_statement, curs):
         #curs.close()
         return []
     
-def read_infile(infile):
+def read_infile(input_file):
     conn = open_connection()
     curs_for_pfms = conn.cursor()
     number_lines_processed = 0
     t = time.time()
-    with open(infile, 'r') as infile, open(infile+'_annotated.tsv', 'w') as outfile:
+    with open(input_file, 'r') as infile, open(input_file+'_annotated.tsv', 'w') as outfile:
         line = infile.readline()
         cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['-sep'])))]
         cols_from_file.extend((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))
@@ -180,7 +180,7 @@ def read_infile(infile):
             
             number_lines_processed+=1
             if number_lines_processed % int(params['-restart_conn_after_n_queries']) == 0:
-                print '{} Lines are processed from {}'.format(number_lines_processed, infile)
+                print '{} Lines are processed from {}'.format(number_lines_processed, input_file)
                 print time.time()-t
                 t = time.time()
                 conn.close()
@@ -201,6 +201,8 @@ def run_regDriver(args):
         if params['-run_parallel']:
             p = Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
+            if f.endswith('_annotated.tsv'):
+                continue
             if params['-run_parallel']:
                 p.apply_async(read_infile, args= (params['-dir'].strip()+'/'+f))
             else:
