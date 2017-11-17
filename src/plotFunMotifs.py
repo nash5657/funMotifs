@@ -136,7 +136,7 @@ def run_query(query_stmt, tissue_table, cols, conn):
     df.to_csv(tissue_table, sep='\t', index=False)
     df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8,9],o=['distinct','max', 'distinct', 'max','max', 'distinct'])
     df = BedTool.to_dataframe(df_bed, names=cols)
-    df.to_csv(tissue_table+'_merged', sep='\t', index=False, float)
+    df.to_csv(tissue_table+'_merged', sep='\t', index=False)
     print df.head()
     curs.close()
     
