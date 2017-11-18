@@ -232,11 +232,11 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
         print stmt_all
         curs.execute(stmt_all)
         scores_all = curs.fetchall()
-        curs.close()
+        
         df = pd.DataFrame(scores_all, columns=['TFs', 'Number of Functional Motifs per TF'])
         df['Tissue']=[tissue_table for i in range(0,len(df))]
         dfs.append(df)
-    
+    curs.close()
     all_dfs = pd.concat(dfs)
     fig = plt.figure(figsize=(12,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
