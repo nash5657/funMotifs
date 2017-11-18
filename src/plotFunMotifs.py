@@ -167,14 +167,14 @@ def plot_fscores_myloid(table_name, fig_name):
     print stmts_boundmotifs
     curs.execute(stmts_boundmotifs)
     fscores_boundmotifs = curs.fetchall()
-    fscores_boundmotifs_list = pd.DataFrame(fscores_boundmotifs, columns='fscore').stack().tolist()
+    fscores_boundmotifs_list = pd.DataFrame(fscores_boundmotifs, columns=['fscore']).stack().tolist()
     print len(fscores_boundmotifs_list)
     scores_all.append(fscores_boundmotifs_list)
     
     print stmts_unboundmotifs
     curs.execute(stmts_unboundmotifs)
     fscores_unboundmotifs = curs.fetchall()
-    fscores_boundmotifs_list = pd.DataFrame(fscores_unboundmotifs, columns='fscore').stack().tolist()
+    fscores_boundmotifs_list = pd.DataFrame(fscores_unboundmotifs, columns=['fscore']).stack().tolist()
     print len(fscores_boundmotifs_list)
     scores_all.append(fscores_boundmotifs_list)
     
