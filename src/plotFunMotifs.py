@@ -278,7 +278,7 @@ if __name__ == '__main__':
     tfs = ['CTCF', 'CEBPB', 'FOXA1', 'MAFK', 'FOS::JUN', 'SP1', 'KLF14']
     #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
     #plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), sorted(tfs), 'all_fscores_selected_tfs')
-    plot_fscores_myloid(table_name='myloid', fig_name='bound_unboundmotifs_myloid')
+    plot_fscores_myloid(table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
     
     if '-plot' in params.keys():
         min_fscore = 2.5
