@@ -107,13 +107,18 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     print df.head()
     df_all = pd.DataFrame(df.stack().tolist(), columns=['All'])
     print df_all.head()
-    fig = plt.figure(figsize=(12,2))
-    s = sns.boxplot(data=df, color='grey')
+    fig = plt.figure(figsize=(14,4))
+    s, ax = sns.boxplot(data=df, color='grey')
+    ax.set_xlabel("")
+    ax.set_ylabel("Functionality Scores")
+    sns.despine(right=True, top=True, bottom=False, left=False)
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf', bbox_inches='tight')
     ss.savefig(fig_name+'.svg', bbox_inches='tight')
     
-    s = sns.boxplot(data=df_all, color='grey')
+    fig = plt.figure(figsize=(2,4))
+    s, ax = sns.boxplot(data=df_all, color='grey')
+    sns.despine(right=True, top=True, bottom=False, left=False)
     ss = s.get_figure()
     ss.savefig(fig_name+'_all.pdf', bbox_inches='tight')
     ss.savefig(fig_name+'_all.svg', bbox_inches='tight')
@@ -192,6 +197,7 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python plotFunMotifs -plot"
         sys.exit(0)
+    
     sns.despine(right=True, top=True, bottom=False, left=False)
     get_params(sys.argv[1:], params_without_value=[])
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
