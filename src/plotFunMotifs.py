@@ -97,7 +97,7 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select {tissue_names} from {table_name} limit 10000".format(
+    stmt_all = "select {tissue_names} from {table_name} limit 1000000".format(
         tissue_names=','.join(tissue_names), table_name=table_name)
     print stmt_all
     curs.execute(stmt_all)
@@ -108,16 +108,16 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     df_all = pd.DataFrame(df.stack().tolist(), columns=['All'])
     print df_all.head()
     fig = plt.figure(figsize=(14,4))
-    s, ax = sns.boxplot(data=df, color='grey')
-    ax.set_xlabel("")
-    ax.set_ylabel("Functionality Scores")
+    s = sns.boxplot(data=df, color='grey')
+    s.set(ylabel='Functionality Scores', ylim=(0,5))
     sns.despine(right=True, top=True, bottom=False, left=False)
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf', bbox_inches='tight')
     ss.savefig(fig_name+'.svg', bbox_inches='tight')
     
-    fig = plt.figure(figsize=(2,4))
-    s, ax = sns.boxplot(data=df_all, color='grey')
+    fig = plt.figure(figsize=(1.5,4))
+    s = sns.boxplot(data=df_all, color='grey')
+    s.set(ylabel='Functionality Scores', ylim=(0,5))
     sns.despine(right=True, top=True, bottom=False, left=False)
     ss = s.get_figure()
     ss.savefig(fig_name+'_all.pdf', bbox_inches='tight')
