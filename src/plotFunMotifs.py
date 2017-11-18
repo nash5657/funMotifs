@@ -153,7 +153,7 @@ def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fi
     plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
     plt.savefig(fig_name+'_all.svg')#, bbox_inches='tight')
     plt.close()
-    '''
+    
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     #get_funmotifs(sorted(tissue_tables))
     tfs = ['CTCF', 'CEBPB', 'FOXA1']#, 'HNF4A', 'MAFK']#'KFL14', 
     #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
-    plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), tfs, 'all_fscores')
+    plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), tfs, 'all_fscores_selected_tfs')
     
     if '-plot' in params.keys():
         
