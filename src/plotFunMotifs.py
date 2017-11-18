@@ -105,23 +105,15 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     curs.close()
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
-    df_all = pd.DataFrame(df.stack().tolist(), columns=['All'])
-    print df_all.head()
     
-    fig = plt.figure(figsize=(14,4), linewidth=1.0)#design a figure with the given size
-    gs = gridspec.GridSpec(1, 2, height_ratios=[4,4,4,4], width_ratios=[4,4,4,4], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
+    fig = plt.figure(figsize=(12,4), linewidth=1.0)#design a figure with the given size
+    gs = gridspec.GridSpec(1, 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
     #all tissues
     ax0 = fig.add_subplot(gs[0:, 0])
-    #combined set
-    ax1 = fig.add_subplot(gs[0, 1])
     gs.tight_layout(fig, pad=2, h_pad=0.0, w_pad=0.0)
     
-    s = sns.boxplot(data=df, color='grey', ax=ax1, linewidth=0.5)
+    s = sns.boxplot(data=df, color='grey', ax=ax0, linewidth=0.5)
     s.set(ylabel='Functionality Scores', ylim=(0,5))
-    sns.despine(right=True, top=True, bottom=False, left=False)
-    
-    s = sns.boxplot(data=df_all, color='grey', ax=ax0, linewidth=0.5)
-    s.set(ylabel='', ylim=(0,5))
     sns.despine(right=True, top=True, bottom=False, left=False)
     
     plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
