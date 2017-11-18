@@ -138,7 +138,7 @@ def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fi
     curs.close()
     print len(scores_all)
     
-    fig = plt.figure(figsize=(12,4), linewidth=1.0)#design a figure with the given size
+    fig = plt.figure(figsize=(9,4), linewidth=1.0)#design a figure with the given size
     gs = gridspec.GridSpec(1, 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
     #all tissues
     ax0 = fig.add_subplot(gs[0:, 0])
@@ -196,7 +196,7 @@ def plot_fscores_myloid(table_name, fig_name):
     plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
     plt.savefig(fig_name+'_all.svg')#, bbox_inches='tight')
     plt.close()
-    
+     
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()
@@ -220,18 +220,32 @@ def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_i
         ss.savefig(fig_name+'.pdf', bbox_inches='tight')
         ss.savefig(fig_name+'.svg', bbox_inches='tight')
     
-def plot_scatter_plot(min_fscore, motifs_table, tissue_table):
+def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by name order by freq desc".format(
-        motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
-    print stmt_all
-    curs.execute(stmt_all)
-    scores_all = curs.fetchall()
-    curs.close()
-    df = pd.DataFrame(scores_all, columns=['TFs', 'Frequency'])
-    df['Tissue']=[tissue_table for i in range(0,len(df))]
+    dfs = []
+    for tissue_table in tissue_tables:
+        stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} limit 1000 group by name order by freq desc".format(
+        motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
+        print stmt_all
+        curs.execute(stmt_all)
+        scores_all = curs.fetchall()
+        curs.close()
+        df = pd.DataFrame(scores_all, columns=['TFs', 'Number of Functional Motifs per TF'])
+        df['Tissue']=[tissue_table for i in range(0,len(df))]
+        
+        
+        dfs.append(df)
+    
+    all_dfs = pd.concat(dfs)
+    fig = plt.figure(figsize=(12,8))
+    s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
+    #s.set_ylim([0,80000])
+    ss = s.get_figure()
+    ss.savefig(figname + '.pdf', bbox_inches='tight')
+    ss.savefig(figname + '.svg', bbox_inches='tight')
+    
     return df
 
 def run_query(query_stmt, tissue_table, cols):
@@ -256,7 +270,7 @@ def get_funmotifs(tissue_tables):
     p = mp.Pool(8)
     for tissue_table in tissue_tables:
         print tissue_table
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.3 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN'))".format(
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.55 and dnase__seq>0.0 and dnase__seq!='NaN' and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         p.apply_async(run_query, args=(query_stmt, tissue_table, cols))
@@ -273,12 +287,16 @@ if __name__ == '__main__':
     sns.despine(right=True, top=True, bottom=False, left=False)
     get_params(sys.argv[1:], params_without_value=[])
     
-    tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
+    tissue_tables= sorted(['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus'])
+    tfs = sorted(['CTCF', 'CEBPB', 'FOXA1', 'MAFK', 'FOS::JUN', 'SP1', 'KLF14'])
+    min_fscore = 2.5
+    otherconditions = " and tfexpr > 0 and ( (fscore>{min_fscore} and (dnase__seq>0 or dnase__seq='NaN') and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
+        min_fscore=min_fscore)
     #get_funmotifs(sorted(tissue_tables))
-    tfs = ['CTCF', 'CEBPB', 'FOXA1', 'MAFK', 'FOS::JUN', 'SP1', 'KLF14']
-    #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
-    #plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), sorted(tfs), 'all_fscores_selected_tfs')
-    plot_fscores_myloid(table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
+    #plot_fscore_all('all_tissues', motifs_table, tissue_tables, 'all_fscores')
+    #plot_fscore_all_selected_tfs('all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
+    #plot_fscores_myloid(table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
+    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     
     if '-plot' in params.keys():
         min_fscore = 2.5
@@ -311,17 +329,5 @@ if __name__ == '__main__':
                 fig = plt.figure(figsize=(12,6))
                 plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap)
         
-        if '-fig4' in params.keys():
-            print 'plotting figure 4' 
-            dfs = []
-            for tissue_table in tissue_tables:
-                dfs.append(plot_scatter_plot(min_fscore, motifs_table, tissue_table))
-            
-            all_dfs = pd.concat(dfs)
-            fig = plt.figure(figsize=(12,8))
-            s = sns.stripplot(x='Tissue', y='Frequency', data=all_dfs, jitter=True)
-            s.set_ylim([0,80000])
-            ss = s.get_figure()
-            ss.savefig('fig4.pdf', bbox_inches='tight')
-            ss.savefig('fig4.svg', bbox_inches='tight')
+        
             
