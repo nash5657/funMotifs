@@ -92,6 +92,27 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg', bbox_inches='tight')
     return
 
+def plot_fscore_all(table_name, tissue_names, fig_name):
+    
+    conn = open_connection()
+    curs = conn.cursor()
+    
+    stmt_all = "select {tissue_names} from {table_name} limit 100".format(
+        tissue_names=','.join(tissue_names), table_name=table_name)
+    print stmt_all
+    curs.execute(stmt_all)
+    scores_all = curs.fetchall()
+    curs.close()
+    df = pd.DataFrame(scores_all, columns=tissue_names)
+    print df.head()
+    print df.stack()
+    s = sns.boxplot(data=df, color='grey')
+    ss = s.get_figure()
+    ss.savefig(fig_name+'.pdf', bbox_inches='tight')
+    ss.savefig(fig_name+'.svg', bbox_inches='tight')
+    return
+
+
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()
@@ -149,9 +170,9 @@ def get_funmotifs(tissue_tables):
     
     motifs_table = 'motifs'
     p = mp.Pool(8)
-    for tissue_table in sorted(tissue_tables):
+    for tissue_table in tissue_tables:
         print tissue_table
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.0 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN')) limit 100".format(
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.3 and dnase__seq>0.0 and dnase__seq!='NaN' and tfbinding>0) or (tfbinding>0 and tfbinding!='NaN'))".format(
             cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
         print query_stmt
         p.apply_async(run_query, args=(query_stmt, tissue_table, cols))
@@ -167,7 +188,8 @@ if __name__ == '__main__':
     get_params(sys.argv[1:], params_without_value=[])
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         
-    get_funmotifs(tissue_tables)
+    #get_funmotifs(sorted(tissue_tables))
+    plot_fscore_all(sorted(tissue_tables))
     
     if '-plot' in params.keys():
         motifs_table='motifs'
