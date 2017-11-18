@@ -97,7 +97,7 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select {tissue_names} from {table_name} limit 100".format(
+    stmt_all = "select {tissue_names} from {table_name} limit 10000".format(
         tissue_names=','.join(tissue_names), table_name=table_name)
     print stmt_all
     curs.execute(stmt_all)
@@ -191,6 +191,7 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python plotFunMotifs -plot"
         sys.exit(0)
+    sns.despine(right=True, top=True, bottom=False, left=False)
     get_params(sys.argv[1:], params_without_value=[])
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         
