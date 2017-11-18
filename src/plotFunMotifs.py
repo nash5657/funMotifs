@@ -272,12 +272,13 @@ if __name__ == '__main__':
     motifs_table='motifs'
     sns.despine(right=True, top=True, bottom=False, left=False)
     get_params(sys.argv[1:], params_without_value=[])
-    tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
     
+    tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
     #get_funmotifs(sorted(tissue_tables))
     tfs = ['CTCF', 'CEBPB', 'FOXA1', 'MAFK', 'FOS::JUN', 'SP1', 'KLF14']
     #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
-    plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), sorted(tfs), 'all_fscores_selected_tfs')
+    #plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), sorted(tfs), 'all_fscores_selected_tfs')
+    plot_fscores_myloid(table_name='myloid', fig_name='bound_unboundmotifs_myloid')
     
     if '-plot' in params.keys():
         min_fscore = 2.5
