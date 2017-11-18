@@ -107,6 +107,7 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     print df.head()
     df_all = pd.DataFrame(df.stack().tolist(), columns=['All'])
     print df_all.head()
+    fig = plt.figure(figsize=(12,2))
     s = sns.boxplot(data=df, color='grey')
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf', bbox_inches='tight')
