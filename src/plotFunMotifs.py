@@ -59,7 +59,7 @@ def plot_motif_freq(tf_name, tissue_table, motifs_table, min_fscore):
     print stmt_all
     stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
     stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
-    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ((fscore>{min_fscore} and dnase__seq>0 and dnase__seq!='NaN') or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name, min_fscore=min_fscore)
+    stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and {motifs}.name like '%{tf_name}%' and ((fscore>{min_fscore} and dnase__seq>0 and dnase__seq!='NaN' and (tfbinding>0 or {tissue}.tfbinding='NaN')) or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name, min_fscore=min_fscore)
     curs.execute(stmt_all)
     motifs_all = curs.fetchall()
     curs.execute(stmt_tfbinding)
@@ -240,7 +240,8 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     fig = plt.figure(figsize=(12,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
     sns.despine(right=True, top=True, bottom=True, left=False)
-    #s.set_ylim([0,80000])
+    s.set(ylabel='', ylim=(0,90000))
+    #s.set_ylim([0,90000])
     ss = s.get_figure()
     ss.savefig(figname + '.pdf', bbox_inches='tight')
     ss.savefig(figname + '.svg', bbox_inches='tight')
@@ -291,15 +292,31 @@ if __name__ == '__main__':
     min_fscore = 2.55
     otherconditions = " and tfexpr > 0 and ( (fscore>{min_fscore} and (dnase__seq>0 and dnase__seq!='NaN') and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
         min_fscore=min_fscore)
-    get_funmotifs(sorted(tissue_tables), otherconditions)
+    #get_funmotifs(sorted(tissue_tables), otherconditions)
     plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     #plot_fscore_all('all_tissues', motifs_table, tissue_tables, 'all_fscores')
     #plot_fscore_all_selected_tfs('all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     #plot_fscores_myloid(table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
     
+    
+    print 'plotting figure 1'
+    for tissue_table in ['blood', 'liver', 'myeloid']:
+        fig = plt.figure()
+        sns.despine(right=True, top=True, bottom=False, left=False)
+        tfs_freq = []
+        for tf in sorted(tfs):
+            tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table, min_fscore = min_fscore))
+        df = pd.DataFrame(tfs_freq, columns = ['TFs', 'Tissue', 'Activity', 'Number of motifs'])
+        s = sns.barplot(x='TFs', y='Number of motifs', hue='Activity', data=df, estimator=sum)
+        ss = s.get_figure()
+        ss.savefig('fig1_'+tissue_table+'.pdf', bbox_inches='tight')
+        ss.savefig('fig1_'+tissue_table+'.svg', bbox_inches='tight')
+        
+               
+    
+    
     if '-plot' in params.keys():
-        min_fscore = 2.5
-        tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
+        #tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14',  'MAFK', 'SP1']
         threshold_to_include_tf_in_heatmap = 20000
         sns.despine(right=True, top=True, bottom=False, left=False)
         if '-fig1' in params.keys():
