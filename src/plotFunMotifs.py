@@ -121,8 +121,37 @@ def plot_fscore_all(table_name, motifs_table, tissue_names, fig_name):
     plt.close()
     
     return
-
-
+def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fig_name):
+    
+    conn = open_connection()
+    curs = conn.cursor()
+    scores_all = []
+    for tf in tfs:
+        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 100".format(
+            tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table, tf=tf)
+        print stmt_all
+        curs.execute(stmt_all)
+        tf_scores = curs.fetchall()
+        scores_all.extend(list(x) for x in tf_scores)
+    curs.close()
+    print scores_all
+    '''df = pd.DataFrame(scores_all, columns=tissue_names)
+    print df.head()
+    
+    fig = plt.figure(figsize=(12,4), linewidth=1.0)#design a figure with the given size
+    gs = gridspec.GridSpec(1, 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
+    #all tissues
+    ax0 = fig.add_subplot(gs[0:, 0])
+    gs.tight_layout(fig, pad=2, h_pad=0.0, w_pad=0.0)
+    
+    s = sns.boxplot(data=df, color='grey', ax=ax0, linewidth=0.5)
+    s.set(ylabel='Functionality Scores', ylim=(0,5))
+    sns.despine(right=True, top=True, bottom=False, left=False)
+    
+    plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
+    plt.savefig(fig_name+'_all.svg')#, bbox_inches='tight')
+    plt.close()
+    '''
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()
@@ -195,16 +224,18 @@ if __name__ == '__main__':
     if len(sys.argv)<=0:
         print "Usage: python plotFunMotifs -plot"
         sys.exit(0)
-    
+    motifs_table='motifs'
     sns.despine(right=True, top=True, bottom=False, left=False)
     get_params(sys.argv[1:], params_without_value=[])
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
-        
+    
     #get_funmotifs(sorted(tissue_tables))
-    plot_fscore_all('all_tissues', 'motifs', sorted(tissue_tables), 'all_fscores')
+    tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
+    #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
+    plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), tfs, 'all_fscores')
     
     if '-plot' in params.keys():
-        motifs_table='motifs'
+        
         min_fscore = 2.5
         tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14', 'HNF4A', 'MAFK']
         threshold_to_include_tf_in_heatmap = 20000
