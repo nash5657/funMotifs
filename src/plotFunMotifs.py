@@ -4,7 +4,6 @@ Created on 17 Nov 2017
 @author: husensofteng
 '''
 import matplotlib
-from statsmodels.sandbox.distributions.examples.matchdist import other
 matplotlib.use('Agg')
 from matplotlib.pyplot import tight_layout
 import matplotlib.pyplot as plt
