@@ -196,7 +196,7 @@ def plot_fscores_myloid(table_name, fig_name):
     plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
     plt.savefig(fig_name+'_all.svg')#, bbox_inches='tight')
     plt.close()
-     
+    
 def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
     conn = open_connection()
     curs = conn.cursor()
@@ -226,7 +226,7 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     
     dfs = []
     for tissue_table in tissue_tables:
-        stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} limit 1000 group by name order by freq desc".format(
+        stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by name order by freq desc".format(
         motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
         print stmt_all
         curs.execute(stmt_all)
