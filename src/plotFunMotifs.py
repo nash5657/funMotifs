@@ -105,11 +105,17 @@ def plot_fscore_all(table_name, tissue_names, fig_name):
     curs.close()
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
-    print df.stack()
+    df_all = pd.DataFrame(df.stack().tolist(), columns=['All'])
+    print df_all.head()
     s = sns.boxplot(data=df, color='grey')
     ss = s.get_figure()
     ss.savefig(fig_name+'.pdf', bbox_inches='tight')
     ss.savefig(fig_name+'.svg', bbox_inches='tight')
+    
+    s = sns.boxplot(data=df_all, color='grey')
+    ss = s.get_figure()
+    ss.savefig(fig_name+'_all.pdf', bbox_inches='tight')
+    ss.savefig(fig_name+'_all.svg', bbox_inches='tight')
     return
 
 
@@ -189,7 +195,7 @@ if __name__ == '__main__':
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         
     #get_funmotifs(sorted(tissue_tables))
-    plot_fscore_all(sorted(tissue_tables))
+    plot_fscore_all('all_tissues', sorted(tissue_tables), 'all_fscores')
     
     if '-plot' in params.keys():
         motifs_table='motifs'
