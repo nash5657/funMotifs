@@ -127,18 +127,16 @@ def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fi
     curs = conn.cursor()
     scores_all = []
     for tf in tfs:
-        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 10".format(
+        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 100".format(
             tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table, tf=tf)
         print stmt_all
         curs.execute(stmt_all)
         tf_scores = curs.fetchall()
         tf_scores_list = pd.DataFrame(tf_scores, columns=tissue_names).stack().tolist()
-        print tf_scores_list
+        print len(tf_scores_list)
         scores_all.append(tf_scores_list)
     curs.close()
-    print scores_all
-    '''df = pd.DataFrame(scores_all, columns=tissue_names)
-    print df.head()
+    print len(scores_all)
     
     fig = plt.figure(figsize=(12,4), linewidth=1.0)#design a figure with the given size
     gs = gridspec.GridSpec(1, 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -146,8 +144,10 @@ def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fi
     ax0 = fig.add_subplot(gs[0:, 0])
     gs.tight_layout(fig, pad=2, h_pad=0.0, w_pad=0.0)
     
-    s = sns.boxplot(data=df, color='grey', ax=ax0, linewidth=0.5)
+    s = sns.boxplot(data=scores_all, color='grey', ax=ax0, linewidth=0.5)
+    plt.xticks(plt.xticks()[0], tfs)
     s.set(ylabel='Functionality Scores', ylim=(0,5))
+
     sns.despine(right=True, top=True, bottom=False, left=False)
     
     plt.savefig(fig_name+'_all.pdf')#, bbox_inches='tight')
