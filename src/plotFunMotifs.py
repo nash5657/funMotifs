@@ -127,7 +127,7 @@ def plot_fscore_all_selected_tfs(table_name, motifs_table, tissue_names, tfs, fi
     curs = conn.cursor()
     scores_all = []
     for tf in tfs:
-        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 100".format(
+        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 10000".format(
             tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table, tf=tf)
         print stmt_all
         curs.execute(stmt_all)
@@ -232,7 +232,7 @@ if __name__ == '__main__':
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
     
     #get_funmotifs(sorted(tissue_tables))
-    tfs = ['CTCF', 'CEBPB', 'FOXA1']#, 'HNF4A', 'MAFK']#'KFL14', 
+    tfs = ['CTCF', 'CEBPB', 'FOXA1', 'HNF4A', 'MAFK', 'KFL14'] 
     #plot_fscore_all('all_tissues', motifs_table, sorted(tissue_tables), 'all_fscores')
     plot_fscore_all_selected_tfs('all_tissues', motifs_table, sorted(tissue_tables), tfs, 'all_fscores_selected_tfs')
     
