@@ -92,13 +92,13 @@ def plot_fscore(tf_name, tissue_table, motifs_table, tissue_names, fig_name):
     ss.savefig(fig_name+'.svg', bbox_inches='tight')
     return
 
-def plot_fscore_all(table_name, tissue_names, fig_name):
+def plot_fscore_all(table_name, motifs_table, tissue_names, fig_name):
     
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select {tissue_names} from {table_name} limit 10000".format(
-        tissue_names=','.join(tissue_names), table_name=table_name)
+    stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.chr=1".format(
+        tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table)
     print stmt_all
     curs.execute(stmt_all)
     scores_all = curs.fetchall()
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     tissue_tables=['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus']
         
     #get_funmotifs(sorted(tissue_tables))
-    plot_fscore_all('all_tissues', sorted(tissue_tables), 'all_fscores')
+    plot_fscore_all('all_tissues', 'motifs', sorted(tissue_tables), 'all_fscores')
     
     if '-plot' in params.keys():
         motifs_table='motifs'
