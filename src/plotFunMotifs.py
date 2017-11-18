@@ -4,6 +4,7 @@ Created on 17 Nov 2017
 @author: husensofteng
 '''
 import matplotlib
+from statsmodels.sandbox.distributions.examples.matchdist import other
 matplotlib.use('Agg')
 from matplotlib.pyplot import tight_layout
 import matplotlib.pyplot as plt
@@ -234,13 +235,12 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
         curs.close()
         df = pd.DataFrame(scores_all, columns=['TFs', 'Number of Functional Motifs per TF'])
         df['Tissue']=[tissue_table for i in range(0,len(df))]
-        
-        
         dfs.append(df)
     
     all_dfs = pd.concat(dfs)
     fig = plt.figure(figsize=(12,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
+    sns.despine(right=True, top=True, bottom=True, left=False)
     #s.set_ylim([0,80000])
     ss = s.get_figure()
     ss.savefig(figname + '.pdf', bbox_inches='tight')
@@ -263,15 +263,15 @@ def run_query(query_stmt, tissue_table, cols):
     curs.close()
     conn.close()
     
-def get_funmotifs(tissue_tables):
+def get_funmotifs(tissue_tables, otherconditions):
     cols = ['chr', 'motifstart', 'motifend', 'name', 'fscore', 'chromhmm', 'dnase__seq', 'contactingdomain', 'replidomain']
     
     motifs_table = 'motifs'
     p = mp.Pool(8)
     for tissue_table in tissue_tables:
         print tissue_table
-        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and ((fscore>2.55 and dnase__seq>0.0 and dnase__seq!='NaN' and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
-            cols=','.join(cols), motifs=motifs_table, tissue=tissue_table)
+        query_stmt = "select {cols} from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions}".format(
+            cols=','.join(cols), motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
         print query_stmt
         p.apply_async(run_query, args=(query_stmt, tissue_table, cols))
     
@@ -289,14 +289,14 @@ if __name__ == '__main__':
     
     tissue_tables= sorted(['blood', 'brain', 'breast','cervix', 'colon', 'esophagus', 'kidney', 'liver', 'lung', 'myeloid', 'pancreas', 'prostate', 'skin', 'stomach', 'uterus'])
     tfs = sorted(['CTCF', 'CEBPB', 'FOXA1', 'MAFK', 'FOS::JUN', 'SP1', 'KLF14'])
-    min_fscore = 2.5
-    otherconditions = " and tfexpr > 0 and ( (fscore>{min_fscore} and (dnase__seq>0 or dnase__seq='NaN') and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
+    min_fscore = 2.55
+    otherconditions = " and tfexpr > 0 and ( (fscore>{min_fscore} and (dnase__seq>0 and dnase__seq!='NaN') and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN'))".format(
         min_fscore=min_fscore)
-    #get_funmotifs(sorted(tissue_tables))
+    get_funmotifs(sorted(tissue_tables), otherconditions)
+    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     #plot_fscore_all('all_tissues', motifs_table, tissue_tables, 'all_fscores')
     #plot_fscore_all_selected_tfs('all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     #plot_fscores_myloid(table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
-    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     
     if '-plot' in params.keys():
         min_fscore = 2.5
