@@ -309,12 +309,13 @@ if __name__ == '__main__':
     #fig2
     plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     '''
+    
     #heatmap
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
-    threshold_to_include_tf_in_heatmap = 20000
+    threshold_to_include_tf_in_heatmap = 10000
     for tissue_table in tissue_tables:
         fig = plt.figure(figsize=(12,6))
-        plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
+        plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
     
     if '-fig2' in params.keys():
