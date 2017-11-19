@@ -235,11 +235,11 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     fig = plt.figure(figsize=(13,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
     sns.despine(right=True, top=True, bottom=True, left=False)
-    s.set(xlabel='', ylabel='Number of motifs', ylim=(0,90000))
+    s.set(xlabel='', ylabel='Number of motifs', ylim=(0,70000))
     
     for i, r in all_dfs.iterrows():
         print r
-        if r['Number of Functional Motifs per TF']>40000:
+        if r['Number of Functional Motifs per TF']>30000:
             s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']),
                        xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+15),rotation=45)
                        
@@ -330,5 +330,3 @@ if __name__ == '__main__':
         for tf in sorted(tfs):
             fig = plt.figure(figsize=(12,6))
             plot_fscore(tf_name=tf, tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_tables, fig_name='fig2_'+tf)
-        
-            
