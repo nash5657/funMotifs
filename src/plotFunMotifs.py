@@ -313,7 +313,7 @@ if __name__ == '__main__':
     threshold_to_include_tf_in_heatmap = 20000
     for tissue_table in tissue_tables[0:1]:
         fig = plt.figure(figsize=(12,6))
-        plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
+        plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
     
     if '-fig2' in params.keys():
