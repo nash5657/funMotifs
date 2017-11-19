@@ -219,9 +219,8 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     
     dfs = []
     for tissue_table in tissue_tables:
-        #stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by name order by freq desc".format(
-        stmt_all = "select upper(split_part(name,'_', 1)), 70000 as freq from {motifs} limit 1000".format(
-        motifs=motifs_table)
+        stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by name order by freq desc".format(
+            motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
         print stmt_all
         curs.execute(stmt_all)
         scores_all = curs.fetchall()
@@ -238,9 +237,10 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     sns.despine(right=True, top=True, bottom=True, left=False)
     s.set(xlabel='', ylabel='Number of motifs', ylim=(0,90000))
     
-    for r in all_dfs.iterrows():
+    for i, r in all_dfs.iterrows():
+        print r
         if r['Number of Functional Motifs per TF']>40000:
-            s.annotate(r['TF'], xy=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']),
+            s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']),
                        xytext=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']+10))
     
     ss = s.get_figure()
@@ -279,7 +279,7 @@ def get_funmotifs(tissue_tables, otherconditions):
     
     p.close()
     p.join()
-
+    
 
 if __name__ == '__main__':
     
@@ -299,7 +299,7 @@ if __name__ == '__main__':
     
     #fig2
     plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
-    '''
+    
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -316,8 +316,8 @@ if __name__ == '__main__':
     
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
-    plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
-    '''
+    #plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
+    
     
     '''
     #heatmap
@@ -326,12 +326,12 @@ if __name__ == '__main__':
     for tissue_table in tissue_tables:
         fig = plt.figure()#figsize=(12,6))
         plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
-    
+    '''
+
     if '-fig2' in params.keys():
         print 'plotting figure 2'
         for tf in sorted(tfs):
             fig = plt.figure(figsize=(12,6))
             plot_fscore(tf_name=tf, tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_tables, fig_name='fig2_'+tf)
-    '''
         
             
