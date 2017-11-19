@@ -126,7 +126,7 @@ def plot_fscore_all(ax, table_name, motifs_table, tissue_names, fig_name):
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
     
-    sns.boxplot(data=df, color='grey', ax=ax, linewidth=0.5)
+    sns.swarmplot(data=df, ax=ax, linewidth=0.5)
     sns.despine(right=True, top=True, bottom=False, left=False)
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -150,7 +150,7 @@ def plot_fscore_all_selected_tfs(ax, table_name, motifs_table, tissue_names, tfs
     curs.close()
     print len(scores_all)
     
-    sns.boxplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
+    sns.swarmplot(data=scores_all, ax=ax, linewidth=0.5)
     #plt.xticks(plt.xticks()[0], tfs)
     ax.set_xticklabels(tfs)
     ax.set_xlabel('')
@@ -183,7 +183,7 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     scores_all.append(fscores_boundmotifs_list)
     curs.close()
     
-    sns.boxplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
+    sns.swarmplot(data=scores_all, ax=ax, linewidth=0.5)
     ax.set_xticklabels(['Bound motifs', 'Unbound motifs'])
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -230,11 +230,16 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
         dfs.append(df)
     curs.close()
     all_dfs = pd.concat(dfs)
+    print all_dfs.head()
+    
     fig = plt.figure(figsize=(13,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
     sns.despine(right=True, top=True, bottom=True, left=False)
     s.set(xlabel='', ylabel='Number of motifs', ylim=(0,90000))
+    
+    s.annotate("Test", xy=(2,50000))
     ss = s.get_figure()
+    
     ss.savefig(figname + '.pdf', bbox_inches='tight')
     ss.savefig(figname + '.svg', bbox_inches='tight')
     
@@ -287,7 +292,9 @@ if __name__ == '__main__':
     
     #get_funmotifs(sorted(tissue_tables), otherconditions)
     
-    '''
+    #fig2
+    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
+    
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -298,26 +305,23 @@ if __name__ == '__main__':
     plot_fscore_all_selected_tfs(ax1, 'all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     plot_fscores_myloid(ax2, table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
     gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=2.0)
-    plt.savefig('fig1'+'.pdf')
-    plt.savefig('fig1'+'.svg')
+    plt.savefig('fig1_swarm'+'.pdf')
+    plt.savefig('fig1_swarm'+'.svg')
     plt.close()
-    
+    '''
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
-    
-    #fig2
-    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
     '''
     
+    '''
     #heatmap
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     threshold_to_include_tf_in_heatmap = 10000
     for tissue_table in tissue_tables:
-        fig = plt.figure(figsize=(12,6))
+        fig = plt.figure()#figsize=(12,6))
         plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
-    
-    
+    '''
     if '-fig2' in params.keys():
         print 'plotting figure 2'
         for tf in sorted(tfs):
