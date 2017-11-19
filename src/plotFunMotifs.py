@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import psycopg2
 sns.set_style("white")
@@ -80,6 +81,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
                     [tf_name, tissue_table, 'Functional Motifs', int(active[0][0])]])
         
         df = pd.DataFrame(tfs_freq, columns = ['TFs', 'Tissue', 'Activity', 'Number of motifs'])
+        df['Number of motifs'] = df['Number of motifs'].apply(np.log2)
         ax = fig.add_subplot(gs[i, 0])
         s = sns.barplot(x='TFs', y='Number of motifs', hue='Activity', data=df, estimator=sum, ax=ax)
         s.set(ylabel='Number of motifs', xlabel='')
