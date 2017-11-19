@@ -287,7 +287,7 @@ if __name__ == '__main__':
     
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
-    gs = gridspec.GridSpec(2, 4, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
+    gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
     ax0 = fig.add_subplot(gs[0, 0:])
     ax1 = fig.add_subplot(gs[1, 0:3])
     ax2 = fig.add_subplot(gs[1, 3])
