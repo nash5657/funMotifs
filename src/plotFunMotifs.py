@@ -60,7 +60,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     
     for i,tissue_table in enumerate(tissue_tables):
         tfs_freq = []
-        for tf_name in tfs:        #count({tissue}.mid)    
+        for tf_name in tfs:#count({tissue}.mid)    
             stmt_all = "select 10 from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' limit 1000".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
             print stmt_all
             stmt_tfbinding = "select 500 from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN') limit 1000".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
