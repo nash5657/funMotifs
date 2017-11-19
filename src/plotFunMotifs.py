@@ -219,8 +219,9 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     
     dfs = []
     for tissue_table in tissue_tables:
-        stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by name order by freq desc".format(
-        motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
+        #stmt_all = "select upper(split_part(name,'_', 1)), count(name) as freq from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by name order by freq desc".format(
+        stmt_all = "select upper(split_part(name,'_', 1)), 70000 as freq from {motifs} limit 1000".format(
+        motifs=motifs_table)
         print stmt_all
         curs.execute(stmt_all)
         scores_all = curs.fetchall()
@@ -237,7 +238,11 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     sns.despine(right=True, top=True, bottom=True, left=False)
     s.set(xlabel='', ylabel='Number of motifs', ylim=(0,90000))
     
-    s.annotate("Test", xy=(2,50000))
+    for r in all_dfs.iterrows():
+        if r['Number of Functional Motifs per TF']>40000:
+            s.annotate(r['TF'], xy=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']),
+                       xytext=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']+10))
+    
     ss = s.get_figure()
     
     ss.savefig(figname + '.pdf', bbox_inches='tight')
