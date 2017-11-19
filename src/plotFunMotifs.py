@@ -55,7 +55,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     
     conn = open_connection()
     curs = conn.cursor()
-    fig = plt.figure(figsize=(3,4*len(tissue_tables)), linewidth=0.5)#design a figure with the given size
+    fig = plt.figure()#figsize=(4*len(tissue_tables),3), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(len(tissue_tables), 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
     
     for i,tissue_table in enumerate(tissue_tables):
@@ -84,9 +84,11 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
         ax = fig.add_subplot(gs[i, 0])
         s = sns.barplot(x='TFs', y='Number of motifs', hue='Activity', data=df, estimator=sum, ax=ax)
         s.set(ylabel='Number of motifs', xlabel='')
+        ax.legend_.remove()
         sns.despine(right=True, top=True, bottom=False, left=False)
     curs.close()
-    gs.tight_layout(fig, pad=2, h_pad=0.0, w_pad=0.0)
+    plt.legend(bbox_to_anchor=(1, 1), loc=2)
+    gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=0.0)
     plt.savefig(fig_name+tissue_table+'.pdf')
     plt.savefig(fig_name+tissue_table+'.svg')
     plt.close()
