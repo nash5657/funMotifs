@@ -55,7 +55,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     
     conn = open_connection()
     curs = conn.cursor()
-    fig = plt.figure()#figsize=(4*len(tissue_tables),3), linewidth=0.5)#design a figure with the given size
+    fig = plt.figure(figsize=(6*len(tissue_tables),10))
     gs = gridspec.GridSpec(len(tissue_tables), 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
     
     for i,tissue_table in enumerate(tissue_tables):
@@ -87,8 +87,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
         ax.legend_.remove()
         sns.despine(right=True, top=True, bottom=False, left=False)
     curs.close()
-    plt.legend(bbox_to_anchor=(1, 1),
-           bbox_transform=plt.gcf().transFigure)
+    plt.legend(bbox_to_anchor=(1, 1), loc=4)
     gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=0.0)
     plt.savefig(fig_name+tissue_table+'.pdf')
     plt.savefig(fig_name+tissue_table+'.svg')
@@ -191,12 +190,12 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     ax.set_ylim(0,5)
     sns.despine(right=True, top=True, bottom=False, left=False)
     
-def plot_heatmap(min_fscore, motifs_table,tissue_table, fig_name, threshold_to_include_tf):
+def plot_heatmap(motifs_table,tissue_table, fig_name, threshold_to_include_tf, otherconditions):
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select chromhmm, upper(split_part(name,'_', 1)), count(name) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and ({tissue}.fscore>{min_fscore} or (tfbinding>0 and tfbinding!='NaN')) group by chromhmm,name order by chromhmm".format(
-        motifs=motifs_table, tissue=tissue_table, min_fscore=min_fscore)
+    stmt_all = "select chromhmm, upper(split_part(name,'_', 1)), count(name) from {motifs},{tissue} where {motifs}.mid={tissue}.mid {otherconditions} group by chromhmm,name order by chromhmm".format(
+        motifs=motifs_table, tissue=tissue_table, otherconditions=otherconditions)
     print stmt_all
     curs.execute(stmt_all)
     scores_all = curs.fetchall()
@@ -302,47 +301,26 @@ if __name__ == '__main__':
     plt.savefig('fig1'+'.pdf')
     plt.savefig('fig1'+'.svg')
     plt.close()
-    '''
+    
     #supp fig1
-    tissue_tables = ['blood', 'liver', 'myeloid']
+    tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
     
     #fig2
-    #plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
+    plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
+    '''
+    #heatmap
+    threshold_to_include_tf_in_heatmap = 20000
+    for tissue_table in tissue_tables[0:1]:
+        fig = plt.figure(figsize=(12,6))
+        plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
     
+    if '-fig2' in params.keys():
+        print 'plotting figure 2'
+        for tf in sorted(tfs):
+            fig = plt.figure(figsize=(12,6))
+            plot_fscore(tf_name=tf, tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_tables, fig_name='fig2_'+tf)
     
-    
-    
-    if '-plot' in params.keys():
-        #tfs = ['CTCF', 'CEBPB', 'FOXA1', 'KFL14',  'MAFK', 'SP1']
-        threshold_to_include_tf_in_heatmap = 20000
-        sns.despine(right=True, top=True, bottom=False, left=False)
-        if '-fig1' in params.keys():
-            print 'plotting figure 1'
-            for tissue_table in ['blood', 'liver']:
-                fig = plt.figure()
-                tfs_freq = []
-                for tf in sorted(tfs):
-                    tfs_freq.extend(plot_motif_freq(tf_name=tf, tissue_table = tissue_table, motifs_table = motifs_table, min_fscore = min_fscore))
-                df = pd.DataFrame(tfs_freq, columns = ['TFs', 'Tissue', 'Activity', 'Frequency'])
-                fig = plt.figure()
-                s = sns.barplot(x='TFs', y='Frequency', hue='Activity', data=df, estimator=sum)
-                ss = s.get_figure()
-                ss.savefig('fig1_'+tissue_table+'.pdf', bbox_inches='tight')
-                ss.savefig('fig1_'+tissue_table+'.svg', bbox_inches='tight')
-               
-        if '-fig2' in params.keys():
-            print 'plotting figure 2'
-            for tf in sorted(tfs):
-                fig = plt.figure(figsize=(12,6))
-                plot_fscore(tf_name=tf, tissue_table='all_tissues', motifs_table=motifs_table, tissue_names=tissue_tables, fig_name='fig2_'+tf)
-        
-        if '-fig3' in params.keys():
-            print 'plotting figure 3'
-            for tissue_table in ['liver', 'blood', 'breast']:
-                fig = plt.figure(figsize=(12,6))
-                plot_heatmap(min_fscore = min_fscore, motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap)
-        
         
             
