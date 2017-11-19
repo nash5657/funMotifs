@@ -56,10 +56,10 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     curs = conn.cursor()
     fig = plt.figure(figsize=(3,4*len(tissue_tables)), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(len(tissue_tables), 1, wspace=0.0, hspace=0.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
-    #count({tissue}.mid)
+    
     for i,tissue_table in enumerate(tissue_tables):
         tfs_freq = []
-        for tf_name in tfs:            
+        for tf_name in tfs:        #count({tissue}.mid)    
             stmt_all = "select 10 from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' limit 1000".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
             print stmt_all
             stmt_tfbinding = "select 500 from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN') limit 1000".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
