@@ -61,11 +61,11 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     for i,tissue_table in enumerate(tissue_tables):
         tfs_freq = []
         for tf_name in tfs:    
-            stmt_all = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+            stmt_all = "select 100"#count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%'".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
             print stmt_all
-            stmt_tfbinding = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
-            stmt_dnase = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
-            stmt_active = "select count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and {motifs}.name like '%{tf_name}%' and ((fscore>{min_fscore} and dnase__seq>0 and dnase__seq!='NaN' and (tfbinding>0 or {tissue}.tfbinding='NaN')) or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name, min_fscore=min_fscore)
+            stmt_tfbinding = "select 500"#count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.tfbinding>0 and {tissue}.tfbinding!='NaN')".format(motifs=motifs_table, tissue=tissue_table,tf_name=tf_name)
+            stmt_dnase = "select 1000"#count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and {motifs}.name like '%{tf_name}%' and ({tissue}.dnase__seq>0 and {tissue}.dnase__seq!='NaN')".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name)
+            stmt_active = "select 10"#count({tissue}.mid) from {motifs},{tissue} where {motifs}.mid={tissue}.mid and tfexpr>0 and {motifs}.name like '%{tf_name}%' and ((fscore>{min_fscore} and dnase__seq>0 and dnase__seq!='NaN' and (tfbinding>0 or {tissue}.tfbinding='NaN')) or (tfbinding>0 and {tissue}.tfbinding!='NaN'))".format(motifs=motifs_table, tissue=tissue_table, tf_name=tf_name, min_fscore=min_fscore)
             curs.execute(stmt_all)
             motifs_all = curs.fetchall()
             curs.execute(stmt_tfbinding)
@@ -115,7 +115,7 @@ def plot_fscore_all(ax, table_name, motifs_table, tissue_names, fig_name):
     conn = open_connection()
     curs = conn.cursor()
     
-    stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.chr=1 limit 1000".format(
+    stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.chr=1".format(
         tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table)
     print stmt_all
     curs.execute(stmt_all)
@@ -137,7 +137,7 @@ def plot_fscore_all_selected_tfs(ax, table_name, motifs_table, tissue_names, tfs
     curs = conn.cursor()
     scores_all = []
     for tf in tfs:
-        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%' limit 1000".format(
+        stmt_all = "select {tissue_names} from {table_name},{motifs} where {motifs}.mid={table_name}.mid and {motifs}.name like '%{tf}%'".format(
             tissue_names=','.join(tissue_names), table_name=table_name, motifs=motifs_table, tf=tf)
         print stmt_all
         curs.execute(stmt_all)
@@ -162,9 +162,9 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     conn = open_connection()
     curs = conn.cursor()
     scores_all = []
-    stmts_boundmotifs = "select fscore from {table_name} where tfbinding>0 and tfbinding!='NaN' and dnase__seq>0 limit 1000".format(
+    stmts_boundmotifs = "select fscore from {table_name} where tfbinding>0 and tfbinding!='NaN' and dnase__seq>0".format(
         table_name=table_name)
-    stmts_unboundmotifs = "select fscore from {table_name} where tfbinding=0 and tfbinding!='NaN' limit 1000".format(
+    stmts_unboundmotifs = "select fscore from {table_name} where tfbinding=0 and tfbinding!='NaN'".format(
         table_name=table_name)
     
     print stmts_boundmotifs
@@ -285,6 +285,7 @@ if __name__ == '__main__':
     
     #get_funmotifs(sorted(tissue_tables), otherconditions)
     
+    '''
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -294,14 +295,14 @@ if __name__ == '__main__':
     plot_fscore_all(ax0, 'all_tissues', motifs_table, tissue_tables, 'all_fscores')
     plot_fscore_all_selected_tfs(ax1, 'all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     plot_fscores_myloid(ax2, table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
-    gs.tight_layout(fig, pad=2, h_pad=0.0, w_pad=0.0)
+    gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=2.0)
     plt.savefig('fig1'+'.pdf')
     plt.savefig('fig1'+'.svg')
     plt.close()
-    
+    '''
     #supp fig1
     tissue_tables = ['blood', 'liver', 'myeloid']
-    #plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='barplots_numbmoitfs')
+    plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
     
     #fig2
     #plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF')
