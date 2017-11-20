@@ -244,7 +244,7 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
                        (tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1))
                        
             s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue']),r['Number of Functional Motifs per TF']),
-                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1),rotation=45)
+                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+3),rotation=45)
                        
     ss = s.get_figure()
     
