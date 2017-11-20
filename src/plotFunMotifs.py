@@ -312,8 +312,8 @@ if __name__ == '__main__':
     plot_fscore_all_selected_tfs(ax1, 'all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     plot_fscores_myloid(ax2, table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
     gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=2.0)
-    plt.savefig('fig1'+'.pdf')
-    plt.savefig('fig1'+'.svg')
+    plt.savefig('fig1_violinplot'+'.pdf')
+    plt.savefig('fig1_violinplot'+'.svg')
     plt.close()
     
     #supp fig1
