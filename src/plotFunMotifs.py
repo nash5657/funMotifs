@@ -312,16 +312,19 @@ def plot_freq(file_x, file_y):
                 except KeyError:
                     x.append(0)
     
-    fig = plt.figure(figsize=(4,3))
+    fig = plt.figure(figsize=(6,3))
     s = sns.regplot(x=np.array(x), y=np.array(y), color='grey')
     sns.despine(right=True, top=True, bottom=True, left=False)
-    s.set(xlabel='Number of sequence motifs', ylabel='Number of functional motifs', ylim=(0,70000),
+    s.set(ylim=(0,70000),
           xlim=(0,1100000))
-        
+    s.set_xlabel(xlabel='Number of sequence motifs', fontsize=6)
+    s.set_ylabel(ylabel='Number of functional motifs', fontsize=6)
+    s.tick_params(labelsize=5)
+       
     for i, v in enumerate(y):
         if v>30000:
             s.annotate(names[i], xy=(x[i], v),
-                       xytext=(x[i], y[i]+3000),rotation=45, fontsize=6)
+                       xytext=(x[i], y[i]+3500),rotation=45, fontsize=6)
             
     ss = s.get_figure()
     
