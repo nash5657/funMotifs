@@ -126,7 +126,7 @@ def plot_fscore_all(ax, table_name, motifs_table, tissue_names, fig_name):
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
     
-    sns.violinplot(data=df, ax=ax, color='grey', linewidth=0.5)
+    sns.swarmplot(data=df, ax=ax, color='grey', linewidth=0.5)
     sns.despine(right=True, top=True, bottom=False, left=False)
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -150,7 +150,7 @@ def plot_fscore_all_selected_tfs(ax, table_name, motifs_table, tissue_names, tfs
     curs.close()
     print len(scores_all)
     
-    sns.violinplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
+    sns.swarmplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
     ax.set_xticklabels(tfs)
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -182,7 +182,7 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     scores_all.append(fscores_boundmotifs_list)
     curs.close()
     
-    sns.violinplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
+    sns.swarmplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
     ax.set_xticklabels(['Bound motifs', 'Unbound motifs'])
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -326,7 +326,6 @@ if __name__ == '__main__':
         fig = plt.figure()#figsize=(12,6))
         #plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
-
     if '-fig2' in params.keys():
         print 'plotting figure 2'
         for tf in sorted(tfs):
