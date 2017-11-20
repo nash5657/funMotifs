@@ -89,8 +89,8 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
     curs.close()
     plt.legend(bbox_to_anchor=(1, 1), loc=4)
     gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=0.0)
-    plt.savefig(fig_name+tissue_table+'.pdf')
-    plt.savefig(fig_name+tissue_table+'.svg')
+    plt.savefig(fig_name+'.pdf')
+    plt.savefig(fig_name+'.svg')
     plt.close()
     
     
@@ -126,7 +126,7 @@ def plot_fscore_all(ax, table_name, motifs_table, tissue_names, fig_name):
     df = pd.DataFrame(scores_all, columns=tissue_names)
     print df.head()
     
-    sns.swarmplot(data=df, ax=ax, linewidth=0.5)
+    sns.boxplot(data=df, ax=ax, linewidth=0.5)
     sns.despine(right=True, top=True, bottom=False, left=False)
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -150,8 +150,7 @@ def plot_fscore_all_selected_tfs(ax, table_name, motifs_table, tissue_names, tfs
     curs.close()
     print len(scores_all)
     
-    sns.swarmplot(data=scores_all, ax=ax, linewidth=0.5)
-    #plt.xticks(plt.xticks()[0], tfs)
+    sns.boxplot(data=scores_all, ax=ax, linewidth=0.5)
     ax.set_xticklabels(tfs)
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -183,7 +182,7 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     scores_all.append(fscores_boundmotifs_list)
     curs.close()
     
-    sns.swarmplot(data=scores_all, ax=ax, linewidth=0.5)
+    sns.boxplot(data=scores_all, ax=ax, linewidth=0.5)
     ax.set_xticklabels(['Bound motifs', 'Unbound motifs'])
     ax.set_xlabel('')
     ax.set_ylabel('Functionality Scores')
@@ -244,7 +243,7 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
                        (tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+20))
                        
             s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue']),r['Number of Functional Motifs per TF']),
-                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1000),rotation=45)
+                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+4000),rotation=45)
                        
     ss = s.get_figure()
     
@@ -319,7 +318,7 @@ if __name__ == '__main__':
     '''
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
-    plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
+    #plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
     #heatmap
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     threshold_to_include_tf_in_heatmap = 10000
