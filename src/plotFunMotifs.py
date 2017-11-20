@@ -348,11 +348,11 @@ if __name__ == '__main__':
         min_fscore=min_fscore)
     
     #get_funmotifs(sorted(tissue_tables), otherconditions)
-    plot_freq(file_x=sys.argv[1], file_y=sys.argv[2])
+    #plot_freq(file_x=sys.argv[1], file_y=sys.argv[2])
     
     #fig2
     #plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
-    '''
+    
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -363,10 +363,10 @@ if __name__ == '__main__':
     plot_fscore_all_selected_tfs(ax1, 'all_tissues', motifs_table, tissue_tables, tfs, 'all_fscores_selected_tfs')
     plot_fscores_myloid(ax2, table_name='myeloid', fig_name='bound_unboundmotifs_myeloid')
     gs.tight_layout(fig, pad=1, h_pad=2.0, w_pad=2.0)
-    plt.savefig('fig1_violinplot'+'.pdf')
-    plt.savefig('fig1_violinplot'+'.svg')
+    plt.savefig('fig1_swarmplot'+'.pdf')
+    plt.savefig('fig1_swarmplot'+'.svg')
     plt.close()
-    '''
+    
     
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
