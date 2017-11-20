@@ -282,7 +282,54 @@ def get_funmotifs(tissue_tables, otherconditions):
     p.close()
     p.join()
     
-
+def plot_freq(file_x, file_y):
+    d_x = {}
+    d_y = {}
+    x = []
+    y = []
+    names = []
+    with open(file_x, 'r') as fx, open(file_y, 'r') as fy:
+        for l in fx:
+            (k, v) = l.strip().split('\t')
+            d_x[k] = int(v)
+        for l in fy:
+            (k, v) = l.strip().split('\t')
+            d_y[k] = int(v)
+        n = max(len(d_x.keys()), len(d_x.keys()))
+        if len(d_x.keys()) > len(d_y.keys()):
+            for k in d_x.keys():
+                x.append(d_x[k])
+                names.append(k.split('_')[0])
+                try:
+                    y.append(d_y[k])
+                except KeyError:
+                    y.append(0)
+        else:
+            for k in d_y.keys():
+                y.append(d_y[k])
+                names.append(k.split('_')[0])
+                try:
+                    x.append(d_x[k])
+                except KeyError:
+                    x.append(0)
+    
+    fig = plt.figure(figsize=(13,8))
+    s = sns.regplot(x=x, y=y)
+    sns.despine(right=True, top=True, bottom=True, left=False)
+    s.set(xlabel='Number of sequence motifs', ylabel='Number of functional motifs', ylim=(0,70000))
+    
+    for i, v in enumerate(y):
+        if v>30000:
+            s.annotate(names[i], xy=(x[i], v),
+                       xytext=(x[i], y[i]+3000),rotation=45)
+            
+    ss = s.get_figure()
+    
+    ss.savefig(file_x+"_"+file_y+ '.pdf', bbox_inches='tight')
+    ss.savefig(file_x+"_"+file_y+ '.svg', bbox_inches='tight')
+    
+    return
+    
 if __name__ == '__main__':
     
     if len(sys.argv)<=0:
@@ -298,10 +345,11 @@ if __name__ == '__main__':
         min_fscore=min_fscore)
     
     #get_funmotifs(sorted(tissue_tables), otherconditions)
+    plot_freq(file_x=sys.argv[1], file_y=sys.argv[2])
     
     #fig2
     #plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
-    
+    '''
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -315,6 +363,7 @@ if __name__ == '__main__':
     plt.savefig('fig1_violinplot'+'.pdf')
     plt.savefig('fig1_violinplot'+'.svg')
     plt.close()
+    '''
     
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
@@ -325,6 +374,7 @@ if __name__ == '__main__':
     for tissue_table in tissue_tables:
         fig = plt.figure()#figsize=(12,6))
         #plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
+    
     
     if '-fig2' in params.keys():
         print 'plotting figure 2'
