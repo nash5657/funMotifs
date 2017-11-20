@@ -80,7 +80,7 @@ def plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name):
                     [tf_name, tissue_table, 'Functional Motifs', int(active[0][0])]])
         
         df = pd.DataFrame(tfs_freq, columns = ['TFs', 'Tissue', 'Activity', 'Number of motifs'])
-        df['Number of motifs'] = df['Number of motifs'].apply(np.log2)
+        #df['Number of motifs'] = df['Number of motifs'].apply(np.log2)
         ax = fig.add_subplot(gs[i, 0])
         s = sns.barplot(x='TFs', y='Number of motifs', hue='Activity', data=df, estimator=sum, ax=ax)
         s.set(ylabel='Number of motifs (log2)', xlabel='')
@@ -244,7 +244,7 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
                        (tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+20))
                        
             s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue']),r['Number of Functional Motifs per TF']),
-                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+3),rotation=45)
+                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1000),rotation=45)
                        
     ss = s.get_figure()
     
@@ -319,7 +319,7 @@ if __name__ == '__main__':
     '''
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
-    #plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
+    plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
     #heatmap
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     threshold_to_include_tf_in_heatmap = 10000
