@@ -312,19 +312,19 @@ def plot_freq(file_x, file_y):
                 except KeyError:
                     x.append(0)
     
-    fig = plt.figure(figsize=(6,3))
+    fig = plt.figure(figsize=(8,5))
     s = sns.regplot(x=np.array(x), y=np.array(y), color='grey')
     sns.despine(right=True, top=True, bottom=True, left=False)
     s.set(ylim=(0,70000),
           xlim=(0,1100000))
-    s.set_xlabel(xlabel='Number of sequence motifs', fontsize=6)
-    s.set_ylabel(ylabel='Number of functional motifs', fontsize=6)
-    s.tick_params(labelsize=5)
+    s.set_xlabel(xlabel='Number of sequence motifs')#, fontsize=6)
+    s.set_ylabel(ylabel='Number of functional motifs')#, fontsize=6)
+    #s.tick_params(labelsize=5)
        
     for i, v in enumerate(y):
         if v>30000:
             s.annotate(names[i], xy=(x[i], v),
-                       xytext=(x[i], y[i]+3500),rotation=45, fontsize=6)
+                       xytext=(x[i], y[i]+3500),rotation=45)#, fontsize=6)
             
     ss = s.get_figure()
     
@@ -348,11 +348,11 @@ if __name__ == '__main__':
         min_fscore=min_fscore)
     
     #get_funmotifs(sorted(tissue_tables), otherconditions)
-    #plot_freq(file_x=sys.argv[1], file_y=sys.argv[2])
+    plot_freq(file_x=sys.argv[1], file_y=sys.argv[2])
     
     #fig2
     #plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
-    
+    '''
     #fig1
     fig = plt.figure(figsize=(12,8), linewidth=0.5)#design a figure with the given size
     gs = gridspec.GridSpec(2, 4, wspace=1.0, hspace=1.0)#height_ratios=[4,2], width_ratios=[4,2], wspace=0.0, hspace=0.0)#create 4 rows and three columns with the given ratio for each
@@ -366,7 +366,7 @@ if __name__ == '__main__':
     plt.savefig('fig1_swarmplot'+'.pdf')
     plt.savefig('fig1_swarmplot'+'.svg')
     plt.close()
-    
+    '''
     
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
