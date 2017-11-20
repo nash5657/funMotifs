@@ -295,7 +295,6 @@ def plot_freq(file_x, file_y):
         for l in fy:
             (k, v) = l.strip().split('\t')
             d_y[k] = int(v)
-        n = max(len(d_x.keys()), len(d_x.keys()))
         if len(d_x.keys()) > len(d_y.keys()):
             for k in d_x.keys():
                 x.append(d_x[k])
@@ -313,10 +312,11 @@ def plot_freq(file_x, file_y):
                 except KeyError:
                     x.append(0)
     
-    fig = plt.figure(figsize=(13,8))
-    s = sns.regplot(x=x, y=y)
+    fig = plt.figure(figsize=(6,4))
+    s = sns.regplot(x=np.array(x), y=np.array(y), color='grey')
     sns.despine(right=True, top=True, bottom=True, left=False)
-    s.set(xlabel='Number of sequence motifs', ylabel='Number of functional motifs', ylim=(0,70000))
+    s.set(xlabel='Number of sequence motifs', ylabel='Number of functional motifs', ylim=(0,70000),
+          xlim=(0,1100000))
     
     for i, v in enumerate(y):
         if v>30000:
