@@ -238,10 +238,13 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
     s.set(xlabel='', ylabel='Number of motifs', ylim=(0,70000))
     
     for i, r in all_dfs.iterrows():
-        print r
-        if r['Number of Functional Motifs per TF']>30000:
-            s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue'])+1,r['Number of Functional Motifs per TF']),
-                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+15),rotation=45)
+        if r['Number of Functional Motifs per TF']>=30000:
+            print r
+            print (r['TFs'], (tissue_tables.index(r['Tissue']),r['Number of Functional Motifs per TF']),
+                       (tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1))
+                       
+            s.annotate(r['TFs'], xy=(tissue_tables.index(r['Tissue']),r['Number of Functional Motifs per TF']),
+                       xytext=(tissue_tables.index(r['Tissue']), r['Number of Functional Motifs per TF']+1),rotation=45)
                        
     ss = s.get_figure()
     
@@ -295,7 +298,7 @@ if __name__ == '__main__':
     otherconditions = " and tfexpr > 0 and ( (fscore>{min_fscore} and (dnase__seq>0 and dnase__seq!='NaN') and (tfbinding>0 or tfbinding='NaN')) or (tfbinding>0 and tfbinding!='NaN' and dnase__seq>0))".format(
         min_fscore=min_fscore)
     
-    get_funmotifs(sorted(tissue_tables), otherconditions)
+    #get_funmotifs(sorted(tissue_tables), otherconditions)
     
     #fig2
     plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname = 'Number_of_Functional_Motifs_per_TF_annotate')
@@ -316,13 +319,13 @@ if __name__ == '__main__':
     '''
     #supp fig1
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
-    plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
+    #plot_motif_freq(tfs, tissue_tables, motifs_table, min_fscore, fig_name='sfig1_barplots_numbmoitfs')
     #heatmap
     tissue_tables = sorted(['blood', 'liver', 'myeloid'])
     threshold_to_include_tf_in_heatmap = 10000
     for tissue_table in tissue_tables:
         fig = plt.figure()#figsize=(12,6))
-        plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
+        #plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
 
     if '-fig2' in params.keys():
