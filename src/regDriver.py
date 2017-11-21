@@ -198,16 +198,20 @@ def run_regDriver(user_args):
     if '-f' in params.keys():
         read_infile(params['-f'])
     elif '-dir' in params.keys():
-        #p = mp.Pool(int(params['-num_cores']))
+        if params['-run_parallel']:
+            p = mp.Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
             f_path = params['-dir'].strip()+'/'+f
             if f.endswith('_annotated.tsv'):
                 continue
-            #p.apply_async(read_infile, args= (f_path))
             print f_path
-            read_infile(f_path)
-        #p.close()
-        #p.join()
+            if params['-run_parallel']:
+                p.apply_async(read_infile, args= (f_path,))
+            else:
+                read_infile(f_path)
+        if ['-run_parallel']:
+            p.close()
+            p.join()
         
 if __name__ == '__main__':
     
