@@ -15,7 +15,7 @@ params = {'-sep': '\t',
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
           '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
           '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False,
-          '-verbose': True, '-run_parallel': True, '-num_cores':1}
+          '-verbose': True, '-run_parallel': True, '-num_cores':8}
     
 def get_params(params_list, params_without_value):
     global params
@@ -198,20 +198,16 @@ def run_regDriver(user_args):
     if '-f' in params.keys():
         read_infile(params['-f'])
     elif '-dir' in params.keys():
-        if params['-run_parallel']:
-            p = Pool(int(params['-num_cores']))
+        p = Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
             f_path = params['-dir'].strip()+'/'+f
             if f.endswith('_annotated.tsv'):
                 continue
-            if params['-run_parallel']:
-                p.apply_async(read_infile, args= (f_path))
-            else:
-                read_infile(f_path)
-        if params['-run_parallel']:
-            p.close()
-            p.join()
-            
+            p.apply_async(read_infile, args= (f_path))
+            #read_infile(f_path)
+        p.close()
+        p.join()
+        
 if __name__ == '__main__':
     
     try:
