@@ -4,7 +4,7 @@ Created on 21 Oct 2017
 @author: husensofteng
 '''
 import sys, os
-from multiprocessing import Pool
+import multiprocessing as mp
 import psycopg2
 from psycopg2.extras import DictCursor
 import time
@@ -198,15 +198,16 @@ def run_regDriver(user_args):
     if '-f' in params.keys():
         read_infile(params['-f'])
     elif '-dir' in params.keys():
-        p = Pool(int(params['-num_cores']))
+        #p = mp.Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
             f_path = params['-dir'].strip()+'/'+f
             if f.endswith('_annotated.tsv'):
                 continue
-            p.apply_async(read_infile, args= (f_path))
-            #read_infile(f_path)
-        p.close()
-        p.join()
+            #p.apply_async(read_infile, args= (f_path))
+            print f_path
+            read_infile(f_path)
+        #p.close()
+        #p.join()
         
 if __name__ == '__main__':
     
