@@ -94,7 +94,10 @@ def read_infile(input_file):
             if params['-variants']:#the input is variant
                 try:
                     if ( #check if the number of ref/alt alleles match the variant length
-                        (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) and 
+                        (
+                            (int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-ref']]) or 
+                             int(float(sline[params['-end']])) - int(float(sline[params['-start']])) + 1 != len(sline[params['-alt']])
+                            ) and 
                          sline[params['-ref']]!='-' and sline[params['-alt']]!='-' and
                          sline[params['-ref']]!='deletion' and sline[params['-alt']]!='insertion' and
                          sline[params['-ref']]!='del' and sline[params['-alt']]!='ins'
