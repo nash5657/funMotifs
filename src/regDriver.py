@@ -80,7 +80,7 @@ def read_infile(input_file):
     curs_for_pfms = conn.cursor()
     number_lines_processed = 0
     t = time.time()
-    with open(input_file, 'r') as infile, open(input_file++'_'+params['-tissue']+'_annotated.tsv', 'w') as outfile:
+    with open(input_file, 'r') as infile, open(input_file+'_'+params['-tissue']+'_annotated.tsv', 'w') as outfile:
         line = infile.readline()
         cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['-sep'])))]
         cols_from_file.extend((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))
