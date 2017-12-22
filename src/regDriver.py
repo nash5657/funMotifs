@@ -80,7 +80,7 @@ def read_infile(input_file):
     curs_for_pfms = conn.cursor()
     number_lines_processed = 0
     t = time.time()
-    with open(input_file, 'r') as infile, open(input_file+'_annotated.tsv', 'w') as outfile:
+    with open(input_file, 'r') as infile, open(input_file++'_'+params['-tissue']+'_annotated.tsv', 'w') as outfile:
         line = infile.readline()
         cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['-sep'])))]
         cols_from_file.extend((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))
@@ -197,7 +197,7 @@ def run_regDriver(user_args):
         print "Usage: python regDriver.py -f input_file -tissue tissue_name [options]"
         sys.exit(0)
     get_params(user_args, params_without_value=[])
-    
+    print params['-tissue']
     if '-f' in params.keys():
         read_infile(params['-f'])
     elif '-dir' in params.keys():
@@ -205,7 +205,7 @@ def run_regDriver(user_args):
             p = mp.Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
             f_path = params['-dir'].strip()+'/'+f
-            if f.endswith('_annotated.tsv'):
+            if f.endswith('_annotated.tsv') or os.path.isdir(f_path):
                 continue
             print f_path
             if params['-run_parallel']:
