@@ -56,7 +56,11 @@ def get_limit_smt():
 def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn, n):
     curs = conn.cursor(name = "countcurs"+n, cursor_factory=DictCursor)
     stmt = 'select {} from {}{}{} {}'.format(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, get_limit_smt())
-    curs.execute(stmt)
+    try:
+        curs.execute(stmt)
+    except psycopg2.ProgrammingError:
+        curs= None
+        print "error in line number (", n, "):"
     if curs is not None:
         return curs.fetchall()
         curs.close()
@@ -85,10 +89,11 @@ def read_infile(input_file):
         cols_from_file = ['cols'+str(i) for i in range(0,len(line.strip().split(params['-sep'])))]
         cols_from_file.extend((params['-cols_to_retrieve'] + ',mutposition,entropy').split(','))
         outfile.write(params['-sep'].join(cols_from_file) + '\n')
-        
         while line:
             sline = line.strip().split(params['-sep'])
+            number_lines_processed+=1
             if (line.startswith('#') or line.startswith('//') or len(sline)<3):
+                print 'Warning -- skipped line number (', number_lines_processed, '): ', line
                 line = infile.readline()
                 continue
             if params['-variants']:#the input is variant
@@ -103,12 +108,12 @@ def read_infile(input_file):
                          sline[params['-ref']]!='del' and sline[params['-alt']]!='ins'
                          )):#skip mis appropriate lines
                             if params['-verbose']:
-                                print 'Warning -- skipped line: the variant length does not match the ref/alt length', line
+                                print 'Warning -- skipped line number (', number_lines_processed, '). The variant length does not match the ref/alt length: ', line
                             line = infile.readline()
                             continue
                 except IndexError:
                     if params['-verbose']:
-                        print 'Warning -- line is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
+                        print 'Warning -- line number (', number_lines_processed, ') is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line
                     params['-variants'] = False
                     
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
@@ -181,7 +186,6 @@ def read_infile(input_file):
                             pass
             line = infile.readline()
             
-            number_lines_processed+=1
             if number_lines_processed % int(params['-restart_conn_after_n_queries']) == 0:
                 print '{} Lines are processed from {}'.format(number_lines_processed, input_file)
                 print time.time()-t
