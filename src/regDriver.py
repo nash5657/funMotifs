@@ -59,7 +59,6 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn,
     try:
         curs.execute(stmt)
     except psycopg2.ProgrammingError:
-        curs= None
         print "error in line number (", n, "):"
     if curs is not None:
         return curs.fetchall()
