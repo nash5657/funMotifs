@@ -10,14 +10,13 @@ The following packages are required:
 - bedtools v25.9
 - Python 2.7: we recommend installing it from anaconda.com
 - In python, the following packages are required to run the pipeline
-	- pybedtools (v0.7.8): for processing the annotation data files (e.g. conda install pybedtools=0.7.8 -c bioconda
-	- json: for processing dictionary files
-	- psycopg2 (v2.6.2): for connecting with the PostgreSQL database
+	- pybedtools (v0.7.8): for processing the annotation data files (e.g. conda install pybedtools=0.7.8 -c bioconda)
+	- psycopg2 (v2.6.2): for connecting with the PostgreSQL database (conda install -c anaconda psycopg2)
 
-The following python packages are also required to run the helper modules:
-- requests
-- userlib 
-- numpy
+	The following python packages are also required to run the helper modules:
+	- requests
+	- userlib 
+	- numpy
 
 Once the requirements above are met and the main configuration file is set correctly, run the following to start the annotation process:
 
