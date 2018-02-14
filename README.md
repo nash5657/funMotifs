@@ -18,5 +18,7 @@ The following packages are also required to run the helper modules:
 - numpy
 
 Once the requirements above are met and the main configuration file is set correctly, run the following to start the annotation process:
+
 cd funMotifs/src/
+
 python regMotifsMain.py param_file=main_parameters.conf
