@@ -1,4 +1,4 @@
-# Functional Motifs (http://bioinf.icm.uu.se/funmotifs/)
+# Functional Motifs (http://bioinf.icm.uu.se/funmotifs)
 
 funMotifs is developed to annotate transcription factor (TF) motifs with functional annotations. The main module is src/funMotifsMain.py
 Parameters to specify the input files and other parameters should be given in a configuration file. An example of such configuration file is provided in conf/main_parameters.conf
