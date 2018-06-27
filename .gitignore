@@ -4,3 +4,8 @@
 results*
 datafiles/GeneExp/GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_median_rpkm.gct_perTissue_perTF
 datafiles*
+analysis*
+dump*
+*.sh
+*log_file*
+*slurm*
