@@ -189,7 +189,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
             if len(tissues_with_NaN_values)>0:
                 if len(tissues_with_values)>=4:
                     value = 'NaN'
-                    try:
+                    try:#FIX: For peaks (ChIP-seq & DNase-seq) don't take the average, rather check if there are more than 4 samples that have a peak then set it to 1 otherwise set it to zero, currently if only one cell has a peak with value x and all other cells have no peak for a motif the imputed value would still be larger than zero. 
                         value = sum(tissues_with_values)/float(len(tissues_with_values))
                     except TypeError:
                         value = Counter(tissues_with_values).most_common(1)[0][0]

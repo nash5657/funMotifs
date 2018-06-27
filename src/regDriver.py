@@ -13,7 +13,7 @@ params = {'-sep': '\t',
           '-cols_to_retrieve':'chr, motifstart, motifend, strand, name, score, pval, fscore, chromhmm, contactingdomain, dnase__seq, fantom, loopdomain, numothertfbinding, othertfbinding, replidomain, tfbinding, tfexpr', '-number_rows_select':'all',
           '-restart_conn_after_n_queries':10000, '-variants':True, '-regions':True,
           '-chr':0, '-start':1, '-end':2, '-ref':3, '-alt':4, 
-          '-db_name':'regmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
+          '-db_name':'funmotifsdbtest', '-db_host':'localhost', '-db_port':5432, '-db_user':'huum', '-db_password':'',
           '-all_motifs':True, '-motifs_tfbining':False, '-max_score_motif':False, '-motifs_tfbinding_otherwise_max_score_motif':False,
           '-verbose': True, '-run_parallel': True, '-num_cores':8}
     
@@ -60,7 +60,7 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn,
         curs.execute(stmt)
     except psycopg2.ProgrammingError:
         conn.rollback()
-        print "error in line number (", n, "):"
+        print "error in line number (", n, ")"
         return []
     if curs is not None:
         return curs.fetchall()

@@ -24,7 +24,7 @@ if __name__ == '__main__':
     '''Get parameters from the sys.argv and the argument file'''
     params = Utilities.get_params(sys.argv)
     if len(params.keys())==0:
-        print "Usage: python regMotifsMain.py param_file=../conf/main_parameters.conf"
+        print "Usage: python funMotifsMain.py param_file=../conf/main_parameters.conf"
         sys.exit(0)
     
     '''set the temp dir for bedtools operations'''
