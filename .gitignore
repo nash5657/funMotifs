@@ -3,3 +3,8 @@
 .pydevproject
 results*
 datafiles*
+analysis*
+dump*
+*.sh
+*log_file*
+*slurm*
