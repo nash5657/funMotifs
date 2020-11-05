@@ -5,7 +5,7 @@ Created on Mar 23, 2016
 '''
 
 import os, sys
-import urllib2
+import urllib.request
 import gzip
 import pybedtools
 from pybedtools import BedTool
@@ -88,7 +88,7 @@ def select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict,
         if factor not in selected_datasets_per_factor.keys():
             selected_datasets_per_factor[factor] = []
         else:
-            print "Warning: duplicate Factors:" + factor
+            print("Warning: duplicate Factors:" + factor)
         
         for output_type in ENCODE_accession_codes_dict[factor].keys():
             quality_flag= flag_indicating_low_qualtity_peaks
@@ -119,7 +119,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
     if not os.path.exists(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type):
         os.makedirs(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type)
     os.chdir(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type)
-    print target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type
+    print(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type)
     if not os.path.exists(final_dataset_of_this_assay_cell):
         for factor in assay_info_dict.keys():
             peak_score_from_peak_file_exists = True
@@ -129,7 +129,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 continue
             list_of_high_quality_datasets_from_this_factor = []
             list_of_low_quality_datasets_from_this_factor = []
-            print assay_info_dict[factor]
+            print(assay_info_dict[factor])
             if 'high' in assay_info_dict[factor]:
                 if number_of_files_to_consider_from_highquality_datasets=='all':
                     list_of_high_quality_datasets_from_this_factor=assay_info_dict[factor][assay_info_dict[factor].index("high")+1]
@@ -164,8 +164,8 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     dataset_name = factor+"_"+dataset+".bed"
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
-                            print "downloading.... " + dataset_path
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
+                            print("downloading.... " + dataset_path)
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         with gzip.open(dataset_name+".gz", 'rb') as dataset_name_zip, open(dataset_name, 'w') as dataset_name_unzipped:
@@ -183,8 +183,8 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                     else:
                         if not os.path.exists(dataset_name):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
-                            print "downloading.... " + dataset_path
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
+                            print("downloading.... " + dataset_path)
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         if "." in dataset_name: 
@@ -212,7 +212,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
             #Combine all high quality peak files into one
             peak_score_from_peak_file_exists = True
             if len(list_of_high_quality_peakfiles_from_this_factor)!=0:
-                print cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor)
+                print(cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor))
                 #merge the high quality datasets
                 if len(list_of_high_quality_peakfiles_from_this_factor)==1:
                     if assay_type == "ChromatinStates":
@@ -281,8 +281,8 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     dataset_name = factor+"_"+dataset+".bed"
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
-                            print "downloading.... " + dataset_path
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
+                            print("downloading.... " + dataset_path)
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         with gzip.open(dataset_name+".gz", 'rb') as dataset_name_zip, open(dataset_name, 'w') as dataset_name_unzipped:
@@ -300,8 +300,8 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                     else:
                         if not os.path.exists(dataset_name):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
-                            print "downloading.... " + dataset_path
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
+                            print("downloading.... " + dataset_path)
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         if "." in dataset_name: 
@@ -329,7 +329,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
             #Combine all low quality peak files into one
             peak_score_from_peak_file_exists = True
             if len(list_of_low_quality_peakfiles_from_this_factor)!=0:
-                print cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor)
+                print(cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor))
                 #merge the low quality datasets
                 if len(list_of_low_quality_peakfiles_from_this_factor)==1:
                     if assay_type == "ChromatinStates":
