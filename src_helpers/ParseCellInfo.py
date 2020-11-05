@@ -525,6 +525,8 @@ def parse_args():
 
 if __name__ == '__main__':
     
+    args = parse_args()
+    
     #if len(sys.argv)==3:
     #    cellinfodict_inputfile=sys.argv[1]
     #    target_cellinfo_dirs_path = sys.argv[2]
