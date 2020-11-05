@@ -5,7 +5,7 @@ Created on Mar 23, 2016
 '''
 
 import os, sys
-import urllib2
+import urllib.request
 import gzip
 import pybedtools
 from pybedtools import BedTool
@@ -164,7 +164,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     dataset_name = factor+"_"+dataset+".bed"
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
                             print "downloading.... " + dataset_path
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
@@ -183,7 +183,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                     else:
                         if not os.path.exists(dataset_name):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
                             print "downloading.... " + dataset_path
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
@@ -281,7 +281,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     dataset_name = factor+"_"+dataset+".bed"
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
                             print "downloading.... " + dataset_path
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
@@ -300,7 +300,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                     else:
                         if not os.path.exists(dataset_name):
-                            downloaded_obj = urllib2.urlopen(dataset_path)
+                            downloaded_obj = urllib.request.urlopen(dataset_path)
                             print "downloading.... " + dataset_path
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
