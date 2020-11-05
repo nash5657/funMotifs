@@ -10,6 +10,7 @@ import gzip
 import pybedtools
 from pybedtools import BedTool
 import shutil
+import argparse
 
 def generate_list_of_accession_info(encode_metadata_inputfile, 
                                     biosample_name_to_extract, 
