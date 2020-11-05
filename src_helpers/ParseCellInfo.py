@@ -10,20 +10,21 @@ import gzip
 import pybedtools
 from pybedtools import BedTool
 import shutil
+import argparse
 
 def generate_list_of_accession_info(encode_metadata_inputfile, 
                                     biosample_name_to_extract, 
+                                    assembly,
                                     assay_type, 
                                     accepted_file_formats=[], 
                                     default_target_name="Unknown", 
-                                    assembly="hg19",
                                     index_file_accession=0, 
                                     index_file_format=1, 
-                                    index_output_type=2, 
-                                    index_assay_type=4, 
-                                    index_biosample_name=6, 
-                                    index_target=15, 
-                                    index_assembly=40):#in the new version of metadata from ENCODE assembly is given on col41 while in the older version it was on col40
+                                    index_output_type=4,#2 for ENCODE2 
+                                    index_assay_type=7,#4 for ENCODE2 
+                                    index_biosample_name=9,#6 for ENCODE2 
+                                    index_target=21,#15 for ENCODE2 
+                                    index_assembly=5):#40 for ENCODE2
     
     metadata_lines = []
     targets_dict = {}
@@ -445,7 +446,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
     os.chdir(current_dir)
     return final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell
     
-def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path):
+def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, assembly):
     #for a given cell name and assay_type make subdirs and retreive the accession codes to download the files
     summary_file_name = "cell_info_summary"
     summary_file = open(target_cellinfo_dirs_path+"/cell_info_summary", 'w')
@@ -464,13 +465,13 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path):
                 for datasource in dict_cell_lines_info[cell_name][assay_type]:
                     if "metadataENCODE" in datasource:
                         if assay_type=="ChIP-seq":
-                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assay_type, accepted_file_formats=['bed narrowPeak'])#'bed broadPeak', 
+                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assembly, assay_type, accepted_file_formats=['bed narrowPeak'])#'bed broadPeak', 
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_optimal idr thresholded peaks', 'bed narrowPeak_conservative idr thresholded peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         elif assay_type=="DNase-seq":
-                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assay_type, accepted_file_formats=['bed narrowPeak'], default_target_name=assay_type)
+                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assay_type, assembly, accepted_file_formats=['bed narrowPeak'], default_target_name=assay_type)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         elif assay_type=="Repli-seq":
-                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assay_type, accepted_file_formats=['bigWig'], default_target_name=assay_type)
+                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assay_type, assembly, accepted_file_formats=['bigWig'], default_target_name=assay_type)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bigWig_percentage normalized signal'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         if len(selected_datasets_per_factor_dict)==0:
                             selected_datasets_per_factor_dict=selected_datasets_per_factor_dict_from_metadatafile
@@ -509,16 +510,28 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path):
     summary_file.close()
     return summary_file_name
 
+def parse_args():
+    '''Parse command line arguments'''
+    print('parse')
+    parser = argparse.ArgumentParser(description='Parse Cell Info')
+    parser.add_argument('--cellinfodict_inputfile', default='', help='')
+    parser.add_argument('--target_cellinfo_dirs_path', default='', help='')    
+    parser.add_argument('--assembly', default = 'GRCh38', choices=['GRCh38', 'hg19'], help='')
+    
+
+    
+    return parser.parse_args(sys.argv[1:])
+ 
 
 if __name__ == '__main__':
     
-    if len(sys.argv)==3:
-        cellinfodict_inputfile=sys.argv[1]
-        target_cellinfo_dirs_path = sys.argv[2]
-    else:
-        print "Usage: python ParseCellInfo.py CellInfoDict_input_file target_cellinfo_dirs_path"        
-    dict_cell_lines_info =  parse_cellinfodict_to_populate_data(cellinfodict_inputfile, cell_names_start_with="#")
-    populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path)
+    #if len(sys.argv)==3:
+    #    cellinfodict_inputfile=sys.argv[1]
+    #    target_cellinfo_dirs_path = sys.argv[2]
+    #else:
+    #    print "Usage: python ParseCellInfo.py CellInfoDict_input_file target_cellinfo_dirs_path"        
+    dict_cell_lines_info =  parse_cellinfodict_to_populate_data(args.cellinfodict_inputfile, cell_names_start_with="#")
+    populate_cellinfo_dirs(dict_cell_lines_info, args.target_cellinfo_dirs_path, args.assembly)
     
     #Get RNA-seq data for each cell in dict_cell_lines_info.keys()
     
