@@ -28,16 +28,12 @@ def generate_list_of_accession_info(encode_metadata_inputfile,
     
     metadata_lines = []
     targets_dict = {}
-    print(assay_type)
 
     with open(encode_metadata_inputfile, 'r') as encode_metadata_infile:
         metadata_lines = encode_metadata_infile.readlines()
     for line in metadata_lines:
         split_line = line.strip().split('\t')
         #print(split_line[index_assay_type])
-        if(biosample_name_to_extract==split_line[index_biosample_name] and 
-                assay_type==split_line[index_assay_type]):
-            print('TAK')
         try:
             if (biosample_name_to_extract==split_line[index_biosample_name] and 
                 assay_type==split_line[index_assay_type] and 
@@ -474,7 +470,6 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assembly, assay_type, accepted_file_formats=['bed narrowPeak'])#'bed broadPeak', 
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_optimal IDR thresholded peaks', 'bed narrowPeak_conservative IDR thresholded peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         elif assay_type=="DNase-seq":
-                            print('YES')
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assembly, assay_type,  accepted_file_formats=['bed narrowPeak'], default_target_name=assay_type)
                             print(ENCODE_accession_codes_dict)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
