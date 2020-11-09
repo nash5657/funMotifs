@@ -9,6 +9,7 @@ from subprocess import STDOUT,PIPE
 import shlex
 import numpy as np
 from multiprocessing import Pool
+import argparse
 
 def get_sig_motif_instances(instances_file_fimo_format,
                             bed_input_file, 
@@ -66,7 +67,7 @@ def get_sig_motif_instances(instances_file_fimo_format,
                             number_of_highest_ranked_instances_wrote+=1
                         bed_outfile.write(line_to_write)
                     
-    print sig_bed_output_file + "(len_all_instances,mean_scores,sd_scores,sig_instances,highest_ranked_instances):\t" + str(lenght_all_instances) + '\t' + str(mean_scores) + '\t' + str(sd_scores) + '\t' + str(number_of_sig_instances_wrote) + '\t' + str(number_of_highest_ranked_instances_wrote)
+    print(sig_bed_output_file + "(len_all_instances,mean_scores,sd_scores,sig_instances,highest_ranked_instances):\t" + str(lenght_all_instances) + '\t' + str(mean_scores) + '\t' + str(sd_scores) + '\t' + str(number_of_sig_instances_wrote) + '\t' + str(number_of_highest_ranked_instances_wrote))
     return bed_input_file, sig_bed_output_file
     
         
@@ -164,12 +165,38 @@ def run_motifs_FIMO(pwm_files,
     pool.close()
     pool.join()
     return generated_FIMO_files
+
+
+def parse_args():
+    '''Parse command line arguments'''
+    print('parse')
+    parser = argparse.ArgumentParser(description='Generate Motifs Fimo')
+    parser.add_argument('--jaspar_meme_pwms_input_file', default='', help='')
+    parser.add_argument('--genome_fasta_file', default='', help='')    
+    parser.add_argument('--output_dir', default='', help='') 
+    parser.add_argument('--pval_threshold', default=0.0001, help='',type=float)
+    parser.add_argument('--limit_to_check', default=1, help='', type=int)   
+    parser.add_argument('--scores_sd_above_mean', default=1.0, help='', type=float)   
+    parser.add_argument('--percentage_highest_scored_isntances', default=10, help='',type=int) 
+    parser.add_argument('--number_processes_to_run', default=16, help='', type=int) 
     
+  
+
+    
+
+    
+    return parser.parse_args(sys.argv[1:])
+ 
+
 if __name__ == '__main__':
-    if len(sys.argv)!=9:
-        print "Usage: python GenerateMotifsFIMO.py jaspar_meme_pwms_input_file.txt hg19.fa output_dir pval_threshold<float> limit_to_check<int> scores_sd_above_mean<float> percentage_highest_scored_isntances<int> #processes<int>"
-        exit(0)
-    pwms_files = distribute_meme_pwms_to_single_pwm(jaspar_meme_pwms_input_file=sys.argv[1])
-    run_motifs_FIMO(pwm_files=pwms_files, fasta_file=sys.argv[2], output_dir=sys.argv[3], threshold = float(sys.argv[4]), limit_to_check = int(sys.argv[5]), scores_sd_above_mean=float(sys.argv[6]), percentage_highest_scored_isntances = int(sys.argv[7]), number_processes_to_run_in_parallel=int(sys.argv[8]))
+    
+    args = parse_args()
+       
+
+    
+    #print("Usage: python GenerateMotifsFIMO.py jaspar_meme_pwms_input_file.txt hg19.fa output_dir pval_threshold<float> limit_to_check<int> scores_sd_above_mean<float> percentage_highest_scored_isntances<int> #processes<int>")
+  
+    pwms_files = distribute_meme_pwms_to_single_pwm(jaspar_meme_pwms_input_file=args.jaspar_meme_pwms_input_file)
+    run_motifs_FIMO(pwm_files=pwms_files, fasta_file=args.genome_fasta_file, output_dir=args.output_dir, threshold = float(args.pval_threshold), limit_to_check = int(args.limit_to_check), scores_sd_above_mean=float(args.scores_sd_above_mean), percentage_highest_scored_isntances = int(args.percentage_highest_scored_isntances), number_processes_to_run_in_parallel=int(args.number_processes_to_run))
     
     
