@@ -18,7 +18,7 @@ def get_sig_motif_instances(instances_file_fimo_format,
                             limit_to_check, scores_sd_above_mean, 
                             percentage_highest_scored_isntances):
     '''Given a bed file of motif instances, this function returns a file containing 
-    those that have a P-value significant positive score and a score larger than: mean_scores+(sd_scores*scores_sd_above_mean.
+    those that have a P-value significant, positive score and a score larger than: mean_scores+(sd_scores*scores_sd_above_mean.
     It also generates a file containing top x highest scored-instances based on the value of percentage_highest_scored_isntances'''
     
     all_lines = []
@@ -125,13 +125,17 @@ def get_motif_instances_FIMO_singlepwm(pwm_file,
     Returns a bed file containing significant motif instances'''
     print('run FIMO')
     if not os.path.exists(instances_file_fimo_format):
-        fimo_out  = open(instances_file_fimo_format, 'w')
-        fimo_cmd = "fimo --max-strand --parse-genomic-coord --skip-matched-sequence --thresh" + " " + str(threshold) + " " + pwm_file + " " + fasta_file 
-        print(fimo_cmd) 
-        proc = subprocess.Popen(shlex.split(fimo_cmd), stdout=PIPE, stderr=STDOUT)
-        stdout, stderr = proc.communicate()
-        fimo_out.write(stdout)
-        fimo_out.close()
+        fimo_stm = """fimo --max-strand --parse-genomic-coord --skip-matched-sequence --thresh "%s" "%s" "%s" > "%s" """%(str(threshold),pwm_file, fasta_file, instances_file_fimo_format)
+        print(fimo_stm) 
+        #awk 'BEGIN{FS=OFS="\t"}{if($6=="%s") print $0 >> "%s"}' %s""" %(cohort_value, cohort_file, mutations_input_file)
+        os.system(fimo_stm)
+        #fimo_out  = open(instances_file_fimo_format, 'w')
+        #fimo_cmd = "fimo --max-strand --parse-genomic-coord --skip-matched-sequence --thresh" + " " + str(threshold) + " " + pwm_file + " " + fasta_file 
+        
+        #proc = subprocess.Popen(shlex.split(fimo_cmd), stdout=PIPE, stderr=STDOUT)
+        #stdout, stderr = proc.communicate()
+        #fimo_out.write(stdout)
+        #fimo_out.close()
     print('DONE')
     if not os.path.exists(sig_instances_file_bed_format) or not os.path.exists(sig_ranked_bed_output_file):
         get_sig_motif_instances(instances_file_fimo_format, instances_file_bed_format, sig_instances_file_bed_format, sig_ranked_bed_output_file, limit_to_check, scores_sd_above_mean, percentage_highest_scored_isntances)
