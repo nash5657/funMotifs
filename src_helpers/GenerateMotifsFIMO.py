@@ -20,18 +20,18 @@ def get_sig_motif_instances(instances_file_fimo_format,
     '''Given a bed file of motif instances, this function returns a file containing 
     those that have a P-value significant, positive score and a score larger than: mean_scores+(sd_scores*scores_sd_above_mean.
     It also generates a file containing top x highest scored-instances based on the value of percentage_highest_scored_isntances'''
-    
+    score_index=6
     all_lines = []
     all_scores = []
     with open(instances_file_fimo_format, 'r') as bed_infile:
-        l = bed_infile.readline()#skip the header line
+        l = bed_infile.readline()[1:]#skip the header line
         while l!= "":
             sl = l.strip().split('\t')
-            if len(sl)==7:
-                if float(sl[5])>0.0:#only include motifs that have a score above zero (ignore negative scores)
+            if len(sl)==8:
+                if float(sl[score_index])>0.0:#only include motifs that have a score above zero (ignore negative scores)
                     lw = []
                     for i in range(0, len(sl)):
-                        if i == 5:
+                        if i == score_index:
                             lw.append(float(sl[i]))#append column i to list lw
                             all_scores.append(float(sl[i]))#if it was the 6th col (score) then append it to all_scoers 
                         else:
@@ -43,7 +43,7 @@ def get_sig_motif_instances(instances_file_fimo_format,
     
     lenght_all_instances = len(all_lines)
     if lenght_all_instances > 0:
-        all_lines.sort(key=lambda k: k[5], reverse=True)
+        all_lines.sort(key=lambda k: k[score_index], reverse=True)
     
     number_of_highest_ranked_instances_to_write = (lenght_all_instances*percentage_highest_scored_isntances)/100
     number_of_highest_ranked_instances_wrote = 0
@@ -58,8 +58,8 @@ def get_sig_motif_instances(instances_file_fimo_format,
                     for sl in all_lines:
                         #sl[1] = str(int(sl[1])+1) #in case of using --parse-genomic-coordinates and if the coordinates are generated from mergeBed one base might be needed to add to each motif 
                         #sl[2] = str(int(sl[2])+1)
-                        line_to_write = '\t'.join(sl[1:4]) + '\t' + sl[0] + '\t' + str(sl[5]) + "\t"+ sl[6] + '\t' + sl[4] + '\n' 
-                        if sl[5] >= np.floor(mean_scores+(sd_scores*scores_sd_above_mean)):
+                        line_to_write = '\t'.join(sl[2:5]) + '\t' + sl[0] + '\t' + str(sl[6]) + "\t"+ str(sl[7]) + '\t' + sl[5] + '\n' 
+                        if sl[score_index] >= np.floor(mean_scores+(sd_scores*scores_sd_above_mean)):
                             sig_bed_outfile.write(line_to_write)
                             number_of_sig_instances_wrote+=1
                         if number_of_highest_ranked_instances_wrote<number_of_highest_ranked_instances_to_write:
