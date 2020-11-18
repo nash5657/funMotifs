@@ -11,6 +11,7 @@ import requests
 import urllib
 import numpy as np
 import json
+import argparse
 
 def get_cellnames_from_cellinfodict(cellinfodict_inputfile, cell_names_start_with="#"):
     cellinfo_lines = []
@@ -31,11 +32,11 @@ def get_cellnames_from_cellinfodict(cellinfodict_inputfile, cell_names_start_wit
     return cell_lines
 
 
-def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[]):
+def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembly):
     HEADERS = {'accept': 'application/json'}
     biosample_term_names_to_get_str = '&biosample_term_name='+ '&biosample_term_name='.join(biosample_term_names_to_get)
     #Changed RNA-seq to total+RNA-seq in the URL
-    URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly=hg19&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object{}".format(biosample_term_names_to_get_str)
+    URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly=GRCh38&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object{}".format(biosample_term_names_to_get_str)
     response_json_dict = requests.get(URL, headers=HEADERS).json()
     #print json.dumps(response_json_dict, indent=4, separators=(',', ': '))
     bio_sample_files = {}
@@ -46,14 +47,14 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[]):
     for cell in range(0, len(response_json_dict['@graph'])):#it contains a list, one element for each experiment
         bio_sample = response_json_dict['@graph'][cell]['biosample_term_name']
         print "downloading data for: " + bio_sample 
-        if 'hg19' not in response_json_dict['@graph'][cell]['assembly'] or response_json_dict['@graph'][cell]['status']!='released':
+        if assembly not in response_json_dict['@graph'][cell]['assembly'] or response_json_dict['@graph'][cell]['status']!='released':
             continue
         if bio_sample not in bio_sample_files.keys():
             bio_sample_files[bio_sample] = []
         for f in response_json_dict['@graph'][cell]['files']:
             f_info = requests.get("https://www.encodeproject.org/{}/".format(f), headers=HEADERS).json()
             if 'assembly' in f_info.keys() and f_info['file_type']=='tsv' and f_info['output_type']=='gene quantifications':
-                if f_info['assembly'] == 'hg19':
+                if f_info['assembly'] == assembly:
                     if not os.path.exists(biosamples_out_dir+bio_sample):
                         os.makedirs(biosamples_out_dir+bio_sample)
                     print biosamples_out_dir+bio_sample + ':' + f_info['href']
@@ -144,20 +145,35 @@ def get_gene_names_and_ids_from_genecode(genecode_genes_input_file,
         json.dump(gencode_id_info_dict, gencode_id_info_dict_savefile_outfile)            
     return gencode_id_info_dict#, gene_id_name_dict
 
+
+def parse_args():
+    '''Parse command line arguments'''
+    print('parse')
+    parser = argparse.ArgumentParser(description='Parse Cell Info')
+    parser.add_argument('--Output_dir', default='', help='')
+    parser.add_argument('--CellInfoDict_input_file', default='', help='')  
+    parser.add_argument('--Genecode_genes_input_file', default='', help='')    
+    parser.add_argument('--assembly', default = 'GRCh38', choices=['GRCh38', 'hg19'], help='')
+    
+
+    
+    return parser.parse_args(sys.argv[1:])
+ 
+
 if __name__ == '__main__':
-    if len(sys.argv)!=4:
-        print "Usage: python GetDataSetsAPI.py Output_dir CellInfoDict_input_file Genecode_genes_input_file"
-        sys.exit(0)
-    biosamples_dir_path=sys.argv[1]
+    
+    args = parse_args()
+  
+    biosamples_dir_path=args.Output_dir
     if not os.path.exists(biosamples_dir_path):
         os.makedirs(biosamples_dir_path)
-    cellinfodict_inputfile = sys.argv[2] 
+    cellinfodict_inputfile = args.CellInfoDict_input_file
     biosample_term_names_to_get = get_cellnames_from_cellinfodict(cellinfodict_inputfile)
     #biosample_term_names_to_get = ['A549','GM12878','Gastric','HCT116','HEK293','HeLa-S3','HepG2','IMR-90','Ishikawa','K562','Kidney_curated','LNCaP clone FGC','MCF 10A','MCF-7','Ovary','Panc1','Pancreas_curated','Prostate_curated','SK-N-SH','T47D','U2OS','astrocyte','epithelial cell of esophagus','keratinocyte','osteoblast','urothelium cell line']
-    genecode_genes_input_file=sys.argv[3]
+    genecode_genes_input_file=args.Genecode_genes_input_file
     genecode_genes_only_genes_bed_output_file=genecode_genes_input_file+"_onlygenes.bed"
-    
-    get_data_API(biosamples_dir_path+'/', biosample_term_names_to_get)
+    assembly = args.assembly
+    get_data_API(biosamples_dir_path+'/', biosample_term_names_to_get, assembly)
     bio_samples = process_RNA_seq_datafolder(biosamples_dir_path)#give a dir that contains all bio_samples that have previously been downloaded
     gencode_id_info_dict = get_gene_names_and_ids_from_genecode(genecode_genes_input_file=genecode_genes_input_file, genecode_genes_only_genes_bed_output_file=genecode_genes_only_genes_bed_output_file)
     genes_with_gencode_info_dict = get_expr_per_bio_sample(bio_samples, gencode_id_info_dict, output_dir_path=biosamples_dir_path)
