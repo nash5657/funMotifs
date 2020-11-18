@@ -82,7 +82,8 @@ def parse_cellinfodict_to_populate_data(cellinfodict_inputfile,
 def select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, 
                                       highest_priority_output_types=['optimal IDR thresholded peaks', 'conservative IDR thresholded peaks'], 
                                       flag_indicating_high_qualtity_peaks="high", 
-                                      flag_indicating_low_qualtity_peaks="low"):
+                                      flag_indicating_low_qualtity_peaks="low",
+                                      limit_to_highest_priority_output_types=False):
  
     selected_datasets_per_factor = {}
     for factor in ENCODE_accession_codes_dict.keys():
@@ -97,11 +98,16 @@ def select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict,
                 if output_type==highest_priority_output_type:
                     quality_flag = flag_indicating_high_qualtity_peaks
                     break
-            if quality_flag in selected_datasets_per_factor[factor]:
-                selected_datasets_per_factor[factor][selected_datasets_per_factor[factor].index(quality_flag)+1].extend(ENCODE_accession_codes_dict[factor][output_type])
+            if limit_to_highest_priority_output_types and quality_flag==flag_indicating_low_qualtity_peaks:
+                pass
             else:
-                selected_datasets_per_factor[factor].append(quality_flag)
-                selected_datasets_per_factor[factor].append(ENCODE_accession_codes_dict[factor][output_type]) 
+                if quality_flag in selected_datasets_per_factor[factor]:
+                    #print (quality_flag)
+                    selected_datasets_per_factor[factor][selected_datasets_per_factor[factor].index(quality_flag)+1].extend(ENCODE_accession_codes_dict[factor][output_type])
+                else:
+                    #print (quality_flag)
+                    selected_datasets_per_factor[factor].append(quality_flag)
+                    selected_datasets_per_factor[factor].append(ENCODE_accession_codes_dict[factor][output_type]) 
     return selected_datasets_per_factor
     
 def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_cellinfo_dirs_path, 
@@ -242,7 +248,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     else:
                         bedTools_obj = BedTool()
                         merging_all = bedTools_obj.multi_intersect(i=list_of_high_quality_peakfiles_from_this_factor).filter(lambda x: int(x[3]) >= number_of_votes_from_highquality_datasets).sort().merge()
-                        
+                        print('bedtools')
                         #in case the line didn't have col index or the value of col index was not convertable to float then it's an indication of no score availabbility
                         for file_i in  list_of_high_quality_peakfiles_from_this_factor:#check if all the files have peak scores
                             with open(file_i) as read_file_i:
@@ -290,7 +296,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                             print(dataset_name_zip)
                             dataset_name_unzipped.write(dataset_name_zip.read())
                         #os.system("gunzip " + dataset_name+".gz")
-                elif dataset.startswith("http://") or dataset.startswith("ftp://"):
+                elif dataset.startswith("http://") or dataset.startswith("ftp://") or dataset.startswith("https://"):
                     dataset_path = dataset
                     dataset_name = factor+"_"+dataset.strip().split('/')[-1]
                     dataset_name_unzipped = dataset_name
@@ -417,7 +423,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         if assay_type == "ChromatinStates":
                             for line in merge_final_lines:
                                 final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#ChromHMM#"+line.strip().split('\t')[3].replace(" ", "-") + '\n')
-                        elif assay_type == "TF ChIP-seq":
+                        elif assay_type == "TF_ChIP-seq":
                             if peak_score_from_peak_file_exists and consider_peak_score_from_peak_file:
                                 for line in merge_final_lines:
                                     peak_score = "#"+str(line.strip().split('\t')[3])
@@ -460,22 +466,25 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
             if os.path.exists(target_cellinfo_dirs_path + "/" + cell_name + "/" + assay_type + "/" + final_dataset_of_this_assay_cell):#if the the combined file of this assay in this cell has been created there is no need to go any further
                 continue
             ENCODE_accession_codes_dict = {}
-            if assay_type=="TF ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq":
+            if assay_type=="TF_ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq" or assay_type=="footprints":
                 selected_datasets_per_factor_dict = {}
                 selected_datasets_per_factor_dict_from_metadatafile = {}
                 #generate the list of dataset IDs per factor in each assay type
                 for datasource in dict_cell_lines_info[cell_name][assay_type]:
                     if "metadataENCODE" in datasource:
-                        if assay_type=="TF ChIP-seq":
+                        if assay_type=="TF_ChIP-seq":
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assembly, assay_type, accepted_file_formats=['bed narrowPeak'])#'bed broadPeak', 
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_optimal IDR thresholded peaks', 'bed narrowPeak_conservative IDR thresholded peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         elif assay_type=="DNase-seq":
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name, assembly, assay_type,  accepted_file_formats=['bed narrowPeak'], default_target_name=assay_type)
-                            print(ENCODE_accession_codes_dict)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed narrowPeak_peaks'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
                         elif assay_type=="Repli-seq":
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name,  assembly, assay_type, accepted_file_formats=['bigWig'], default_target_name=assay_type)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bigWig_percentage normalized signal'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low")
+                        elif assay_type=="footprints":
+                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name,  assembly, "DNase-seq", accepted_file_formats=['bed bed3+'], default_target_name=assay_type)
+                            selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed bed3+_footprints'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low",limit_to_highest_priority_output_types=True)
+
                         if len(selected_datasets_per_factor_dict)==0:
                             selected_datasets_per_factor_dict=selected_datasets_per_factor_dict_from_metadatafile
                         else:
@@ -500,7 +509,7 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                             selected_datasets_per_factor_dict[factor_name_from_otherdatasource].append(quality_level_from_otherdatasource)
                             selected_datasets_per_factor_dict[factor_name_from_otherdatasource].append(source_from_otherdatasource)
                 
-                if assay_type=="TF ChIP-seq":
+                if assay_type=="TF_ChIP-seq":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = True, peak_score_index=6)
                 elif assay_type=="DNase-seq":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = True, peak_score_index=6)
@@ -508,6 +517,8 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                     download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets=1, dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = True, peak_score_index=6)
                 elif assay_type == "ChromatinStates":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
+                elif assay_type == "footprints":
+                    final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
             if final_dataset_of_this_assay_cell!="":
                 summary_file.write(final_dataset_of_this_assay_cell+"\t"+str(len(final_datasets_of_this_assay_cell)) + '\t' +','.join(final_datasets_of_this_assay_cell)+'\n')
     summary_file.close()
