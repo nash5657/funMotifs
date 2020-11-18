@@ -123,10 +123,8 @@ def get_motif_instances_FIMO_singlepwm(pwm_file,
     '''Runs fimo for a given PWM file and generate its motif instances
     Calls get_sig_motif_instances to generate the significant motif instances
     Returns a bed file containing significant motif instances'''
-    print('run FIMO')
     if not os.path.exists(instances_file_fimo_format):
         fimo_stm = """fimo --max-strand --parse-genomic-coord --skip-matched-sequence --thresh "%s" "%s" "%s" > "%s" """%(str(threshold),pwm_file, fasta_file, instances_file_fimo_format)
-        print(fimo_stm) 
         #awk 'BEGIN{FS=OFS="\t"}{if($6=="%s") print $0 >> "%s"}' %s""" %(cohort_value, cohort_file, mutations_input_file)
         os.system(fimo_stm)
         #fimo_out  = open(instances_file_fimo_format, 'w')
@@ -136,7 +134,6 @@ def get_motif_instances_FIMO_singlepwm(pwm_file,
         #stdout, stderr = proc.communicate()
         #fimo_out.write(stdout)
         #fimo_out.close()
-    print('DONE')
     if not os.path.exists(sig_instances_file_bed_format) or not os.path.exists(sig_ranked_bed_output_file):
         get_sig_motif_instances(instances_file_fimo_format, instances_file_bed_format, sig_instances_file_bed_format, sig_ranked_bed_output_file, limit_to_check, scores_sd_above_mean, percentage_highest_scored_isntances)
     
@@ -161,7 +158,6 @@ def run_motifs_FIMO(pwm_files,
     pool = Pool(processes=number_processes_to_run_in_parallel)
     for pwm_file in pwm_files:
         motif_name = '.'.join(pwm_file.split('/')[-1].split('.')[0:-1])
-        print(motif_name)
         instances_file_fimo_format = output_dir+'/'+motif_name+".fimo"
         instances_file_bed_format = output_dir+'/'+motif_name+".bed"
         sig_instances_file_bed_format = output_dir+'/'+motif_name+"_sig.bed"
@@ -204,8 +200,6 @@ if __name__ == '__main__':
     #print("Usage: python GenerateMotifsFIMO.py jaspar_meme_pwms_input_file.txt hg19.fa output_dir pval_threshold<float> limit_to_check<int> scores_sd_above_mean<float> percentage_highest_scored_isntances<int> #processes<int>")
   
     pwms_files = distribute_meme_pwms_to_single_pwm(jaspar_meme_pwms_input_file=args.jaspar_meme_pwms_input_file)
-    print('run motifs FIMO')
-    print(pwms_files)
     run_motifs_FIMO(pwm_files=pwms_files, fasta_file=args.genome_fasta_file, output_dir=args.output_dir, threshold = float(args.pval_threshold), limit_to_check = int(args.limit_to_check), scores_sd_above_mean=float(args.scores_sd_above_mean), percentage_highest_scored_isntances = int(args.percentage_highest_scored_isntances), number_processes_to_run_in_parallel=int(args.number_processes_to_run))
     
     
