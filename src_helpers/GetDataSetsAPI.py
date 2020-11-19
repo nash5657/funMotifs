@@ -32,7 +32,7 @@ def get_cellnames_from_cellinfodict(cellinfodict_inputfile, cell_names_start_wit
     return cell_lines
 
 
-def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembly):
+def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembly='GRCh38'):
     HEADERS = {'accept': 'application/json'}
     biosample_term_names_to_get_str = '&biosample_term_name='+ '&biosample_term_name='.join(biosample_term_names_to_get)
     #Changed RNA-seq to total+RNA-seq in the URL
