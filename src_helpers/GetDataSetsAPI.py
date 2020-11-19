@@ -46,7 +46,7 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
     '''
     for cell in range(0, len(response_json_dict['@graph'])):#it contains a list, one element for each experiment
         bio_sample = response_json_dict['@graph'][cell]['biosample_term_name']
-        print "downloading data for: " + bio_sample 
+        print("downloading data for: " + bio_sample)
         if assembly not in response_json_dict['@graph'][cell]['assembly'] or response_json_dict['@graph'][cell]['status']!='released':
             continue
         if bio_sample not in bio_sample_files.keys():
@@ -57,12 +57,12 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
                 if f_info['assembly'] == assembly:
                     if not os.path.exists(biosamples_out_dir+bio_sample):
                         os.makedirs(biosamples_out_dir+bio_sample)
-                    print biosamples_out_dir+bio_sample + ':' + f_info['href']
+                    print(biosamples_out_dir+bio_sample + ':' + f_info['href'])
                     bio_sample_files[bio_sample].append(f_info['href'])
                     if not os.path.exists(biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1]):
                         urllib.urlretrieve('https://www.encodeproject.org/{}'.format(f_info['href']), biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1])
     
-    print "Finished downloading files for: ", bio_sample_files.keys()
+    print("Finished downloading files for: ", bio_sample_files.keys())
     #now the content of bio_sample_files can be further processed to combine files of each bio_sample
     
 def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1, 
