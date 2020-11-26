@@ -35,35 +35,40 @@ def get_cellnames_from_cellinfodict(cellinfodict_inputfile, cell_names_start_wit
 
 
 def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembly='GRCh38'):
+    
+    biosample_term_names_to_get_chunks = [biosample_term_names_to_get[x:x+100] for x in range(0, len(biosample_term_names_to_get), 100)]
     HEADERS = {'accept': 'application/json'}
-    biosample_term_names_to_get_str = '&biosample_ontology.term_name='+ '&biosample_ontology.term_name='.join(biosample_term_names_to_get)
-    #Changed RNA-seq to total+RNA-seq in the URL
-    URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object{}".format(assembly, biosample_term_names_to_get_str)
-    response_json_dict = requests.get(URL, headers=HEADERS).json()
-    #print json.dumps(response_json_dict, indent=4, separators=(',', ': '))
-    bio_sample_files = {}
-    '''
-    iterate through each file in @graph list, for each file 'files' key send a request to get the file's info in json
-    check file_type, assembly,... and the get link to the file in 'href'
-    '''
-    for cell in range(0, len(response_json_dict['@graph'])):#it contains a list, one element for each experiment
-        #bio_sample = response_json_dict['@graph'][cell]['biosample_term_name']
-        #print("downloading data for: " + bio_sample)
-        if response_json_dict['@graph'][cell]['status']!='released':
-            continue
-        #if bio_sample not in bio_sample_files.keys():
-        #    bio_sample_files[bio_sample] = []
-        for f in response_json_dict['@graph'][cell]['files']:
-            f_info = requests.get("https://www.encodeproject.org/{}/".format(f), headers=HEADERS).json()
-            bio_sample = (f_info['biosample_ontology']['term_name'])
-
-            if 'assembly' in f_info.keys() and f_info['file_type']=='tsv' and f_info['output_type']=='gene quantifications':
-                if f_info['assembly'] == assembly:
-                    if not os.path.exists(biosamples_out_dir+bio_sample):
-                        os.makedirs(biosamples_out_dir+bio_sample)
-                    print(biosamples_out_dir+bio_sample + ':' + f_info['href'])
-                    if not os.path.exists(biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1]):
-                        urllib.request.urlretrieve('https://www.encodeproject.org/{}'.format(f_info['href']), biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1])
+    
+    for chunk in biosample_term_names_to_get_chunks:
+        biosample_term_names_to_get_str = '&biosample_ontology.term_name='+ '&biosample_ontology.term_name='.join(chunk)
+        #Changed RNA-seq to total+RNA-seq in the URL
+        URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
+        #print(URL)
+        response_json_dict = requests.get(URL, headers=HEADERS).json()
+        #print json.dumps(response_json_dict, indent=4, separators=(',', ': '))
+        bio_sample_files = {}
+        '''
+        iterate through each file in @graph list, for each file 'files' key send a request to get the file's info in json
+        check file_type, assembly,... and the get link to the file in 'href'
+        '''
+        for cell in range(0, len(response_json_dict['@graph'])):#it contains a list, one element for each experiment
+            #bio_sample = response_json_dict['@graph'][cell]['biosample_term_name']
+            #print("downloading data for: " + bio_sample)
+            if response_json_dict['@graph'][cell]['status']!='released':
+                continue
+            #if bio_sample not in bio_sample_files.keys():
+            #    bio_sample_files[bio_sample] = []
+            for f in response_json_dict['@graph'][cell]['files']:
+                f_info = requests.get("https://www.encodeproject.org/{}/".format(f), headers=HEADERS).json()
+                bio_sample = (f_info['biosample_ontology']['term_name'])
+    
+                if 'assembly' in f_info.keys() and f_info['file_type']=='tsv' and f_info['output_type']=='gene quantifications':
+                    if f_info['assembly'] == assembly:
+                        if not os.path.exists(biosamples_out_dir+bio_sample):
+                            os.makedirs(biosamples_out_dir+bio_sample)
+                        print(biosamples_out_dir+bio_sample + ':' + f_info['href'])
+                        if not os.path.exists(biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1]):
+                            urllib.request.urlretrieve('https://www.encodeproject.org/{}'.format(f_info['href']), biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1])
 
     print("Finished downloading files")
     #now the content of bio_sample_files can be further processed to combine files of each bio_sample
