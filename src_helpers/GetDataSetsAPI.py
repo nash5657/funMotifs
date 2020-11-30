@@ -146,8 +146,7 @@ def get_gene_names_and_ids_from_genecode(genecode_genes_input_file,
                 continue
             sl = l.strip().split(sep)
             if sl[2]=="gene":
-                gene_info_tmp = [x.split() for x in sl[8].split(';')]
-                print(gene_info_tmp)
+                gene_info_tmp = [x.split('=') for x in sl[8].split(';')]
                 sl_info_dict = dict(gene_info_tmp[:-1])
                 gencode_id_info_dict[sl_info_dict['gene_id']] = [sl[0], sl[3], sl[4], sl[5], sl[6], sl_info_dict['gene_id'], 
                                                               sl_info_dict['gene_name'],  sl_info_dict['gene_type']]
