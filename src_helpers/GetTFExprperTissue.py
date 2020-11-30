@@ -5,6 +5,7 @@ Created on 2 Oct 2017
 @desc Given a GTEX file retrieve gene expression from each tissue for each TF name that is given in the retreive_TFFamilyName_for_motifNames input file
 '''
 import sys, os, json
+import argparse
 
 def retreive_TFFamilyName_for_motifNames(TF_family_matches_file):#TFFamilyName TF_name
     "Retrieves the TF family name for each TF name"
@@ -98,12 +99,24 @@ def get_TFs_extract_expression(list_of_tf_names):
                         TFs_extract_expression[tf_name].append(s)
     return TFs_extract_expression
 
+def parse_args():
+    '''Parse command line arguments'''
+    print('parse')
+    parser = argparse.ArgumentParser(description='Get Gene Expression Data from ENCODE')
+    parser.add_argument('--TF_family_matches_file', default='', help='')
+    parser.add_argument('--normal_gene_expression_inputfile', default='', help='')  
+
+    
+    return parser.parse_args(sys.argv[1:])
+ 
+
 if __name__ == '__main__':
-    if len(sys.argv)!=3:
-        print "Usage: python GetTFExprperTissue.py TF_family_matches_file normal_gene_expression_inputfile" 
-        sys.exit(0)
-    TF_family_matches_file = sys.argv[1]
-    normal_gene_expression_inputfile = sys.argv[2]
+    
+    args = parse_args()
+
+    
+    TF_family_matches_file = args.TF_family_matches_file
+    normal_gene_expression_inputfile = args.normal_gene_expression_inputfile
     origin_gene_expression_values_outputfile = normal_gene_expression_inputfile+"_perTissue_perTF"
     #get TF name and their matching names as defined in the given file
     motifTFName_TFNames_matches_dict = retreive_TFFamilyName_for_motifNames(TF_family_matches_file)
