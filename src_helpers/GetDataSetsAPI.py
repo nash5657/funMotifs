@@ -43,17 +43,13 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
         biosample_term_names_to_get_str = '&biosample_ontology.term_name='+ '&biosample_ontology.term_name='.join(chunk)
         #Changed RNA-seq to total+RNA-seq in the URL
         URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
-        #print(URL)
         response_json_dict = requests.get(URL, headers=HEADERS).json()
-        #print json.dumps(response_json_dict, indent=4, separators=(',', ': '))
         bio_sample_files = {}
         '''
         iterate through each file in @graph list, for each file 'files' key send a request to get the file's info in json
         check file_type, assembly,... and the get link to the file in 'href'
         '''
         for cell in range(0, len(response_json_dict['@graph'])):#it contains a list, one element for each experiment
-            #bio_sample = response_json_dict['@graph'][cell]['biosample_term_name']
-            #print("downloading data for: " + bio_sample)
             if response_json_dict['@graph'][cell]['status']!='released':
                 continue
             #if bio_sample not in bio_sample_files.keys():
@@ -80,10 +76,10 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
                                gene_id_index=0, gene_value_index=5,sep='\t'):
     bio_samples = {}
     bio_samples_output_dict = "bio_samples_dict.json"
-    #if os.path.exists(bio_samples_output_dict):
-    #    with open(bio_samples_output_dict, 'r') as bio_samples_infile_dict:
-    #        bio_samples = json.load(bio_samples_infile_dict)
-    #    return bio_samples
+    if os.path.exists(bio_samples_output_dict):
+        with open(bio_samples_output_dict, 'r') as bio_samples_infile_dict:
+            bio_samples = json.load(bio_samples_infile_dict)
+        return bio_samples
     for bio_sample_input_path in listdir_nohidden(input_dir_path):
         print('bio_sample_input_dir:', bio_sample_input_path)
         bio_sample_input_dir = bio_sample_input_path.split('/')[-1]
@@ -98,7 +94,6 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
                 for i in range(0, num_header_lines):
                     bio_sample_infile.readline()#skip the header lines
                 genes = bio_sample_infile.readlines()
-                #print(genes)
                 for g in genes:
                     if g=="" or g.startswith('//'):
                         continue
@@ -107,7 +102,6 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
                     if gene_id not in bio_samples[bio_sample_input_dir].keys():
                         bio_samples[bio_sample_input_dir][gene_id] = []
                     bio_samples[bio_sample_input_dir][gene_id].append(gene_value)
-    #print(bio_samples)
     with open(bio_samples_output_dict, 'w') as bio_samples_output_dict_outfile:
         json.dump(bio_samples, bio_samples_output_dict_outfile)
     return bio_samples
@@ -118,18 +112,13 @@ def get_expr_per_bio_sample(bio_samples, gencode_id_info_dict, output_dir_path):
     print(list(gencode_id_info_dict.keys()))
     genes_with_gencode_info_dict = {}
     for bio_sample in bio_samples:
-        #print(bio_sample)
         genes_with_gencode_info_dict[bio_sample] = {}
 
         if os.path.exists(output_dir_path+'/'+bio_sample + '/' + bio_sample+".bed"):
             return genes_with_gencode_info_dict
-        #print(output_dir_path+'/'+bio_sample + '/' + bio_sample+".bed")
         with open(output_dir_path+'/'+bio_sample + '/' + bio_sample+".bed", 'w') as bio_sample_outfile:
             for gene_id in bio_samples[bio_sample]:
-                #
-                #print(gene_id)
                 if gene_id in gencode_id_info_dict.keys():
-                    #print(gene_id)
                     genes_with_gencode_info_dict[bio_sample][gene_id] = np.mean(bio_samples[bio_sample][gene_id])
                     gene_info = '\t'.join(gencode_id_info_dict[gene_id])
                     bio_sample_outfile.write(gene_info.replace('"', '') + '\t' + str(np.mean(bio_samples[bio_sample][gene_id])) + '\n')
@@ -158,6 +147,7 @@ def get_gene_names_and_ids_from_genecode(genecode_genes_input_file,
             sl = l.strip().split(sep)
             if sl[2]=="gene":
                 gene_info_tmp = [x.split() for x in sl[8].split(';')]
+                print(gene_info_tmp)
                 sl_info_dict = dict(gene_info_tmp[:-1])
                 gencode_id_info_dict[sl_info_dict['gene_id']] = [sl[0], sl[3], sl[4], sl[5], sl[6], sl_info_dict['gene_id'], 
                                                               sl_info_dict['gene_name'],  sl_info_dict['gene_type']]
@@ -173,10 +163,10 @@ def get_gene_names_and_ids_from_genecode(genecode_genes_input_file,
 def parse_args():
     '''Parse command line arguments'''
     print('parse')
-    parser = argparse.ArgumentParser(description='Parse Cell Info')
-    parser.add_argument('--Output_dir', default='', help='')
-    parser.add_argument('--CellInfoDict_input_file', default='', help='')  
-    parser.add_argument('--Genecode_genes_input_file', default='', help='')    
+    parser = argparse.ArgumentParser(description='Get Gene Expression Data from ENCODE')
+    parser.add_argument('--Output_dir', default='', help='Output directory')
+    parser.add_argument('--CellInfoDict_input_file', default='', help='A file with cell info file, e.g. ParseCellInfo_params.conf')  
+    parser.add_argument('--Genecode_genes_input_file', default='', help='Genecode annotation file in GFF3')    
     parser.add_argument('--assembly', default = 'GRCh38', choices=['GRCh38', 'hg19'], help='')
     
 
@@ -199,7 +189,6 @@ if __name__ == '__main__':
     assembly = args.assembly
     get_data_API(biosamples_dir_path+'/', biosample_term_names_to_get, assembly)
     bio_samples = process_RNA_seq_datafolder(biosamples_dir_path)#give a dir that contains all bio_samples that have previously been downloaded
-    #print(bio_samples)
     gencode_id_info_dict = get_gene_names_and_ids_from_genecode(genecode_genes_input_file=genecode_genes_input_file, genecode_genes_only_genes_bed_output_file=genecode_genes_only_genes_bed_output_file)
     print('Last step')
     genes_with_gencode_info_dict = get_expr_per_bio_sample(bio_samples, gencode_id_info_dict, output_dir_path=biosamples_dir_path)
