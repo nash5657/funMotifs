@@ -14,7 +14,7 @@ def create_db(db_name, db_user_name, db_host_name):
         curs = conn.cursor()
         curs.execute("SELECT exists(SELECT 1 from pg_catalog.pg_database where datname = %s)", (db_name,))    
         if curs.fetchone()[0]:
-            print "Successfully connected to DB: ", db_name
+            print("Successfully connected to DB: ", db_name)
     
     except psycopg2.DatabaseError, e:
         print "Error %s" %e
@@ -31,7 +31,7 @@ def create_db(db_name, db_user_name, db_host_name):
         curs = conn.cursor()
         curs.execute("SELECT exists(SELECT 1 from pg_catalog.pg_database where datname = %s)", (db_name,))    
         if curs.fetchone()[0]:
-            print "Successfully created and connected to DB: ", db_name
+            print("Successfully created and connected to DB: ", db_name)
             conn.close()
             return True
         else:
@@ -70,7 +70,7 @@ def table_contains_data(db_name, db_user_name, db_host_name, table_name):
     try:
         curs.execute('select chr from {} limit 1'.format(table_name))
         if curs.fetchone() is not None:
-            print '{} contains data'.format(table_name)
+            print('{} contains data'.format(table_name))
             return True
         else:
             return False
