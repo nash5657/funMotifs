@@ -50,7 +50,7 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     with open(i_file, 'r') as ifile:
-        print i_file
+        print(i_file)
         if header:#read an extra line to skip the first one
             list(islice(ifile, 1))
         while True:
@@ -65,11 +65,11 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
                 try:
                     curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ', '.join(value_marks)), lines_as_lists)
                     conn.commit()
-                    print "Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)
+                    print("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed))
                 except:
-                    print "Thread {} coundn't insert to DB ({})".format(thread_num, i_file)
+                    print("Thread {} coundn't insert to DB ({})".format(thread_num, i_file))
             except (ValueError, IndexError):
-                print "Empty file" + i_file + "in thread" + str(thread_num)
+                print("Empty file" + i_file + "in thread" + str(thread_num))
     curs.close()
     conn.close()
     return
@@ -95,7 +95,8 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         p.close()
         p.join()
-    print "Data insertion into {} is done".format(cell_table)
+    
+nt("Data insertion into {} is done".format(cell_table))
     return
 
 def generate_cell_table(db_name,
@@ -119,7 +120,7 @@ def generate_cell_table(db_name,
         field_names = create_cell_table(db_name, db_user_name, db_host_name,
             cells_assays_dict, assay_cells_datatypes, cell_table, motif_cols_names[1:], motif_cols)
         
-        print "Inserting data into: ", cell_table
+        print("Inserting data into: ", cell_table)
         insert_into_db(field_names, db_name = db_name, 
                        db_user_name=db_user_name, 
                        db_host_name=db_host_name, 
