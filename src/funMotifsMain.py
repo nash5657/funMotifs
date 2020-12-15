@@ -11,6 +11,7 @@ Process: the module has three sections 1)collects and processes data from the pr
 import os
 import sys
 from pybedtools import set_tempdir
+import argparse
 
 import Utilities
 import DataProcessing
@@ -18,14 +19,26 @@ import ProcessTFMotifs
 import MotifAnnotation
 import GenerateMotifsTables
 
+
+def parse_args():
+    '''Parse command line arguments'''
+    print('funMotifsMain')
+    parser = argparse.ArgumentParser(description='funMotifs Main script')
+    parser.add_argument('--param_file', default='', help='')
+   
+   
 if __name__ == '__main__':
+    
+    
+    args = parse_args()
+    
     '''to run this program add param_file=main_parameters.conf as an argument'''
     
     '''Get parameters from the sys.argv and the argument file'''
-    params = Utilities.get_params(sys.argv)
-    if len(params.keys())==0:
-        print "Usage: python funMotifsMain.py param_file=../conf/main_parameters.conf"
-        sys.exit(0)
+    params = Utilities.get_params(args.param_file)
+    #if len(params.keys())==0:
+    #    print("Usage: python funMotifsMain.py param_file=../conf/main_parameters.conf")
+    #    sys.exit(0)
     
     '''set the temp dir for bedtools operations'''
     if not os.path.exists(params['temp_dir']):
@@ -53,6 +66,7 @@ if __name__ == '__main__':
                                                                                                                          values_sep=',')
     
     
+    #Footprint?
     assay_cells, cell_assays, cell_tfs, tf_cells, assay_cells_datatypes = DataProcessing.get_assay_cell_info(data_dir = params['all_chromatin_makrs_all_cells_combined_dir_path'], 
                                                                                               sep='\t', 
                                                                                               matching_rep_cell_names_dict=matching_cell_name_representative_dict, 
@@ -130,7 +144,7 @@ if __name__ == '__main__':
         tissues_fscores_table="all_tissues"
         #write results to the tissues (based on cell motifs) table
         if process_tissues:
-            print 'Dropping and Creating tissues tables'
+            print('Dropping and Creating tissues tables')
             GenerateTissueTables.generate_tissue_tables(db_name,
                     cell_table,
                     db_user_name,
