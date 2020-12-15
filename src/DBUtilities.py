@@ -16,8 +16,8 @@ def create_db(db_name, db_user_name, db_host_name):
         if curs.fetchone()[0]:
             print("Successfully connected to DB: ", db_name)
     
-    except psycopg2.DatabaseError, e:
-        print("Error %s" %e)
+    except psycopg2.DatabaseError as e:
+        print("Error"+ e)
         print("Creating DB: ", db_name)
         con_postgres = psycopg2.connect(dbname='postgres', user=db_user_name, host=db_host_name)
         con_postgres.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
