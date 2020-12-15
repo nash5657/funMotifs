@@ -39,7 +39,7 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     curs = conn.cursor()
     
     curs.execute('drop table if exists {0};'.format(new_table_name))
-    print 'create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table)
+    print('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
     curs.execute('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format(new_table_name, new_table_name))
@@ -54,7 +54,7 @@ def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr
     curs = conn.cursor()
     new_table_name = "chr"+str(chr)+"motifs"
     curs.execute('drop table if exists {0};'.format(new_table_name))
-    print 'create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr)
+    print('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr))
     curs.execute('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr))
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format("chr"+str(chr), new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format("chr"+str(chr), new_table_name))
@@ -83,7 +83,7 @@ def motif_names_table(db_name, db_user_name, db_host_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     curs.execute('drop table if exists {0};'.format(motif_names_table))
-    print 'create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table)
+    print('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     curs.execute('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     conn.commit()
     curs.close()

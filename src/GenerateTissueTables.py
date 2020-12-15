@@ -127,7 +127,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                            feature_weights_dict, 
                            db_name, db_user_name, db_host_name, tissues_fscores_table):
     
-    print "Thread {} has started".format(thread_num)
+    print("Thread {} has started".format(thread_num))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs_for_insertion = conn.cursor()
     
@@ -213,7 +213,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
             #for the tissues_fscores table
             fscores_per_tissues.append(fscore)
         fscores_per_tissues_allrows.append(fscores_per_tissues)
-    print 't_process (func): ', time.time()-t_process
+    print('t_process (func): ', time.time()-t_process)
     
     #insert all collected values to their respective tables/tissues
     t_insert = time.time()
@@ -240,11 +240,11 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
     curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
     
-    print 't_insert (func): ', time.time()-t_insert
+    print('t_insert (func): ', time.time()-t_insert)
     conn.commit()
     del tissues_values
     del tissues_fields
-    print "Thread {} is done".format(thread_num)
+    print("Thread {} is done".format(thread_num))
     curs_for_insertion.close()
     conn.close()
     return
@@ -275,19 +275,19 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     curs_for_count.execute('select count(posrange) from {}'.format(table_from))
     num_rows = int(curs_for_count.fetchone()[0])#85459976
     curs_for_count.close()
-    print 'total number of rows to be inserted: ', num_rows
+    print('total number of rows to be inserted: ', num_rows)
     curs_for_selection = conn.cursor(name = "selectioncurs", cursor_factory=DictCursor)
     curs_for_selection.itersize = number_of_rows_to_load
     t_for_select =  time.time()
     curs_for_selection.execute('select {} from {}'.format(','.join(col_list), table_from))
-    print 't_to_select: ', time.time() - t_for_select
+    print('t_to_select: ', time.time() - t_for_select)
     t_for_fetch = time.time()
     selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
-    print 't_to_fetch: ', time.time()-t_for_fetch
-    print "Selected {} rows for insertion.".format(str(number_of_rows_to_load))
+    print('t_to_fetch: ', time.time()-t_for_fetch)
+    print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
     t_jobset = time.time()
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
-        print 'Running in parallel'
+        print('Running in parallel')
         i = 0
         num_cores = number_processes_to_run_in_parallel
         p = Pool(number_processes_to_run_in_parallel)
@@ -296,7 +296,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
                                    cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                    db_name, db_user_name, db_host_name, tissues_fscores_table))
             num_rows -=len(selected_rows)
-            print 'num_rows remaining: ', num_rows
+            print('num_rows remaining: ', num_rows)
             
             selected_rows = []
             selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
@@ -308,36 +308,36 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
             if i==num_cores-1:
                 p.close()
                 p.join()
-                print 't_jobset: ', time.time()-t_jobset
+                print('t_jobset: ', time.time()-t_jobset)
                 t_jobset = time.time()
                 p = Pool(number_processes_to_run_in_parallel)
                 i=0
             i+=1
             thread_num+=1
     else:
-        print 'Running sequentially'
+        print('Running sequentially')
         while selected_rows:
             t_to_insert = time.time()
             insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                    cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                    db_name, db_user_name, db_host_name, tissues_fscores_table)
             
-            print 't_to_insert: ', time.time()-t_to_insert
+            print('t_to_insert: ', time.time()-t_to_insert)
             num_rows -=len(selected_rows)
-            print 'num_rows remaining: ', num_rows
+            print('num_rows remaining: ', num_rows)
             t_for_fetch = time.time()
             selected_rows = []
             selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
             thread_num+=1
-            print 't_to_fetch: ', time.time()-t_for_fetch
+            print('t_to_fetch: ', time.time()-t_for_fetch)
             if num_rows<=0:
-                print "All rows are processed and inserted from {} into tissue tables".format(table_from)
+                print("All rows are processed and inserted from {} into tissue tables".format(table_from))
                 break
     
     if num_rows==0:
-        print "All rows are processed and inserted from {} into tissue tables".format(table_from)
+        print("All rows are processed and inserted from {} into tissue tables".format(table_from))
     else:
-        print "Warning!!! There are {} remaining rows to be inserted".format(num_rows)
+        print("Warning!!! There are {} remaining rows to be inserted".format(num_rows))
     curs_for_selection.close()
     conn.close()
     return
@@ -359,7 +359,7 @@ def get_weights_per_feature(annotation_weights_inputfile, skip_negative_weights)
                         else:
                             feature_weights[label.upper()]=float(sl[1].strip())
                 except ValueError:
-                    print "no weights is used for sl[0] because the assigned values is not a number"
+                    print("no weights is used for sl[0] because the assigned values is not a number")
                     continue
     return feature_weights
 
@@ -392,7 +392,7 @@ def generate_tissue_tables(db_name,
                                    motif_cols_for_tissues_fscores_table = ['mid INTEGER'])
     col_list.append('mid')
     feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile,skip_negative_weights=skip_negative_weights)
-    print 'Inserting data into tissues tables'
+    print('Inserting data into tissues tables')
     populate_tissue_values(tissue_cell_assays, 
                            tissue_cell_allassays, 
                            assay_names, col_list, table_from=cell_table, 
@@ -405,7 +405,7 @@ def generate_tissue_tables(db_name,
                            number_of_rows_to_load = number_of_rows_to_load,
                            )
     
-    print "Creating index on tissues tables"
+    print("Creating index on tissues tables")
     for tissue_table in sorted(tissue_cols.keys()):
         DBUtilities.create_index(db_name, db_user_name, db_host_name, 
                                  cell_table=tissue_table, index_name='index'+tissue_table+'mid', index_method = 'btree', index_cols = 'mid')
