@@ -13,13 +13,13 @@ def collect_all_data(data_dir , data_tracks, sep='\t'):
     """Combine all data tracks into a bed4 files one per chr, also record assay types"""
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-        print "Generating chromatin data for all the cells"
+        print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
-            print data_track
+            print(data_track)
             if os.path.exists(data_track) or '*' in data_track:
                 #on linux use awk to generate a file per chr
                 if sys.platform == "linux" or sys.platform == "linux2":
-                    print """awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track
+                    print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
                     os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
                 else: #otherwise use readline (it is much slower than awk)
                     for f in glob(data_track):
@@ -33,9 +33,9 @@ def collect_all_data(data_dir , data_tracks, sep='\t'):
                                 l = fi.readline()
                                 sl = l.strip().split(sep)
                     
-        print "Combined data from the listed tracks."
+        print("Combined data from the listed tracks.")
     else:
-        print "Using existing data tracks from: " + data_dir
+        print("Using existing data tracks from: " + data_dir)
     return data_dir
 
 def get_assay_cell_info(data_dir , 
@@ -60,7 +60,7 @@ def get_assay_cell_info(data_dir ,
         
         for chr_file in os.listdir(data_dir):
             if "chr" in chr_file:
-                print 'reading from: ' + data_dir + '/' + chr_file
+                print('reading from: ' + data_dir + '/' + chr_file)
                 with open(data_dir+'/'+chr_file, 'r') as data_infile:
                     l = data_infile.readline()
                     while l:
