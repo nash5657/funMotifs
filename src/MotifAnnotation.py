@@ -226,13 +226,13 @@ def overlay_resources_score_motifs(motif_sites_input_file,
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
     Return a file in bed7 format (motif info (6cols), overlapping_tracks. 
     """
-    print "in overlay_resources_score_motifs: " + scored_motifs_chromatin_tracks_output_file
+    print("in overlay_resources_score_motifs: " + scored_motifs_chromatin_tracks_output_file)
     
     if not os.path.exists(motifs_overlapping_tracks_file):#intersect motifs and chromatin data
         motifs_chromatin_tracks_output_file_temp_sorted = motifs_overlapping_tracks_file + '_temp_sorted'
         motif_sites_file_obj = BedTool(motif_sites_input_file)
         all_chromatin_makrs_all_cells_file_obj = BedTool(chromatin_tracks_input_file)
-        print "intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file
+        print("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
         motifs_chromatin_tracks_output_file_temp = motif_sites_file_obj.intersect(all_chromatin_makrs_all_cells_file_obj, wo=True)
         os.system('cut -f1-6,10 ' + motifs_chromatin_tracks_output_file_temp.fn + ' | sort -k1,1 -k2,2n -k3,3n -k4,4 -k5,5 -k6,6 > ' + motifs_chromatin_tracks_output_file_temp_sorted)
         motifs_chromatin_tracks_output_file_temp.delete_temporary_history(ask=False)
@@ -245,7 +245,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
             os.remove(motifs_chromatin_tracks_output_file_temp_sorted)
     
     if not os.path.exists(scored_motifs_chromatin_tracks_output_file):#score each motif-track_overlapping file file
-        print "computing scores to: " + scored_motifs_chromatin_tracks_output_file
+        print("computing scores to: " + scored_motifs_chromatin_tracks_output_file)
         score_motifs_per_cell(motifs_overlapping_tracks_file, 
                               scored_motifs_chromatin_tracks_output_file,
                               normal_expression_per_tissue_origin_per_TF, 
