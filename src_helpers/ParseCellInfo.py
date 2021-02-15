@@ -466,7 +466,7 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
             if os.path.exists(target_cellinfo_dirs_path + "/" + cell_name + "/" + assay_type + "/" + final_dataset_of_this_assay_cell):#if the the combined file of this assay in this cell has been created there is no need to go any further
                 continue
             ENCODE_accession_codes_dict = {}
-            if assay_type=="TF_ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq" or assay_type=="footprints":
+            if assay_type=="TF_ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq" or assay_type=="footprints" or assay_type=="cCRE":
                 selected_datasets_per_factor_dict = {}
                 selected_datasets_per_factor_dict_from_metadatafile = {}
                 #generate the list of dataset IDs per factor in each assay type
@@ -484,7 +484,9 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                         elif assay_type=="footprints":
                             ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name,  assembly, "DNase-seq", accepted_file_formats=['bed bed3+'], default_target_name=assay_type)
                             selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed bed3+_footprints'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low",limit_to_highest_priority_output_types=True)
-
+                        elif assay_type=="cCRE":
+                            ENCODE_accession_codes_dict = generate_list_of_accession_info(datasource, cell_name,  assembly, assay_type, accepted_file_formats=['bed bed3+'], default_target_name=assay_type)
+                            selected_datasets_per_factor_dict_from_metadatafile = select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict, highest_priority_output_types= ['bed bed3+_candidate Cis-Regulatory Elements'], flag_indicating_high_qualtity_peaks="high", flag_indicating_low_qualtity_peaks="low",limit_to_highest_priority_output_types=True)
                         if len(selected_datasets_per_factor_dict)==0:
                             selected_datasets_per_factor_dict=selected_datasets_per_factor_dict_from_metadatafile
                         else:
@@ -518,6 +520,8 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                 elif assay_type == "ChromatinStates":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
                 elif assay_type == "footprints":
+                    final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
+                elif assay_type == "cCRE":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
             if final_dataset_of_this_assay_cell!="":
                 summary_file.write(final_dataset_of_this_assay_cell+"\t"+str(len(final_datasets_of_this_assay_cell)) + '\t' +','.join(final_datasets_of_this_assay_cell)+'\n')
