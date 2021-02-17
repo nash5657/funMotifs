@@ -40,7 +40,7 @@ def generate_list_of_accession_info(encode_metadata_inputfile,
                 split_line[index_file_format] in accepted_file_formats and 
                 split_line[index_assembly]==assembly):
                 target_name = split_line[index_target].replace("-human", "").replace("eGFP-", "").replace("HA-", "").replace("FLAG-", "") #all the factor names end with -human so there is no need to keep them; some factor names are written as eGFP-factorName or HA-factorName to indidicate the antibody type so they have to be removed to combine the same factors regardless of their antibody type 
-                if target_name=="":
+                if target_name=="" or target_name=="NA":
                     target_name=default_target_name
                 if target_name not in targets_dict.keys():
                     targets_dict[target_name] = {}
