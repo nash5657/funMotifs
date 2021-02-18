@@ -14,21 +14,17 @@ def get_value(str):
         return False
     
 
-def get_params(params_list):
+def get_params(param_file):
     params = {}
-    for arg in params_list:#priority is for the command line
-        if '=' in arg: 
-            if len(arg.strip().split('='))==2:
-                if arg.split('=')[0] not in params.keys():
-                    params[arg.strip().split('=')[0]] = arg.strip().split('=')[1]
-    if 'param_file' in params:     
-        with open(params['param_file'], 'r') as params_infile:
-            params_from_file = params_infile.readlines()
-            for line in params_from_file:
-                if not line.startswith('//') and not line.startswith('#') and '=' in line:
-                    if len(line.strip().split('='))==2:
-                        if line.strip().split('=')[0] not in params.keys():
-                            params[line.strip().split('=')[0]] = line.strip().split('=')[1].split('#')[0].split('//')[0]
+    
+   
+    with open(param_file, 'r') as params_infile:
+        params_from_file = params_infile.readlines()
+        for line in params_from_file:
+            if not line.startswith('//') and not line.startswith('#') and '=' in line:
+                if len(line.strip().split('='))==2:
+                    if line.strip().split('=')[0] not in params.keys():
+                        params[line.strip().split('=')[0]] = line.strip().split('=')[1].split('#')[0].split('//')[0]
     return params
 
 

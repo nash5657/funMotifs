@@ -25,7 +25,8 @@ def parse_args():
     print('funMotifsMain')
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
-   
+
+    return parser.parse_args(sys.argv[1:])
    
 if __name__ == '__main__':
     
