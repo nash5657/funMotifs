@@ -236,11 +236,12 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         motifs_chromatin_tracks_output_file_temp = motif_sites_file_obj.intersect(all_chromatin_makrs_all_cells_file_obj, wo=True)
         os.system('cut -f1-6,10 ' + motifs_chromatin_tracks_output_file_temp.fn + ' | sort -k1,1 -k2,2n -k3,3n -k4,4 -k5,5 -k6,6 > ' + motifs_chromatin_tracks_output_file_temp_sorted)
         motifs_chromatin_tracks_output_file_temp.delete_temporary_history(ask=False)
-        motif_sites_input_file_temp_sorted_obj = BedTool(motifs_chromatin_tracks_output_file_temp_sorted)
-        k = motif_sites_input_file_temp_sorted_obj.groupby(g=range(1,7), c=7, o=['distinct']).saveas(motifs_overlapping_tracks_file)
-        k.delete_temporary_history(ask=False)
         if os.path.exists(motifs_chromatin_tracks_output_file_temp.fn):
             os.remove(motifs_chromatin_tracks_output_file_temp.fn)
+        motif_sites_input_file_temp_sorted_obj = BedTool(motifs_chromatin_tracks_output_file_temp_sorted)
+        k = motif_sites_input_file_temp_sorted_obj.groupby(g=[1,2,3,4,5,6,7], c=7, o=['distinct']).saveas(motifs_overlapping_tracks_file)
+        k.delete_temporary_history(ask=False)
+        
         if os.path.exists(motifs_chromatin_tracks_output_file_temp_sorted):
             os.remove(motifs_chromatin_tracks_output_file_temp_sorted)
     
