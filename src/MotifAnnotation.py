@@ -6,7 +6,7 @@ Created on 28 Sep 2017
 
 import os
 from multiprocessing import Pool
-from pybedtools import BedTool
+from pybedtools import BedTool, set_tempdir, cleanup
 
 
 def reset_cells_assays_matrix(tf_name_from_motif_name, 
@@ -258,7 +258,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                               header,
                               index_track_names=6, 
                               index_motif_name=3)
-        
+    cleanup()   
     return motifs_overlapping_tracks_file, scored_motifs_chromatin_tracks_output_file
 
 

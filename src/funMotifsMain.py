@@ -10,7 +10,7 @@ Process: the module has three sections 1)collects and processes data from the pr
 '''
 import os
 import sys
-from pybedtools import set_tempdir
+from pybedtools import BedTool, set_tempdir, cleanup
 import argparse
 
 import Utilities
