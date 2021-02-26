@@ -4,7 +4,7 @@ Created on 28 Sep 2017
 @author: husensofteng
 '''
 
-import os
+import sys, os
 from multiprocessing import Pool
 from pybedtools import BedTool, set_tempdir, cleanup
 import glob
@@ -249,7 +249,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         
         
         
-        os.system( """split -l 1000000 {} {}""" ).format(chromatin_tracks_input_file,chromatin_tracks_input_file+'_tmp')
+        os.system( """split -l 1000000 {} {}""" .format(chromatin_tracks_input_file,chromatin_tracks_input_file+'_tmp'))
         chromatin_tracks_input_file_splitted = glob.glob(chromatin_tracks_input_file+'_tmp*')
         
         
