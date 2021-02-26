@@ -253,7 +253,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         chromatin_tracks_input_file_splitted = glob.glob(chromatin_tracks_input_file+'_tmp*')
         
         
-        if run_in_parallel_param and len(motif_files)>1:
+        if run_in_parallel_param:
             motif_sites_file_obj = BedTool(motif_sites_input_file)
             
             
