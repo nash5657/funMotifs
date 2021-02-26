@@ -209,7 +209,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
             line = motifs_overlapping_tracks_readfile.readline()
     return scored_motifs_chromatin_tracks_output_file
 
-def intersect_motif_and_chromatin_marks (chromatin_tracks_input_file_splitted, motif_sites_input_file):
+def intersect_motif_and_chromatin_marks (chromatin_tracks_input_file_splitted, motif_sites_file_obj):
     motifs_chromatin_tracks_output_file_temp_splitted = chromatin_tracks_input_file_splitted + '_intersected'
     motifs_chromatin_tracks_output_file_temp_splitted_tmp = motifs_chromatin_tracks_output_file_temp_splitted + '_tmp'
 
