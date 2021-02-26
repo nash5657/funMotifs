@@ -258,7 +258,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
             
             
             
-            pm = Pool(number_processes_to_run_in_parallel)
+            pm = Pool(int(number_processes_to_run_in_parallel))
             motifs_chromatin_tracks_output_file_temp_files = pm.starmap(intersect_motif_and_chromatin_marks, product(chromatin_tracks_input_file_splitted, [motif_sites_file_obj]))
             pm.close()
             pm.join()
