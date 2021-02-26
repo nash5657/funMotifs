@@ -7,7 +7,9 @@ Created on 28 Sep 2017
 import os
 from multiprocessing import Pool
 from pybedtools import BedTool, set_tempdir, cleanup
-
+import glob
+from itertools import starmap 
+from itertools import product
 
 def reset_cells_assays_matrix(tf_name_from_motif_name, 
                               cells_assays_dict, 
@@ -207,7 +209,18 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
             line = motifs_overlapping_tracks_readfile.readline()
     return scored_motifs_chromatin_tracks_output_file
 
+def intersect_motif_and_chromatin_marks (chromatin_tracks_input_file_splitted, motif_sites_input_file):
+    motifs_chromatin_tracks_output_file_temp_splitted = chromatin_tracks_input_file_splitted + '_intersected'
+    motifs_chromatin_tracks_output_file_temp_splitted_tmp = motifs_chromatin_tracks_output_file_temp_splitted + '_tmp'
 
+    all_chromatin_makrs_all_cells_file_obj = BedTool(chromatin_tracks_input_file_splitted)
+    motif_sites_file_obj.intersect(all_chromatin_makrs_all_cells_file_obj, wo=True).saveas(motifs_chromatin_tracks_output_file_temp_splitted_tmp)
+    os.system('cut -f1-6,10 ' + motifs_chromatin_tracks_output_file_temp_splitted_tmp + ' | sort -k1,1 -k2,2n -k3,3n -k4,4 -k5,5 -k6,6 > ' + motifs_chromatin_tracks_output_file_temp_splitted)
+    os.remove(motifs_chromatin_tracks_output_file_temp_splitted_tmp)
+    
+    
+    cleanup()
+    return motifs_chromatin_tracks_output_file_temp_splitted
 
 def overlay_resources_score_motifs(motif_sites_input_file, 
                                    chromatin_tracks_input_file, 
@@ -220,7 +233,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                    cell_tfs, 
                                    tf_cells, 
                                    assay_cells_datatypes, 
-                                   header): 
+                                   header, run_in_parallel_param, number_processes_to_run_in_parallel): 
     """intersect motifs with chromatin tracks, sort and group the tracks per motif
     Input: moitf instances file (motif pos, name_id, scorePval, strand)
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
@@ -229,15 +242,47 @@ def overlay_resources_score_motifs(motif_sites_input_file,
     print("in overlay_resources_score_motifs: " + scored_motifs_chromatin_tracks_output_file)
     
     if not os.path.exists(motifs_overlapping_tracks_file):#intersect motifs and chromatin data
-        motifs_chromatin_tracks_output_file_temp_sorted = motifs_overlapping_tracks_file + '_temp_sorted'
-        motif_sites_file_obj = BedTool(motif_sites_input_file)
-        all_chromatin_makrs_all_cells_file_obj = BedTool(chromatin_tracks_input_file)
+        motifs_chromatin_tracks_output_file_temp = motifs_overlapping_tracks_file + '_temp'
+        motifs_chromatin_tracks_output_file_temp_sorted = motifs_chromatin_tracks_output_file_temp+ '_sorted'
+        
         print("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
-        motifs_chromatin_tracks_output_file_temp = motif_sites_file_obj.intersect(all_chromatin_makrs_all_cells_file_obj, wo=True)
-        os.system('cut -f1-6,10 ' + motifs_chromatin_tracks_output_file_temp.fn + ' | sort -k1,1 -k2,2n -k3,3n -k4,4 -k5,5 -k6,6 > ' + motifs_chromatin_tracks_output_file_temp_sorted)
-        motifs_chromatin_tracks_output_file_temp.delete_temporary_history(ask=False)
-        if os.path.exists(motifs_chromatin_tracks_output_file_temp.fn):
-            os.remove(motifs_chromatin_tracks_output_file_temp.fn)
+        
+        
+        
+        os.system( """awk 'NR%1000000==1{x={}++i;}{print > x}' {}""" ).format(chromatin_tracks_input_file+'_tmp', chromatin_tracks_input_file)
+        chromatin_tracks_input_file_splitted = glob.glob(chromatin_tracks_input_file+'_tmp*')
+        
+        
+        if run_in_parallel_param and len(motif_files)>1:
+            motif_sites_file_obj = BedTool(motif_sites_input_file)
+            
+            
+            
+            pm = Pool(number_processes_to_run_in_parallel)
+            motifs_chromatin_tracks_output_file_temp_files = pm.starmap(intersect_motif_and_chromatin_marks, product(chromatin_tracks_input_file_splitted, [motif_sites_file_obj]))
+            pm.close()
+            pm.join()
+            
+            
+   
+            
+        
+
+    
+    
+
+        if not os.path.exists(motifs_chromatin_tracks_output_file_temp):
+            with open(motifs_chromatin_tracks_output_file_temp, 'w') as motifs_chromatin_tracks_output_file_temp_outfile:
+                for motifs_chromatin_tracks_output_file_temp_file in motifs_chromatin_tracks_output_file_temp_files:
+                    with open(motifs_chromatin_tracks_output_file_temp_file, 'r') as motifs_chromatin_tracks_output_file_temp_ifile:
+                        motifs_chromatin_tracks_output_file_temp_outfile.write(motifs_chromatin_tracks_output_file_temp_ifile.read())
+                       # os.remove(motifs_chromatin_tracks_output_file_temp_file)
+        
+
+        os.system( ' sort -k1,1 -k2,2n -k3,3n' + motifs_chromatin_tracks_output_file_temp +'> ' + motifs_chromatin_tracks_output_file_temp_sorted)
+        motifs_chromatin_tracks_output_file_temp_fn.delete_temporary_history(ask=False)
+        if os.path.exists(motifs_chromatin_tracks_output_file_temp):
+            os.remove(motifs_chromatin_tracks_output_file_temp)
         motif_sites_input_file_temp_sorted_obj = BedTool(motifs_chromatin_tracks_output_file_temp_sorted)
         k = motif_sites_input_file_temp_sorted_obj.groupby(g=[1,2,3,4,5,6,7], c=7, o=['distinct']).saveas(motifs_overlapping_tracks_file)
         k.delete_temporary_history(ask=False)
@@ -306,22 +351,22 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
             scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
             if not (os.path.exists(motifs_overlapping_tracks_file) and os.path.exists(scored_motifs_chromatin_tracks_output_file)):
-                if run_in_parallel_param and len(motif_files)>1:
-                    p.apply_async(overlay_resources_score_motifs, args=(motif_sites_dir+'/'+motif_file, 
-                                                                     all_chromatin_makrs_all_cells_combined_dir_path+'/'+chr_n_file, 
-                                                                     scored_motifs_chromatin_tracks_output_file, 
-                                                                     motifs_overlapping_tracks_file,
-                                                                     normal_expression_per_tissue_origin_per_TF, 
-                                                                     matching_cell_name_representative_dict, motifTFName_TFNames_matches_dict, 
-                                                                     cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes, header))
-                else:
+                #if run_in_parallel_param and len(motif_files)>1:
+                #    p.apply_async(overlay_resources_score_motifs, args=(motif_sites_dir+'/'+motif_file, 
+                #                                                     all_chromatin_makrs_all_cells_combined_dir_path+'/'+chr_n_file, 
+                #                                                     scored_motifs_chromatin_tracks_output_file, 
+                #                                                     motifs_overlapping_tracks_file,
+                #                                                     normal_expression_per_tissue_origin_per_TF, 
+                #                                                     matching_cell_name_representative_dict, motifTFName_TFNames_matches_dict, 
+                #                                                     cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes, header))
+                #else:
                     overlay_resources_score_motifs(motif_sites_dir+'/'+motif_file, 
                                                 all_chromatin_makrs_all_cells_combined_dir_path+'/'+chr_n_file, 
                                                 scored_motifs_chromatin_tracks_output_file, 
                                                 motifs_overlapping_tracks_file,
                                                 normal_expression_per_tissue_origin_per_TF,
                                                 matching_cell_name_representative_dict, motifTFName_TFNames_matches_dict, 
-                                                cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes, header)
+                                                cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes, header,run_in_parallel_param, number_processes_to_run_in_parallel)
             motifs_overlapping_tracks_files.append(motifs_overlapping_tracks_file)
             scored_motifs_overlapping_tracks_files.append(scored_motifs_chromatin_tracks_output_file)
     if run_in_parallel_param and len(motif_files)>1:
