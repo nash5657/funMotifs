@@ -328,7 +328,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         p.close()
         p.join()
     else:
-        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_sites_dir+'/'+motif_file, 
+        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_sites_dir+'/'+motif_files, 
                                                 motifs_overlapping_tracks_output_dir,
                                                 all_chromatin_makrs_all_cells_combined_dir_path, 
                                                 chromatin_tracks_files,
