@@ -120,11 +120,19 @@ def process_scored_motif_per_cell_per_assay(motif_info,
     field_values.append(str(int(motif_info[2])))
     field_values.append(motif_info[3])
     
-    field_values.append(motif_info[4].split('P')[0].strip('S'))
-    if 'P' in motif_info[4]:
-        field_values.append(motif_info[4].split('P')[1])
-    field_values.append(motif_info[5])
-    
+    if 'P' in motif_info[4]: 
+        field_values.append(motif_info[4].split('P')[0].strip('S'))
+        if 'P' in motif_info[4]:
+            field_values.append(motif_info[4].split('P')[1])
+        field_values.append(motif_info[5])
+    else:
+        #score
+        field_values.append(motif_info[4])
+        #p-value
+        field_values.append(motif_info[5])
+        #strand
+        field_values.append(motif_info[6])
+        
     '''for inf in motif_info:
         try:
             field_values.append(str(int(inf)))
@@ -279,7 +287,7 @@ def overlay_resources_score_motifs(motif_sites_input_files,
                                           tf_cells, 
                                           assay_cells_datatypes, 
                                           header,
-                                          index_track_names=6, 
+                                          index_track_names=7, 
                                           index_motif_name=3)
                     scored_motifs_chromatin_tracks_output_files.append(scored_motifs_chromatin_tracks_output_file)
         cleanup()   
