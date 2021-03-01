@@ -310,7 +310,9 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motif_sites_dir = "."
     else:
         motif_files = os.listdir(motif_sites_dir)
-    
+    motif_files_full_path =  motif_sites_dir +'/'+ motif_files
+    print(motif_files_full_path )
+    [motif_sites_dir+'/' + s  for s in mylist]
     chromatin_tracks_files = os.listdir(all_chromatin_makrs_all_cells_combined_dir_path)
     if not os.path.exists(motifs_overlapping_tracks_output_dir):
         os.makedirs(motifs_overlapping_tracks_output_dir)
@@ -318,7 +320,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     #if not (os.path.exists(motifs_overlapping_tracks_file) and os.path.exists(scored_motifs_chromatin_tracks_output_file)):
     if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
-        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = pm.starmap(overlay_resources_score_motifs, product(motif_sites_dir+'/'+motif_files, 
+        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = pm.starmap(overlay_resources_score_motifs, product(motif_files_full_path , 
                                                                     [motifs_overlapping_tracks_output_dir],
                                                                      [all_chromatin_makrs_all_cells_combined_dir_path],
                                                                      [chromatin_tracks_files],
@@ -328,7 +330,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         p.close()
         p.join()
     else:
-        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_sites_dir+'/'+motif_files, 
+        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_files_full_path, 
                                                 motifs_overlapping_tracks_output_dir,
                                                 all_chromatin_makrs_all_cells_combined_dir_path, 
                                                 chromatin_tracks_files,
