@@ -310,9 +310,11 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motif_sites_dir = "."
     else:
         motif_files = os.listdir(motif_sites_dir)
-    motif_files_full_path =  motif_sites_dir +'/'+ motif_files
+
+   
+    motif_files_full_path =  [motif_sites_dir+'/' + s  for s in motif_files]
     print(motif_files_full_path )
-    [motif_sites_dir+'/' + s  for s in mylist]
+    
     chromatin_tracks_files = os.listdir(all_chromatin_makrs_all_cells_combined_dir_path)
     if not os.path.exists(motifs_overlapping_tracks_output_dir):
         os.makedirs(motifs_overlapping_tracks_output_dir)
