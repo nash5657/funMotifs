@@ -70,8 +70,11 @@ def get_motif_score(split_line,
     for representative_cell in cells_assays_dict:
         try:
             if 'TFExpr' in cells_assays_dict[representative_cell]:
-                if normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif]!='NaN':
-                    cells_assays_dict[representative_cell]['TFExpr'] = float(normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif])
+                if tf_name_from_motif in normal_expression_per_tissue_origin_per_TF[representative_cell]:
+                    if normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif]!='NaN':
+                        cells_assays_dict[representative_cell]['TFExpr'] = float(normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif])
+                else: 
+                    print(cells_assays_dict[representative_cell]['TFExpr'])
         except ValueError:
             pass
     
