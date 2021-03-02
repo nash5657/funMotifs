@@ -231,7 +231,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
         if (chr_n_file in chromatin_tracks_files):#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_sites_input_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
-            print("in overlay_resources_score_motifs: " + scored_motifs_chromatin_tracks_output_file)
+            print("in overlay_resources_score_motifs: " + motifs_overlapping_tracks_file)
             if not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path +'/'+ chr_n_file
