@@ -225,7 +225,6 @@ def overlay_resources_score_motifs(motif_sites_input_file,
     Return a file in bed7 format (motif info (6cols), overlapping_tracks. 
     """
     
-    motifs_overlapping_tracks_files =[]
     #for motif_sites_input_file in motif_sites_input_files:
     with open(motif_sites_input_file) as f:
         chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
@@ -247,10 +246,10 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['distinct']).saveas(motifs_overlapping_tracks_file)
                 os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
-            motifs_overlapping_tracks_files.append(motifs_overlapping_tracks_file)
+            
             
         cleanup()   
-    return motifs_overlapping_tracks_files
+    return motifs_overlapping_tracks_file
 
 
 def run_overlay_resources_score_motifs(motif_sites_dir,
