@@ -208,6 +208,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
             
             scored_motifs_writefile.write('\t'.join(field_values) + '\n')
             line = motifs_overlapping_tracks_readfile.readline()
+    os.remove(motifs_overlapping_tracks_file)
     return scored_motifs_chromatin_tracks_output_file
 
 
@@ -259,6 +260,8 @@ def overlay_resources_score_motifs(motif_sites_input_files,
                     os.remove(motif_sites_input_file_sorted)
                     os.remove(chromatin_tracks_input_file_sorted)
                 motifs_overlapping_tracks_files.append(motifs_overlapping_tracks_file)
+                with open(motifs_overlapping_tracks_file) as f:
+                    count = sum(1 for _ in f)
                 if not os.path.exists(scored_motifs_chromatin_tracks_output_file):#score each motif-track_overlapping file file
                     print("computing scores to: " + scored_motifs_chromatin_tracks_output_file)
                     index_track_names=7
@@ -271,7 +274,7 @@ def overlay_resources_score_motifs(motif_sites_input_files,
                                     header_line.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
                                                          .replace('-','__')).split()))
                             scored_motifs_writefile.write('\t'.join(header_line) + '\n')
-                    if run_in_parallel_param:
+                    if (run_in_parallel_param and count>200000):
                         os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                         motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                         p = Pool(int(number_processes_to_run_in_parallel))
