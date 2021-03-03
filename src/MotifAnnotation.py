@@ -166,7 +166,6 @@ def process_scored_motif_per_cell_per_assay(motif_info,
     return field_values
 
 def score_motifs_per_cell(motifs_overlapping_tracks_file, 
-                          scored_motifs_chromatin_tracks_output_file,
                           normal_expression_per_tissue_origin_per_TF, 
                           matching_cell_name_representative_dict, 
                           motifTFName_TFNames_matches_dict, 
@@ -182,8 +181,9 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
            
     Return: list of scored motifs files 
     """
+    scored_motifs_chromatin_tracks_output_file = motifs_overlapping_tracks_file + '_scored'
     sep = '\t'
-    with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(scored_motifs_chromatin_tracks_output_file, 'a') as scored_motifs_writefile:
+    with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
         line = motifs_overlapping_tracks_readfile.readline()
         while line:
             split_line = line.strip().split(sep)
@@ -320,15 +320,16 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                     header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval','strand']
                     for cell in sorted(cells_assays_dict.keys()):
                         for assay in sorted(cells_assays_dict[cell].keys()):
-                            header_line.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                                 .replace('-','__')).split()))
+                            cell_name ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
+                                                 .replace('-','__')).split())
+                            header_line.append('"'+cell_name+'"')
+                    print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
             if (run_in_parallel_param and count>200000):
                 os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
                 p.starmap(score_motifs_per_cell, product(motifs_overlapping_tracks_file_splitted, 
-                                    [scored_motifs_chromatin_tracks_output_file],
                                       [normal_expression_per_tissue_origin_per_TF], 
                                       [matching_cell_name_representative_dict], 
                                       [motifTFName_TFNames_matches_dict], 
@@ -342,11 +343,18 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                 p.join() 
                 #remove tmp splitted files
                 for f in motifs_overlapping_tracks_file_splitted:
-                    os.remove(f)   
+                    with open(f+'_scored', 'r') as f_score_ifile:
+                        l = f_score_ifile.readline()
+                        while l:
+                            scored_motifs_writefile.write(l)
+                        l = f_score_ifile.readline()
+                        
+                        
+                    os.remove(f)
+                    os.remove(f+'_scored')   
                 
             else:
                 score_motifs_per_cell(motifs_overlapping_tracks_file, 
-                                      scored_motifs_chromatin_tracks_output_file,
                                       normal_expression_per_tissue_origin_per_TF, 
                                       matching_cell_name_representative_dict, 
                                       motifTFName_TFNames_matches_dict, 
