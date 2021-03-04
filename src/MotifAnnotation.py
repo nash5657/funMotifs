@@ -182,33 +182,34 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
     Return: list of scored motifs files 
     """
     scored_motifs_chromatin_tracks_output_file = motifs_overlapping_tracks_file + '_scored'
-    sep = '\t'
-    with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
-        line = motifs_overlapping_tracks_readfile.readline()
-        while line:
-            split_line = line.strip().split(sep)
-            reset_cells_assays_dict = reset_cells_assays_matrix(split_line[index_motif_name].split('_')[0].upper(), 
-                                                                cells_assays_dict, 
-                                                                cell_tfs, 
-                                                                tf_cells, 
-                                                                motifTFName_TFNames_matches_dict, 
-                                                                assay_cells_datatypes)
-            
-            scored_motif_per_cell_per_assay = get_motif_score(split_line, 
-                                                              normal_expression_per_tissue_origin_per_TF, 
-                                                              matching_cell_name_representative_dict, 
-                                                              motifTFName_TFNames_matches_dict, 
-                                                              reset_cells_assays_dict, 
-                                                              index_track_names, 
-                                                              index_motif_name)  #, run_training, weights_per_param_dict, log_base)
-            
-            field_values = process_scored_motif_per_cell_per_assay(split_line[0:index_track_names], 
-                                                                   scored_motif_per_cell_per_assay,
-                                                                   cells_assays_dict)
-            
-            scored_motifs_writefile.write('\t'.join(field_values) + '\n')
+    if not os.path.exists(scored_motifs_chromatin_tracks_output_file):
+        sep = '\t'
+        with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
             line = motifs_overlapping_tracks_readfile.readline()
-    
+            while line:
+                split_line = line.strip().split(sep)
+                reset_cells_assays_dict = reset_cells_assays_matrix(split_line[index_motif_name].split('_')[0].upper(), 
+                                                                    cells_assays_dict, 
+                                                                    cell_tfs, 
+                                                                    tf_cells, 
+                                                                    motifTFName_TFNames_matches_dict, 
+                                                                    assay_cells_datatypes)
+                
+                scored_motif_per_cell_per_assay = get_motif_score(split_line, 
+                                                                  normal_expression_per_tissue_origin_per_TF, 
+                                                                  matching_cell_name_representative_dict, 
+                                                                  motifTFName_TFNames_matches_dict, 
+                                                                  reset_cells_assays_dict, 
+                                                                  index_track_names, 
+                                                                  index_motif_name)  #, run_training, weights_per_param_dict, log_base)
+                
+                field_values = process_scored_motif_per_cell_per_assay(split_line[0:index_track_names], 
+                                                                       scored_motif_per_cell_per_assay,
+                                                                       cells_assays_dict)
+                
+                scored_motifs_writefile.write('\t'.join(field_values) + '\n')
+                line = motifs_overlapping_tracks_readfile.readline()
+        
     return scored_motifs_chromatin_tracks_output_file
 
 
@@ -323,7 +324,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                             cell_name ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
                                                  .replace('-','__')).split())
                             header_line.append('"'+cell_name+'"')
-                    print(header_line)
+                    #print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
             if (run_in_parallel_param and count>200000):
                 os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
@@ -342,16 +343,17 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                 p.close()
                 p.join() 
                 #remove tmp splitted files
-                for f in motifs_overlapping_tracks_file_splitted:
-                    with open(f+'_scored', 'r') as f_score_ifile:
-                        l = f_score_ifile.readline()
-                        while l:
-                            scored_motifs_writefile.write(l)
-                        l = f_score_ifile.readline()
-                        
-                        
-                    os.remove(f)
-                    os.remove(f+'_scored')   
+                with open(scored_motifs_chromatin_tracks_output_file, 'a') as scored_motifs_writefile:
+                    for f in motifs_overlapping_tracks_file_splitted:
+                        with open(f+'_scored', 'r') as f_score_ifile:
+                            l = f_score_ifile.readline()
+                            while l:
+                                scored_motifs_writefile.write(l)
+                            l = f_score_ifile.readline()
+                            
+                            
+                        #os.remove(f)
+                        #os.remove(f+'_scored')   
                 
             else:
                 score_motifs_per_cell(motifs_overlapping_tracks_file, 
