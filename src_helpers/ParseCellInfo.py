@@ -421,8 +421,28 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     merge_final_lines = merge_final_read.readlines()
                     with open(final_dataset, 'w') as final_dataset_writer:  
                         if assay_type == "ChromatinStates":
+                            states_labels = {"E1": "1_TssA", 
+                                             "E2": "2_TssFlnk", 
+                                             "E3": "3_TssFlnkU",
+                                             "E4" : "4_TssFlnkD", 
+                                             "E5": "5_Tx", 
+                                             "E6": "6_TxWk",
+                                             "E7": "7_EnhG1",
+                                             "E8" : "8_EnhG2",
+                                             "E9": "9_EnhA1",
+                                             "E10": "10_EnhA2",
+                                             "E11" : "11_EnhWk",
+                                             "E12" : "12_ZNF/Rpts",
+                                             "E13" : "13_Het",
+                                             "E14" : "14_TssBiv",
+                                             "E15" : "15_EnhBiv",
+                                             "E16" : "16_ReprPC",
+                                             "E17" : "17_ReprPCWk",
+                                             "E18" : "18_Quies"} 
                             for line in merge_final_lines:
-                                final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#ChromHMM#"+line.strip().split('\t')[3].replace(" ", "-") + '\n')
+                                state = states_labels[line.strip().split('\t')[3].replace(" ", "-")]
+                                
+                                final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#ChromHMM#"+state + '\n')
                         elif assay_type == "TF_ChIP-seq":
                             if peak_score_from_peak_file_exists and consider_peak_score_from_peak_file:
                                 for line in merge_final_lines:
