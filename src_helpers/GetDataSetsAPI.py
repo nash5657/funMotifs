@@ -42,7 +42,7 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
     for chunk in biosample_term_names_to_get_chunks:
         biosample_term_names_to_get_str = '&biosample_ontology.term_name='+ '&biosample_ontology.term_name='.join(chunk)
         #Changed RNA-seq to total+RNA-seq in the URL
-        URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
+        URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
         response_json_dict = requests.get(URL, headers=HEADERS).json()
         bio_sample_files = {}
         '''
