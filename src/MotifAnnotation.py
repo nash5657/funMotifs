@@ -343,13 +343,13 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                 p.close()
                 p.join() 
                 #remove tmp splitted files
-                with open(scored_motifs_chromatin_tracks_output_file, 'a') as scored_motifs_writefile:
-                    for f in motifs_overlapping_tracks_file_splitted:
-                        with open(f+'_scored', 'r') as f_score_ifile:
-                            l = f_score_ifile.readline()
-                            while l:
-                                scored_motifs_writefile.write(l)
-                            l = f_score_ifile.readline()
+                for f in motifs_overlapping_tracks_file_splitted:
+                    print(f+'_scored')
+                    with open(f+'_scored', 'r') as f_score_ifile, open(scored_motifs_chromatin_tracks_output_file, 'a') as scored_motifs_writefile:
+                        l = f_score_ifile.readline()
+                        while l:
+                            scored_motifs_writefile.write(l)
+                        l = f_score_ifile.readline()
                             
                             
                         #os.remove(f)
