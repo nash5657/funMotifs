@@ -42,7 +42,7 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
     for chunk in biosample_term_names_to_get_chunks:
         biosample_term_names_to_get_str = '&biosample_ontology.term_name='+ '&biosample_ontology.term_name='.join(chunk)
         #Changed RNA-seq to total+RNA-seq in the URL
-        URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
+        URL = "https://www.encodeproject.org/search/?type=Experiment&assay_slims=Transcription&assay_title=total+RNA-seq&status=released&assembly={}&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens&files.file_type=tsv&files.analysis_step_version.analysis_step.pipelines.title=RNA-seq+of+long+RNAs+%28paired-end%2C+stranded%29&frame=object&limit=all{}".format(assembly, biosample_term_names_to_get_str)
         response_json_dict = requests.get(URL, headers=HEADERS).json()
         bio_sample_files = {}
         '''
@@ -97,7 +97,7 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
                 for g in genes:
                     if g=="" or g.startswith('//'):
                         continue
-                    gene_id = g.strip().split(sep)[gene_id_index]
+                    gene_id = g.strip().split(sep)[gene_id_index].split('.')[0]
                     gene_value = float(g.strip().split(sep)[gene_value_index])
                     if gene_id not in bio_samples[bio_sample_input_dir].keys():
                         bio_samples[bio_sample_input_dir][gene_id] = []
@@ -148,10 +148,10 @@ def get_gene_names_and_ids_from_genecode(genecode_genes_input_file,
             if sl[2]=="gene":
                 gene_info_tmp = [x.split('=') for x in sl[8].split(';')]
                 sl_info_dict = dict(gene_info_tmp[:-1])
-                gencode_id_info_dict[sl_info_dict['gene_id']] = [sl[0], sl[3], sl[4], sl[5], sl[6], sl_info_dict['gene_id'], 
+                gencode_id_info_dict[sl_info_dict['gene_id'].split('.')[0]] = [sl[0], sl[3], sl[4], sl[5], sl[6], sl_info_dict['gene_id'].split('.')[0], 
                                                               sl_info_dict['gene_name'],  sl_info_dict['gene_type']]
-                gene_id_name_dict[sl_info_dict['gene_id']] = sl_info_dict['gene_name']
-                genecode_genes_only_genes_bed_outfile.write(sep.join(gencode_id_info_dict[sl_info_dict['gene_id']]) + '\n')
+                gene_id_name_dict[sl_info_dict['gene_id'].split('.')[0]] = sl_info_dict['gene_name']
+                genecode_genes_only_genes_bed_outfile.write(sep.join(gencode_id_info_dict[sl_info_dict['gene_id'].split('.')[0]]) + '\n')
             l = genecode_genes_infile.readline()
     
     with open(gencode_id_info_dict_savefile, 'w') as gencode_id_info_dict_savefile_outfile:

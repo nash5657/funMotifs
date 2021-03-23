@@ -222,7 +222,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 print(cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor))
                 #merge the high quality datasets
                 if len(list_of_high_quality_peakfiles_from_this_factor)==1:
-                    if assay_type == "ChromatinStates":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
                         final_dataset_high_quality = list_of_high_quality_peakfiles_from_this_factor[0]
                     else:
                         merged_output = open(list_of_high_quality_peakfiles_from_this_factor[0], 'r').readlines()
@@ -239,7 +239,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 final_dataset_high_quality_name.write('\t'.join(line.strip().split('\t')[0:3]) +"\n")
                         final_dataset_high_quality_name.close()
                 elif len(list_of_high_quality_peakfiles_from_this_factor)>1:
-                    if assay_type == "ChromatinStates":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
                         #write all the files into one
                         with open(final_dataset_high_quality, 'w') as concatenated_file_write: 
                             for file_name in list_of_high_quality_peakfiles_from_this_factor:
@@ -340,7 +340,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 print(cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor))
                 #merge the low quality datasets
                 if len(list_of_low_quality_peakfiles_from_this_factor)==1:
-                    if assay_type == "ChromatinStates":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
                         final_dataset_low_quality = list_of_low_quality_peakfiles_from_this_factor[0]
                     else:
                         merged_output = open(list_of_low_quality_peakfiles_from_this_factor[0], 'r').readlines()
@@ -358,7 +358,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         final_dataset_low_quality_name.close()
                 
                 elif len(list_of_low_quality_peakfiles_from_this_factor)>1:
-                    if assay_type == "ChromatinStates":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
                         #write all the files into one
                         with open(final_dataset_low_quality, 'w') as concatenated_file_write: 
                             for file_name in list_of_low_quality_peakfiles_from_this_factor:
@@ -400,7 +400,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 merge_final_lines = []
                 highlow_combined  = "highlow_combined"
                 os.system("cat " + final_dataset_high_quality + " " + final_dataset_low_quality + " > " + highlow_combined)
-                if assay_type == "ChromatinStates":#because the chromatinstates are defined for all genome bins merging them would cause create 25 regions only since all the bins are starting consequentively 
+                if assay_type == "ChromatinStates" or assay_type == "cCRE":#because the chromatinstates are defined for all genome bins merging them would cause create 25 regions only since all the bins are starting consequentively 
                     final_file = highlow_combined
                 else:
                     with open(highlow_combined) as read_file_i:
@@ -452,6 +452,11 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 for line in merge_final_lines:
                                     peak_score = ""
                                     final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#TFBinding#"+factor.replace(" ", "-")+peak_score + '\n')
+                        elif assay_type == "cCRE":
+                            for line in merge_final_lines:
+                                state = "#"+str(line.strip().split('\t')[9].replace(",", "_"))
+                                final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#cCRE#"+state + '\n')
+                            
                         else:
                             if peak_score_from_peak_file_exists and consider_peak_score_from_peak_file:
                                 for line in merge_final_lines:
