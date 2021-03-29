@@ -440,8 +440,9 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                              "E17" : "17_ReprPCWk",
                                              "E18" : "18_Quies"} 
                             for line in merge_final_lines:
-                                state = states_labels[line.strip().split('\t')[3].replace(" ", "-")]
-                                
+                                #state = states_labels[line.strip().split('\t')[3].replace(" ", "-")]
+                                state = states_labels
+
                                 final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#ChromHMM#"+state + '\n')
                         elif assay_type == "TF_ChIP-seq":
                             if peak_score_from_peak_file_exists and consider_peak_score_from_peak_file:
@@ -454,7 +455,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                     final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#TFBinding#"+factor.replace(" ", "-")+peak_score + '\n')
                         elif assay_type == "cCRE":
                             for line in merge_final_lines:
-                                state = "#"+str(line.strip().split('\t')[9].replace(",", "_"))
+                                state = str(line.strip().split('\t')[9].replace(",", "_"))
                                 final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#cCRE#"+state + '\n')
                             
                         else:
