@@ -231,6 +231,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
         if (chr_n_file in chromatin_tracks_files):#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_sites_input_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
+            motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             print("in overlay_resources_score_motifs: " + motifs_overlapping_tracks_file)
             if not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
@@ -244,9 +245,63 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 
 
                 motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
-                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['distinct']).saveas(motifs_overlapping_tracks_file)
+                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['collapse']).saveas(motifs_overlapping_tracks_file_tmp)
+                
+                with open(motifs_overlapping_tracks_file_tmp, 'r') as infile, open(motifs_overlapping_tracks_file, 'w') as outfile:
+                        line = infile.readline()
+                        while line:
+                            
+                            sline = line.split()
+                            #print(sline)
+                            if(sline[7]!='.'):
+                                my_list=sline[7].split(',')
+                                cell_assay_values_dict_ChromHMM = {}
+                                cell_assay_values_dict_cCRE = {}
+                                cell_assay_values_dict_IndexDHS = {}
+                                elem_list =[]
+                                for elem in my_list:
+                                    #print(elem)
+                
+                                    cell_value=elem.split('#')[0]
+                                    assay_value = elem.split('#')[1]
+                                    if(len(elem.split('#'))>2):
+                                        state_value = elem.split('#')[2]
+                
+                                    if assay_value== "ChromHMM" and cell_value not in cell_assay_values_dict_ChromHMM.keys():
+                                        cell_assay_values_dict_ChromHMM[cell_value] = []
+                                    if assay_value== "cCRE" and cell_value not in cell_assay_values_dict_cCRE.keys():
+                                        cell_assay_values_dict_cCRE[cell_value] = []
+                                    if assay_value== "IndexDHS" and cell_value not in cell_assay_values_dict_IndexDHS.keys():
+                                        cell_assay_values_dict_IndexDHS[cell_value] = []
+                                    
+                                    if assay_value== "ChromHMM":
+                                        cell_assay_values_dict_ChromHMM[cell_value].append(state_value)
+                
+                                    elif assay_value== "cCRE":
+                                        cell_assay_values_dict_cCRE[cell_value].append(state_value)
+                
+                                    elif assay_value== "IndexDHS":
+                                        cell_assay_values_dict_IndexDHS[cell_value].append(state_value)
+                                    else:
+                
+                                        elem_list.append(elem)
+                                for cell in cell_assay_values_dict_ChromHMM.keys():
+                                    #print(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell_value]).most_common(1)[0][0])
+                                    elem_list.append(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][0])
+                                for cell in cell_assay_values_dict_cCRE.keys():
+                                    #print(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell_value]).most_common(1)[0][0])
+                                    elem_list.append(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell]).most_common(1)[0][0])
+                
+                                for cell in cell_assay_values_dict_IndexDHS.keys():
+                                    #print(cell_assay_values_dict_IndexDHS[cell])
+                                    elem_list.append(cell+"#IndexDHS#"+Counter(cell_assay_values_dict_IndexDHS[cell]).most_common(1)[0][0])
+                
+                                outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
+                
+                            line = infile.readline()
                 os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
+                os.remove(motifs_overlapping_tracks_file_tmp)
             
             
         cleanup()   
@@ -326,7 +381,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                             header_line.append('"'+cell_name+'"')
                     #print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
-            if (run_in_parallel_param and count>200000):
+            if (run_in_parallel_param):
                 os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
