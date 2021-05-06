@@ -110,7 +110,8 @@ def select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict,
                     selected_datasets_per_factor[factor].append(ENCODE_accession_codes_dict[factor][output_type]) 
     return selected_datasets_per_factor
     
-def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_cellinfo_dirs_path, 
+def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_cellinfo_dirs_path,
+                                hg18ToHg19_over_chain="hg18ToHg19.over.chain.gz", 
                                 number_of_votes_from_highquality_datasets=1, 
                                 number_of_votes_from_lowquality_datasets=2, 
                                 number_of_files_to_consider_from_highquality_datasets='all', 
@@ -199,7 +200,23 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 with gzip.open(dataset_name, 'rb') as dataset_name_unzip_read, open(dataset_name_unzipped, 'wb') as dataset_name_unzipped_write:
                                     dataset_name_unzipped_write.write(dataset_name_unzip_read.read())
                                 #os.system("gunzip " + dataset_name)
-                                dataset_name = '.'.join(dataset_name.split('.')[0:-1])
+                                
+                                
+                                if assay_type=="Reg_elem_EpiMap":
+
+                                    if dataset_name.split('.')[-2].split('_')[0]=='promoter':
+                                        dataset_name_unzipped_hg38 = dataset_name_unzipped+'_prom_hg38'
+                                        dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
+                                        os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Promoter"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))
+                                    else:
+                                        dataset_name_unzipped_hg38 = dataset_name_unzipped+'_enh_hg38'
+                                        dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
+                                        os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Enhancer"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))
+                                    
+                                    dataset_name = dataset_name_unzipped_hg38
+                                else:
+                                    dataset_name = '.'.join(dataset_name.split('.')[0:-1])
+                                    
                 else:#path to a local file
                     dataset_path = dataset
                     dataset_name = factor+"_"+dataset.strip().split('/')[-1]
@@ -222,7 +239,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 print(cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor))
                 #merge the high quality datasets
                 if len(list_of_high_quality_peakfiles_from_this_factor)==1:
-                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type =="Reg_elem_EpiMap":
                         final_dataset_high_quality = list_of_high_quality_peakfiles_from_this_factor[0]
                     else:
                         merged_output = open(list_of_high_quality_peakfiles_from_this_factor[0], 'r').readlines()
@@ -239,7 +256,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 final_dataset_high_quality_name.write('\t'.join(line.strip().split('\t')[0:3]) +"\n")
                         final_dataset_high_quality_name.close()
                 elif len(list_of_high_quality_peakfiles_from_this_factor)>1:
-                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type =="Reg_elem_EpiMap":
                         #write all the files into one
                         with open(final_dataset_high_quality, 'w') as concatenated_file_write: 
                             for file_name in list_of_high_quality_peakfiles_from_this_factor:
@@ -317,7 +334,21 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 with gzip.open(dataset_name, 'rb') as dataset_name_unzip_read, open(dataset_name_unzipped, 'wb') as dataset_name_unzipped_write:
                                     dataset_name_unzipped_write.write(dataset_name_unzip_read.read())
                                 #os.system("gunzip " + dataset_name)
-                                dataset_name = '.'.join(dataset_name.split('.')[0:-1])
+                                #dataset_name = '.'.join(dataset_name.split('.')[0:-1])
+                                if assay_type=="Reg_elem_EpiMap":
+
+                                    if dataset_name.split('.')[-2].split('_')[0]=='promoter':
+                                        dataset_name_unzipped_hg38 = dataset_name_unzipped+'_prom_hg38'
+                                        dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
+                                        os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Promoter"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))
+                                    else:
+                                        dataset_name_unzipped_hg38 = dataset_name_unzipped+'_enh_hg38'
+                                        dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
+                                        os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Enhancer"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))
+                                    
+                                    dataset_name = dataset_name_unzipped_hg38
+                                else:
+                                    dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                 else:#path to a local file
                     dataset_path = dataset
                     dataset_name = factor+"_"+dataset.strip().split('/')[-1]
@@ -340,7 +371,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 print(cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor))
                 #merge the low quality datasets
                 if len(list_of_low_quality_peakfiles_from_this_factor)==1:
-                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type=="Reg_elem_EpiMap":
                         final_dataset_low_quality = list_of_low_quality_peakfiles_from_this_factor[0]
                     else:
                         merged_output = open(list_of_low_quality_peakfiles_from_this_factor[0], 'r').readlines()
@@ -358,7 +389,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                         final_dataset_low_quality_name.close()
                 
                 elif len(list_of_low_quality_peakfiles_from_this_factor)>1:
-                    if assay_type == "ChromatinStates" or assay_type == "cCRE":
+                    if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type=="Reg_elem_EpiMap":
                         #write all the files into one
                         with open(final_dataset_low_quality, 'w') as concatenated_file_write: 
                             for file_name in list_of_low_quality_peakfiles_from_this_factor:
@@ -400,7 +431,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 merge_final_lines = []
                 highlow_combined  = "highlow_combined"
                 os.system("cat " + final_dataset_high_quality + " " + final_dataset_low_quality + " > " + highlow_combined)
-                if assay_type == "ChromatinStates" or assay_type == "cCRE":#because the chromatinstates are defined for all genome bins merging them would cause create 25 regions only since all the bins are starting consequentively 
+                if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type=="Reg_elem_EpiMap":#because the chromatinstates are defined for all genome bins merging them would cause create 25 regions only since all the bins are starting consequentively 
                     final_file = highlow_combined
                 else:
                     with open(highlow_combined) as read_file_i:
@@ -440,10 +471,15 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                              "E17" : "17_ReprPCWk",
                                              "E18" : "18_Quies"} 
                             for line in merge_final_lines:
-                                #state = states_labels[line.strip().split('\t')[3].replace(" ", "-")]
-                                state = states_labels
+                                state = line.strip().split('\t')[3].replace(" ", "-")
+                                #state = states_labels
 
                                 final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#ChromHMM#"+state + '\n')
+                        elif assay_type=="Reg_elem_EpiMap":
+                            for line in merge_final_lines:
+                                state = line.strip().split('\t')[3]
+                                final_dataset_writer.write('\t'.join(line.strip().split('\t')[0:3]) + '\t' + cell_name+"#RegElem#"+state + '\n')
+                            
                         elif assay_type == "TF_ChIP-seq":
                             if peak_score_from_peak_file_exists and consider_peak_score_from_peak_file:
                                 for line in merge_final_lines:
@@ -480,7 +516,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
     os.chdir(current_dir)
     return final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell
     
-def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, assembly):
+def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, assembly, hg18ToHg19_over_chain):
     #for a given cell name and assay_type make subdirs and retreive the accession codes to download the files
     summary_file_name = "cell_info_summary"
     summary_file = open(target_cellinfo_dirs_path+"/cell_info_summary", 'w')
@@ -492,7 +528,7 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
             if os.path.exists(target_cellinfo_dirs_path + "/" + cell_name + "/" + assay_type + "/" + final_dataset_of_this_assay_cell):#if the the combined file of this assay in this cell has been created there is no need to go any further
                 continue
             ENCODE_accession_codes_dict = {}
-            if assay_type=="TF_ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq" or assay_type=="footprints" or assay_type=="cCRE":
+            if assay_type=="TF_ChIP-seq" or assay_type=="DNase-seq" or assay_type=="ChromatinStates" or assay_type=="Repli-seq" or assay_type=="footprints" or assay_type=="cCRE" or assay_type=="Reg_elem_EpiMap":
                 selected_datasets_per_factor_dict = {}
                 selected_datasets_per_factor_dict_from_metadatafile = {}
                 #generate the list of dataset IDs per factor in each assay type
@@ -545,6 +581,9 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                     download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets=1, dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = True, peak_score_index=6)
                 elif assay_type == "ChromatinStates":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
+                elif assay_type == "Reg_elem_EpiMap":
+                    final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, hg18ToHg19_over_chain, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=1, number_of_files_to_consider_from_highquality_datasets=1, number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
+
                 elif assay_type == "footprints":
                     final_dataset_of_this_assay_cell, final_datasets_of_this_assay_cell = download_and_unify_datasets(cell_name, assay_type, selected_datasets_per_factor_dict, target_cellinfo_dirs_path, number_of_votes_from_highquality_datasets=1, number_of_votes_from_lowquality_datasets=2, number_of_files_to_consider_from_highquality_datasets='all', number_of_files_to_consider_from_lowquality_datasets='all', dont_consider_low_quality_datasets_when_highquality_datasets_available=True, consider_peak_score_from_peak_file = False)
                 elif assay_type == "cCRE":
@@ -561,6 +600,7 @@ def parse_args():
     parser.add_argument('--cellinfodict_inputfile', default='', help='')
     parser.add_argument('--target_cellinfo_dirs_path', default='', help='')    
     parser.add_argument('--assembly', default = 'GRCh38', choices=['GRCh38', 'hg19'], help='')
+    parser.add_argument('--hg18ToHg19_over_chain', default='hg18ToHg19.over.chain.gz', help='')
     
 
     
@@ -577,7 +617,7 @@ if __name__ == '__main__':
     #else:
     #    print "Usage: python ParseCellInfo.py CellInfoDict_input_file target_cellinfo_dirs_path"        
     dict_cell_lines_info =  parse_cellinfodict_to_populate_data(args.cellinfodict_inputfile, cell_names_start_with="#")
-    populate_cellinfo_dirs(dict_cell_lines_info, args.target_cellinfo_dirs_path, args.assembly)
+    populate_cellinfo_dirs(dict_cell_lines_info, args.target_cellinfo_dirs_path, args.assembly, args.hg18ToHg19_over_chain)
     
     #Get RNA-seq data for each cell in dict_cell_lines_info.keys()
     
