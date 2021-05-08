@@ -254,58 +254,59 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                             
                             sline = line.split('\t')
                             #print(sline)
-                            if(sline[7]!='.'):
-                                my_list=sline[7].split(',')
-                                cell_assay_values_dict_ChromHMM = {}
-                                cell_assay_values_dict_cCRE = {}
-                                cell_assay_values_dict_IndexDHS = {}
-                                cell_assay_values_dict_RegElem = {}
-                                elem_list =[]
-                                #elem_list_EpiMap =[]
-                                for elem in my_list:
-                                    #print(elem)
-                
-                                    cell_value=elem.split('#')[0]
-                                    assay_value = elem.split('#')[1]
-                                    if(len(elem.split('#'))>2):
-                                        state_value = elem.split('#')[2]
-                
-                                    if assay_value== "ChromHMM":
-                                        if cell_value not in cell_assay_values_dict_ChromHMM.keys():
-                                            cell_assay_values_dict_ChromHMM[cell_value] = []
-
-                                        cell_assay_values_dict_ChromHMM[cell_value].append(state_value)
-                                    elif assay_value== "cCRE": 
-                                        if cell_value not in cell_assay_values_dict_cCRE.keys():
-                                            cell_assay_values_dict_cCRE[cell_value] = []
-                                        cell_assay_values_dict_cCRE[cell_value].append(state_value)
-                                    elif assay_value== "IndexDHS":
-                                        if cell_value not in cell_assay_values_dict_IndexDHS.keys():
-                                            cell_assay_values_dict_IndexDHS[cell_value] = []
-                                        cell_assay_values_dict_IndexDHS[cell_value].append(state_value)
-                                    elif assay_value== "RegElem":
-                                        if cell_value not in cell_assay_values_dict_RegElem.keys():
-                                            cell_assay_values_dict_RegElem[cell_value] = []
-                                        cell_assay_values_dict_RegElem[cell_value].append(state_value)
-                                    else:
-
-                                        elem_list.append(elem.rstrip("\n"))                               
-                                for cell in cell_assay_values_dict_ChromHMM:
-                                    #print(cell)
-                                    #print(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][0])
-                                    elem_list.append(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][0])
-                                for cell in cell_assay_values_dict_cCRE.keys():
-                                        #print(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell_value]).most_common(1)[0][0])
-                                    eelem_list.append(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell]).most_common(1)[0][0])
-
-                                for cell in cell_assay_values_dict_IndexDHS.keys():
-                                        #print(cell_assay_values_dict_IndexDHS[cell])
-                                    elem_list.append(cell+"#IndexDHS#"+Counter(cell_assay_values_dict_IndexDHS[cell]).most_common(1)[0][0])
-                                for cell in cell_assay_values_dict_RegElem.keys():
-                                        #print(cell_assay_values_dict_IndexDHS[cell])
-                                    elem_list.append(cell+"#RegElem#"+Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
-                
-                                outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
+                            if(len(sline)>6):
+                                if(sline[7]!='.'):
+                                    my_list=sline[7].split(',')
+                                    cell_assay_values_dict_ChromHMM = {}
+                                    cell_assay_values_dict_cCRE = {}
+                                    cell_assay_values_dict_IndexDHS = {}
+                                    cell_assay_values_dict_RegElem = {}
+                                    elem_list =[]
+                                    #elem_list_EpiMap =[]
+                                    for elem in my_list:
+                                        #print(elem)
+                    
+                                        cell_value=elem.split('#')[0]
+                                        assay_value = elem.split('#')[1]
+                                        if(len(elem.split('#'))>2):
+                                            state_value = elem.split('#')[2].rstrip("\n")
+                    
+                                        if assay_value== "ChromHMM":
+                                            if cell_value not in cell_assay_values_dict_ChromHMM.keys():
+                                                cell_assay_values_dict_ChromHMM[cell_value] = []
+    
+                                            cell_assay_values_dict_ChromHMM[cell_value].append(state_value)
+                                        elif assay_value== "cCRE": 
+                                            if cell_value not in cell_assay_values_dict_cCRE.keys():
+                                                cell_assay_values_dict_cCRE[cell_value] = []
+                                            cell_assay_values_dict_cCRE[cell_value].append(state_value)
+                                        elif assay_value== "IndexDHS":
+                                            if cell_value not in cell_assay_values_dict_IndexDHS.keys():
+                                                cell_assay_values_dict_IndexDHS[cell_value] = []
+                                            cell_assay_values_dict_IndexDHS[cell_value].append(state_value)
+                                        elif assay_value== "RegElem":
+                                            if cell_value not in cell_assay_values_dict_RegElem.keys():
+                                                cell_assay_values_dict_RegElem[cell_value] = []
+                                            cell_assay_values_dict_RegElem[cell_value].append(state_value)
+                                        else:
+    
+                                            elem_list.append(elem.rstrip("\n"))                               
+                                    for cell in cell_assay_values_dict_ChromHMM:
+                                        #print(cell)
+                                        #print(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][0])
+                                        elem_list.append(cell+"#ChromHMM#"+Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][0])
+                                    for cell in cell_assay_values_dict_cCRE.keys():
+                                            #print(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell_value]).most_common(1)[0][0])
+                                        elem_list.append(cell+"#cCRE#"+Counter(cell_assay_values_dict_cCRE[cell]).most_common(1)[0][0])
+    
+                                    for cell in cell_assay_values_dict_IndexDHS.keys():
+                                            #print(cell_assay_values_dict_IndexDHS[cell])
+                                        elem_list.append(cell+"#IndexDHS#"+Counter(cell_assay_values_dict_IndexDHS[cell]).most_common(1)[0][0])
+                                    for cell in cell_assay_values_dict_RegElem.keys():
+                                            #print(cell_assay_values_dict_IndexDHS[cell])
+                                        elem_list.append(cell+"#RegElem#"+Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
+                    
+                                    outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
                 
                             line = infile.readline()
                 os.remove(motif_sites_input_file_sorted)
