@@ -28,10 +28,12 @@ def create_cell_table(db_name, db_user_name, db_host_name,
                 data_type = assay_cells_datatypes[assay]
             except KeyError:
                 pass
-            field_names.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                         .replace('-','__')).split()) + " " + data_type)
-            col_names.append('_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                         .replace('-','__')).split()))
+            
+            feature ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
+                                         .replace('-','__')).split())
+            field_names.append('"'+feature+ " " + data_type+'"')
+            
+            col_names.append('"'+feature+'"')
     #curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
