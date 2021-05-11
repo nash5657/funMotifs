@@ -37,8 +37,10 @@ def create_cell_table(db_name, db_user_name, db_host_name,
             if cell=="Peyer's patch":
                 cell="Peyers patch"
 
+                
+
             feature ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                         .replace('-','__')).split())
+                                         .replace('-','__').replace('.','')).split())
             field_names.append(feature+ " " + data_type)
             
             col_names.append(feature)
