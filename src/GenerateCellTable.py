@@ -29,11 +29,15 @@ def create_cell_table(db_name, db_user_name, db_host_name,
             except KeyError:
                 pass
             
+            if(cell=='22Rv1' or cell=='8988T'):
+                cell='a'+cell
+
             feature ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
                                          .replace('-','__')).split())
-            field_names.append('"'+feature+ " " + data_type+'"')
+            field_names.append(feature+ " " + data_type)
             
-            col_names.append('"'+feature+'"')
+            col_names.append(feature)
+    print(field_names)
     #curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
