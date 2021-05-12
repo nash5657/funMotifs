@@ -307,7 +307,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                         elem_list.append(cell+"#RegElem#"+Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
                     
                                     outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
-                
+                    
                             line = infile.readline()
                 os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
