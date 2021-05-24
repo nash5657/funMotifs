@@ -261,6 +261,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                     cell_assay_values_dict_cCRE = {}
                                     cell_assay_values_dict_IndexDHS = {}
                                     cell_assay_values_dict_RegElem = {}
+                                    cell_assay_values_dict_DNaseq = {}
                                     elem_list =[]
                                     #elem_list_EpiMap =[]
                                     for elem in my_list:
@@ -288,6 +289,10 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                             if cell_value not in cell_assay_values_dict_RegElem.keys():
                                                 cell_assay_values_dict_RegElem[cell_value] = []
                                             cell_assay_values_dict_RegElem[cell_value].append(state_value)
+                                        elif assay_value== "DNase-seq":
+                                            if cell_value not in cell_assay_values_dict_DNaseq.keys():
+                                                cell_assay_values_dict_DNaseq[cell_value] = []
+                                            cell_assay_values_dict_DNaseq[cell_value].append(float(state_value))
                                         else:
     
                                             elem_list.append(elem.rstrip("\n"))                               
@@ -305,6 +310,9 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                     for cell in cell_assay_values_dict_RegElem.keys():
                                             #print(cell_assay_values_dict_IndexDHS[cell])
                                         elem_list.append(cell+"#RegElem#"+Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
+                                    for cell in cell_assay_values_dict_DNaseq.keys():
+                                            #print(cell_assay_values_dict_IndexDHS[cell])
+                                        elem_list.append(cell+"#DNase-seq#"+max(cell_assay_values_dict_DNaseq[cell]))
                     
                                     outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
                     
@@ -386,8 +394,15 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                     header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval','strand']
                     for cell in sorted(cells_assays_dict.keys()):
                         for assay in sorted(cells_assays_dict[cell].keys()):
+                            if cell=='22Rv1' or cell=='8988T':
+                                cell='a'+cell
+                                
+                            if cell=="Ammon's horn":
+                                cell="Ammons horn"
+                            if cell=="Peyer's patch":
+                                cell="Peyers patch"
                             cell_name ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                                 .replace('-','__')).split())
+                                                 .replace('-','__').replace('.','')).split())
                             header_line.append('"'+cell_name+'"')
                     #print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
