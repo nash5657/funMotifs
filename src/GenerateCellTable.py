@@ -48,7 +48,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
     #curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
-    create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(cell_table, ' ,'.join(field_names))
+    create_table_stmt = "CREATE TABLE IF NOT EXISTS {} ({});".format(cell_table, ', '.join(field_names))
     curs.execute(create_table_stmt)
     conn.commit()
     DBUtilities.close_connection(conn)
