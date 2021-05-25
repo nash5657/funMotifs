@@ -44,7 +44,8 @@ if __name__ == '__main__':
     '''set the temp dir for bedtools operations'''
     if not os.path.exists(params['temp_dir']):
         os.makedirs(params['temp_dir'])  
-    set_tempdir(params['temp_dir'])
+    #set_tempdir(params['temp_dir'])
+    set_tempdir('$SNIC_TMP')
     
     #Section 1: Collect resources
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'], params['data_tracks'])
