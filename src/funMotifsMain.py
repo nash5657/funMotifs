@@ -25,8 +25,10 @@ def parse_args():
     print('funMotifsMain')
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
+    parser.add_argument('--temp_dir', default='', help='')
 
-    return parser.parse_args(sys.argv[1:])
+    args, unknown = parser.parse_known_args()
+    return args
    
 if __name__ == '__main__':
     
@@ -42,10 +44,10 @@ if __name__ == '__main__':
     #    sys.exit(0)
     
     '''set the temp dir for bedtools operations'''
-    if not os.path.exists(params['temp_dir']):
-        os.makedirs(params['temp_dir'])  
+    #if not os.path.exists(params['temp_dir']):
+    #    os.makedirs(params['temp_dir'])  
     #set_tempdir(params['temp_dir'])
-    set_tempdir('$SNIC_TMP')
+    set_tempdir(args.temp_dir)
     
     #Section 1: Collect resources
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'], params['data_tracks'])
