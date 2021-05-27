@@ -312,7 +312,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                         elem_list.append(cell+"#RegElem#"+Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
                                     for cell in cell_assay_values_dict_DNaseq.keys():
                                             #print(cell_assay_values_dict_IndexDHS[cell])
-                                        elem_list.append(cell+"#DNase-seq#"+max(cell_assay_values_dict_DNaseq[cell]))
+                                        elem_list.append(cell+"#DNase-seq#"+str(max(cell_assay_values_dict_DNaseq[cell])))
                     
                                     outfile.write('\t'.join(sline[0:7])+'\t'+','.join(elem_list)+'\n')
                     
