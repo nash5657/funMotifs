@@ -127,22 +127,25 @@ if __name__ == '__main__':
         
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
         
-        GenerateCellTable.generate_cell_table(db_name,
-                    cell_table,
-                    db_user_name,
-                    db_host_name,
-                    cells_assays_dict,
-                    assay_cells_datatypes,
-                    run_in_parallel_param=run_in_parallel_param,
-                    number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
-                    header=header,
-                    scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
-                    motif_cols = motif_cols,
-                    motif_cols_names = motif_cols_names,
-                    cell_index_name='indexposrange', 
-                    cell_index_method = 'gist', 
-                    cell_index_cols = 'posrange'
-                    )
+        process_cell_table = Utilities.get_value(params['generate_cell_table'])
+    
+        if process_cell_table:    
+            GenerateCellTable.generate_cell_table(db_name,
+                        cell_table,
+                        db_user_name,
+                        db_host_name,
+                        cells_assays_dict,
+                        assay_cells_datatypes,
+                        run_in_parallel_param=run_in_parallel_param,
+                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
+                        header=header,
+                        scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
+                        motif_cols = motif_cols,
+                        motif_cols_names = motif_cols_names,
+                        cell_index_name='indexposrange', 
+                        cell_index_method = 'gist', 
+                        cell_index_cols = 'posrange'
+                        )
         
         process_tissues = Utilities.get_value(params['generate_tissue_tables'])
         tissues_fscores_table="all_tissues"
@@ -164,14 +167,20 @@ if __name__ == '__main__':
                     motif_cols_names=motif_cols_names,
                     number_of_rows_to_load=50000,
                     annotation_weights_inputfile=params['annotation_weights_inputfile'],
-                    skip_negative_weights=Utilities.get_value(params['skip_negative_weights'])
+                    skip_negative_weights=Utilities.get_value(params['skip_negative_weights']),
+                    generate_tissue_from_db==Utilities.get_value(params['generate_tissue_from_db'])
                 )
         
         #split motif table per chr
         new_table_name="motifs"
+        if process_cell_table:
+            motifs_table = cell_table
+        if process_tissues:
+            motifs_table = tissues_fscores_table
+            
         if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name, 
                                            new_table_name): 
-            GenerateMotifsTables.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table=cell_table, motif_cols=motif_cols_names, new_table_name=new_table_name)
+            GenerateMotifsTables.create_motifs_table(db_name, db_user_name, db_host_name, motifs_table = motifs_table, motif_cols=motif_cols_names, new_table_name=new_table_name)
             GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name, 
                                                       motifs_table=new_table_name,
                                                       motif_names_table="motif_names" 
