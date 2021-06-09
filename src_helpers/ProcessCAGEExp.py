@@ -10,9 +10,9 @@ output format: peak1 info(chr start end strand) cell1#avgExpValue,cell2#avgExpVa
 '''
 def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile, 
                                          peak_expression_matrix_inputfile, 
-                                         start_index_expr_values=7, 
+                                         start_index_expr_values=1, 
                                          peak_coords_index = 0, 
-                                         header_line_starting_keyword="00Annotation", 
+                                         header_line_starting_keyword="Id", 
                                          peak_lines_starting_keyword="chr", 
                                          ignore_lines_starting_wiht_keyword='#'):
     #peak coord format in FANTOM dataset =  chr10:100013403..100013414,-
@@ -34,7 +34,7 @@ def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile,
                 split_line = line.split('\t')
                 if line.startswith(header_line_starting_keyword) and len(sample_ids_from_expr_file) == 0: #the header line starts with keyword
                     for x in split_line[start_index_expr_values::]:
-                        sample_ids_from_expr_file.append(x.strip().split('.')[2]) #an example of a sample ID is: tpm.293SLAM%20rinderpest%20infection%2c%2000hr%2c%20biol_rep3.CNhs14408.13543-145H6 but since only the libraryID (e.g CNhs14408) is listed in the sample_info file so only that one is extracted 
+                        sample_ids_from_expr_file.append(x.strip()) 
 
                 elif line.startswith(peak_lines_starting_keyword):
                     new_line = []
