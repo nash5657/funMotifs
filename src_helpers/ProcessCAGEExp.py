@@ -34,8 +34,10 @@ def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile,
                 split_line = line.split('\t')
                 if line.startswith(header_line_starting_keyword) and len(sample_ids_from_expr_file) == 0: #the header line starts with keyword
                     for x in split_line[start_index_expr_values::]:
-                        sample_ids_from_expr_file.append(x.strip()) 
-
+                        if "." in x:
+                            sample_ids_from_expr_file.append(x.strip().split('.')[2]) 
+                        else:
+                            sample_ids_from_expr_file.append(x.strip())
                 elif line.startswith(peak_lines_starting_keyword):
                     new_line = []
                     for cell in cell_sample_dict.keys():
@@ -55,5 +57,7 @@ def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile,
 if __name__ == '__main__':
     cell_to_sampleID_mapping_inputfile = sys.argv[1]
     peak_expression_matrix_inputfile = sys.argv[2]
-    extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile, peak_expression_matrix_inputfile)
+    header_line_starting_keyword = sys.argv[3]
+    start_index_expr_values = sys.argv[4]
+    extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile, peak_expression_matrix_inputfile, header_line_starting_keyword=header_line_starting_keyword, start_index_expr_values=start_index_expr_values)
     
