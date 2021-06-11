@@ -394,15 +394,16 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                     header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval','strand']
                     for cell in sorted(cells_assays_dict.keys()):
                         for assay in sorted(cells_assays_dict[cell].keys()):
-                            if cell=='22Rv1' or cell=='8988T':
+                            if cell[0].isdigit():
+                            #if cell=='22Rv1' or cell=='8988T':
                                 cell='a'+cell
                                 
-                            if cell=="Ammon's horn":
-                                cell="Ammons horn"
-                            if cell=="Peyer's patch":
-                                cell="Peyers patch"
+                            #if cell=="Ammon's horn":
+                            #    cell="Ammons horn"
+                            #if cell=="Peyer's patch":
+                            #    cell="Peyers patch"
                             cell_name ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                                 .replace('-','__').replace('.','')).split())
+                                                 .replace('-','__').replace('.','').replace("'","")).split())
                             header_line.append('"'+cell_name+'"')
                     #print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
