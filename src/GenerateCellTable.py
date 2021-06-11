@@ -29,18 +29,18 @@ def create_cell_table(db_name, db_user_name, db_host_name,
             except KeyError:
                 pass
             
-            if cell=='22Rv1' or cell=='8988T':
+            if cell[0].isdigit():
                 cell='a'+cell
                 
-            if cell=="Ammon's horn":
-                cell="Ammons horn"
-            if cell=="Peyer's patch":
-                cell="Peyers patch"
+            #if cell=="Ammon's horn":
+            #    cell="Ammons horn"
+            #if cell=="Peyer's patch":
+            #    cell="Peyers patch"
 
                 
 
             feature ='_'.join(((cell + "___" + assay).replace('(','').replace(')','')
-                                         .replace('-','__').replace('.','')).split())
+                                         .replace('-','__').replace('.','').replace("'","")).split())
             field_names.append(feature+ " " + data_type)
             
             col_names.append(feature)

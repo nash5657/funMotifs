@@ -46,10 +46,10 @@ def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile,
                             list_of_expression_in_this_peak_from_all_samples_of_this_cell.append(float(split_line[start_index_expr_values+sample_ids_from_expr_file.index(sampleID)]))
                         #only add cell lines that have the peak active in at least one of their samples; Note: changes the next line to get only cells that are active in a given percentage of samples because the list contains the value from all samples of this cell
                         if np.mean(list_of_expression_in_this_peak_from_all_samples_of_this_cell) > 0: #=0 means write all regardless of their activity
-                            new_line.append(cell + "#FANTOM#" + str(np.mean(list_of_expression_in_this_peak_from_all_samples_of_this_cell)))
+                            new_line.append(cell.replace(' - ',"-") + "#FANTOM#" + str(np.mean(list_of_expression_in_this_peak_from_all_samples_of_this_cell)))
                     #only write peaks that are active in at least one cell line     
                     if len(new_line)>0:#=0 means write all the peaks regardless their activity
-                        peak_expression_matrix_outfile.write(split_line[peak_coords_index].strip().split(',')[0].replace(':',"\t").replace('..','\t') + '\t' + ','.join(new_line) + '\n')
+                        peak_expression_matrix_outfile.write(split_line[peak_coords_index].strip().split(',')[0].replace(':',"\t").replace('..','\t').replace('-',"\t") + '\t' + ','.join(new_line) + '\n')
             line = peak_expression_matrix_infile.readline()
         peak_expression_matrix_outfile.close()
     return peak_expression_matrix_outputfile

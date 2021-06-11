@@ -45,13 +45,22 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
                     #print(cell)
                     if cell in cell_assays.keys():
                         cell_updated=cell
-                        if cell=='22Rv1' or cell=='8988T':
-                            cell_updated='a'+cell       
-                        if cell=="Ammon's horn":
-                            cell_updated="Ammons horn"
-                        if cell=="Peyer's patch":
-                            cell_updated="Peyers patch"
-                        cell_updated_name = '_'.join(cell_updated.replace('(','').replace(')','').replace('-','__').replace('.','').split())
+                        if cell[0].isdigit():
+                            #if cell=='22Rv1' or cell=='8988T':
+                                cell_updated='a'+cell
+                                
+                            #if cell=="Ammon's horn":
+                            #    cell="Ammons horn"
+                            #if cell=="Peyer's patch":
+                            #    cell="Peyers patch"
+
+                        #if cell=='22Rv1' or cell=='8988T':
+                        #    cell_updated='a'+cell       
+                        #if cell=="Ammon's horn":
+                        #    cell_updated="Ammons horn"
+                        #if cell=="Peyer's patch":
+                        #    cell_updated="Peyers patch"
+                        cell_updated_name = '_'.join(cell_updated.replace('(','').replace(')','').replace('-','__').replace('.','').replace("'","").split())
                         print(cell_updated_name)
                         print(cell_assays[cell])
                         if ':' in s:
