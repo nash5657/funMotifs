@@ -204,7 +204,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 
                                 if assay_type=="Reg_elem_EpiMap":
 
-                                    if dataset_name.split.split('_')[-2]=='promoter':
+                                    if dataset_name.split('_')[-2]=='promoter':
                                         dataset_name_unzipped_hg38 = dataset_name_unzipped+'_prom_hg38'
                                         dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
                                         os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Promoter"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))
@@ -337,7 +337,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                                 #dataset_name = '.'.join(dataset_name.split('.')[0:-1])
                                 if assay_type=="Reg_elem_EpiMap":
 
-                                    if dataset_name.split('.')[-2].split('_')[0]=='promoter':
+                                    if dataset_name.split('_')[-2]=='promoter':
                                         dataset_name_unzipped_hg38 = dataset_name_unzipped+'_prom_hg38'
                                         dataset_name_unzipped_hg38_unmapped = dataset_name_unzipped_hg38+ '_unmapped'
                                         os.system("""awk '{{if(NR>1)print}}' {} | awk -F"\t" '{{$4="Promoter"; print}}' |  liftOver stdin {} {} {}""".format(dataset_name_unzipped, hg18ToHg19_over_chain, dataset_name_unzipped_hg38,dataset_name_unzipped_hg38_unmapped ))

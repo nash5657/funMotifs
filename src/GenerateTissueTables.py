@@ -11,6 +11,7 @@ import math
 import psycopg2
 from psycopg2.extras import DictCursor
 import DBUtilities
+import pandas as pd
 
 def get_tissue_cell_mappings(cell_assays, assay_names, 
                              tissue_cell_mappings_file, 
@@ -386,7 +387,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     for tissue in sorted(tissue_cell_allassays.keys()):
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             cols_to_write_to_allassays.append(tissue+'___'+assay)
-    
+    thread_num = 0
 #     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
 #     curs_for_count = conn.cursor(name = "countcurs", cursor_factory=DictCursor)
 #     thread_num = 0
@@ -410,9 +411,14 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         n_lines = 1
         n_lines_end=number_of_rows_to_load
         num_cores = number_processes_to_run_in_parallel
-        p = Pool(number_processes_to_run_in_parallel)
+        
         for file_in in scored_motifs_overlapping_tracks_files:
-            selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t')
+            i = 0
+            n_lines = 1
+            n_lines_end=number_of_rows_to_load
+            num_cores = number_processes_to_run_in_parallel
+            p = Pool(number_processes_to_run_in_parallel)
+            selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t', dtype=str)
             selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
             #to list of tuples
             records = selected_rows_df_order.to_records(index=False)
@@ -429,7 +435,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                 print('num_rows: ', n_lines_end)
                 
                 selected_rows = []
-                selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t')
+                selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
                 selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
                 #to list of tuples
                 records = selected_rows_df_order.to_records(index=False)
@@ -471,7 +477,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             print('num_rows remaining: ', num_rows)
             t_for_fetch = time.time()
             selected_rows = []
-            selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t')
+            selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
             selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
             #to list of tuples
             records = selected_rows_df_order.to_records(index=False)

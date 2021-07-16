@@ -18,6 +18,7 @@ import DataProcessing
 import ProcessTFMotifs
 import MotifAnnotation
 import GenerateMotifsTables
+import pandas as pd
 
 
 def parse_args():
@@ -167,7 +168,7 @@ if __name__ == '__main__':
                     motif_cols_names=motif_cols_names,
                     number_of_rows_to_load=50000,
                     annotation_weights_inputfile=params['annotation_weights_inputfile'],
-                    skip_negotive_weights=Utilities.get_value(params['skip_negative_weights']),
+                    skip_negative_weights=Utilities.get_value(params['skip_negative_weights']),
                     generate_tissue_from_db==Utilities.get_value(params['generate_tissue_from_db'])
                 )
         
