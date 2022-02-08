@@ -13,6 +13,6 @@ ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923452
 ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE53nnn/GSE53984/suppl/GSE53984_GSM923444_Bj_Rep1_segments.bed.gz
 
 Merge files in the datafiles/ReplicationTiming directory using the following command: 
-awk -F"\t" ' { print FILENAME"\t"$0 } ' * | awk '{split($1,a,"_"); print $2"\t"$3"\t"$4"\t"a[3]"#RepliDomain#"$5}' | sort -k1,2 -V  > ReplicationDomains.bed4
+awk -F"\t" '{ print FILENAME"\t"$0 } ' * | awk '{split($1,a,"_"); print $2"\t"$3"\t"$4"\t"a[3]"#RepliDomain#"$5}' | sort -k1,2 -V  > ReplicationDomains.bed4
 
 In order to lift the data from hg19 to GRCh38 use liftOver.
