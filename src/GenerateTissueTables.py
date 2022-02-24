@@ -12,6 +12,8 @@ import psycopg2
 from psycopg2.extras import DictCursor
 import DBUtilities
 import pandas as pd
+import os
+import glob
 
 def get_tissue_cell_mappings(cell_assays, assay_names, 
                              tissue_cell_mappings_file, 
@@ -272,6 +274,297 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     conn.close()
     return
 
+
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                           cols_to_write_to,
+                           cols_to_write_to_allassays,thread_num, 
+                           feature_weights_dict, 
+                           db_name, db_user_name, db_host_name, tissues_fscores_table):
+    
+    print("Thread {} has started".format(thread_num))
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
+    curs_for_insertion = conn.cursor()
+    
+    tissues_values = {}
+    tissues_fields = {}
+    for tissue in sorted(tissue_cell_allassays.keys()):
+        tissues_fields[tissue] = ['mid', 'fscore']
+        tissues_values[tissue] = []
+        for assay in sorted(tissue_cell_allassays[tissue].keys()):
+            tissues_fields[tissue].append(assay.lower())
+    fscores_per_tissues_allrows = []
+    #values_to_write = []
+    t_process = time.time()
+    with open(scored_motifs_overlapping_tracks_files_tissue) as data_infile:
+        l = data_infile.readline()
+        while l:
+            row = l.strip().split('\t')
+    #for row in selected_rows:
+        #value_current_row = [row['mid']]
+        #reset tissue_cell_allassays for every new row
+            for tissue in sorted(tissue_cell_allassays.keys()):
+                for assay in sorted(tissue_cell_allassays[tissue].keys()):
+                    tissue_cell_allassays[tissue][assay]='NaN'
+                    
+            for tissue in sorted(tissue_cell_assays.keys()):
+                for assay in sorted(tissue_cell_assays[tissue].keys()):
+                    values = []
+                    for col in tissue_cell_assays[tissue][assay]:
+                        #col = col.encode('ascii','ignore').lower()
+                        #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
+                        col_id = col_list_lower.index(col)
+                        print(col_id)
+                        if row[col_id] not in ["NaN", float('NaN'), float('nan'), 'nan']:
+                            print(row[col_id])
+                            try:
+                                if not math.isnan(float(row[col_id])):
+                                    values.append(float(row[col_id]))
+                            except ValueError:
+                                values.append(row[col_id])              
+                    
+                    value = 'NaN'
+                    if len(values)>0:
+                        try:
+                            value = sum(values)/float(len(values))
+                        except TypeError:
+                            value = Counter(values).most_common(1)[0][0]
+                        
+                    tissue_cell_allassays[tissue][assay]=value
+                    #value_current_row.append(value)
+                    
+            #values_to_write.append(value_current_row)
+            #impute missing values
+            for assay in assay_names:
+                assay = '_'.join(assay.replace('(','').replace(')','').replace('-','__').split())
+                tissues_with_NaN_values = []
+                tissues_with_values = []
+                for tissue in tissue_cell_allassays.keys():
+                    if tissue_cell_allassays[tissue][assay]=="NaN":
+                        tissues_with_NaN_values.append(tissue)
+                    else:
+                        try:
+                            tissues_with_values.append(float(tissue_cell_allassays[tissue][assay]))
+                        except ValueError:
+                            tissues_with_values.append(tissue_cell_allassays[tissue][assay])
+                
+                if len(tissues_with_NaN_values)>0:
+                    if len(tissues_with_values)>=4:
+                        value = 'NaN'
+                        try:#FIX: For peaks (ChIP-seq & DNase-seq) don't take the average, rather check if there are more than 4 samples that have a peak then set it to 1 otherwise set it to zero, currently if only one cell has a peak with value x and all other cells have no peak for a motif the imputed value would still be larger than zero. 
+                            value = sum(tissues_with_values)/float(len(tissues_with_values))
+                        except TypeError:
+                            value = Counter(tissues_with_values).most_common(1)[0][0]
+                        if value!='NaN':
+                            for tissue in tissues_with_NaN_values:
+                                tissue_cell_allassays[tissue][assay] = value
+            
+            fscores_per_tissues = [row['mid']]
+            for tissue in sorted(tissue_cell_allassays.keys()):
+                values_selected_row = [row['mid'], 0.0]
+                fscore = 0.0
+                for assay in sorted(tissue_cell_allassays[tissue].keys()):
+                    values_selected_row.append(tissue_cell_allassays[tissue][assay])
+                    
+                    #compute the final score
+                    value = tissue_cell_allassays[tissue][assay]
+                    fscore+=get_score_from_value(value, assay, feature_weights_dict)
+                    
+                values_selected_row[1]=fscore
+                tissues_values[tissue].append(values_selected_row)
+                #for the tissues_fscores table
+                fscores_per_tissues.append(fscore)
+            fscores_per_tissues_allrows.append(fscores_per_tissues)
+            l = data_infile.readline()
+    print('t_process (func): ', time.time()-t_process)
+    
+    #insert all collected values to their respective tables/tissues
+    t_insert = time.time()
+    for tissue in sorted(tissues_values.keys()):
+        s_chars = ','.join('%s' for i in range(0, len(tissues_fields[tissue])))
+        field_names=','.join(tissues_fields[tissue])
+        
+        #curs_for_insertion.executemany('insert into {table_name} ({field_names}) values ({values})'.format(table_name='temp'+tissue, field_names=field_names, values=s_chars), tissues_values[tissue])
+        '''execute_values(cur = curs_for_insertion, 
+                       sql = 'insert into {table_name} ({field_names}) values (%s)'.format(table_name=tissue, field_names=','.join(tissues_fields[tissue])), 
+                       argslist = tissues_values[tissue],
+                       template = None,
+                       page_size = 100)
+        '''
+        t_tissues_values = tuple(tissues_values[tissue])
+        dataText = ','.join('('+curs_for_insertion.mogrify(s_chars, row) + ')' for row in t_tissues_values)
+        curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText)) 
+        
+    #insert into tissues_fscores table
+    tissues_names_for_fscores = ['mid']
+    tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
+    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
+    t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
+    fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
+    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
+    
+    print('t_insert (func): ', time.time()-t_insert)
+    conn.commit()
+    del tissues_values
+    del tissues_fields
+    print("Thread {} is done".format(thread_num))
+    curs_for_insertion.close()
+    conn.close()
+    return
+
+def insert_into_tissues_per_tissue(scored_motifs_overlapping_tracks_files, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                           cols_to_write_to,
+                           cols_to_write_to_allassays,thread_num, 
+                           feature_weights_dict, 
+                           db_name, db_user_name, db_host_name, tissues_fscores_table):
+    
+    print("Thread {} has started".format(thread_num))
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
+    curs_for_insertion = conn.cursor()
+    
+    tissues_values = {}
+    tissues_fields = {}
+    tissues_fields[tissue] = ['mid', 'fscore']
+    tissues_values[tissue] = []
+    for assay in sorted(tissue_cell_allassays[tissue].keys()):
+        tissues_fields[tissue].append(assay.lower())
+    fscores_per_tissues_allrows = []
+    #values_to_write = []
+    t_process = time.time()
+    with open(scored_motifs_overlapping_tracks_files_tissue) as data_infile:
+        l = data_infile.readline()
+        while l:
+            row = l.strip().split('\t')
+            for assay in sorted(tissue_cell_allassays[tissue].keys()):
+                tissue_cell_allassays[tissue][assay]='NaN'
+                
+            for assay in sorted(tissue_cell_assays[tissue].keys()):
+                values = []
+                for col in tissue_cell_assays[tissue][assay]:
+                    #col = col.encode('ascii','ignore').lower()
+                    #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
+                    if row[col] not in ["NaN", float('NaN'), float('nan'), 'nan']:
+                        try:
+                            if not math.isnan(float(row[col])):
+                                values.append(float(row[col]))
+                        except ValueError:
+                            values.append(row[col]) 
+                value = 'NaN'
+                if len(values)>0:
+                    try:
+                        value = sum(values)/float(len(values))
+                    except TypeError:
+                        value = Counter(values).most_common(1)[0][0]
+                tissue_cell_allassays[tissue][assay]=value
+                
+            l = data_infile.readline()
+    for row in selected_rows:
+        #value_current_row = [row['mid']]
+        #reset tissue_cell_allassays for every new row
+        for tissue in sorted(tissue_cell_allassays.keys()):
+            for assay in sorted(tissue_cell_allassays[tissue].keys()):
+                tissue_cell_allassays[tissue][assay]='NaN'
+                
+        for tissue in sorted(tissue_cell_assays.keys()):
+            for assay in sorted(tissue_cell_assays[tissue].keys()):
+                values = []
+                for col in tissue_cell_assays[tissue][assay]:
+                    #col = col.encode('ascii','ignore').lower()
+                    #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
+                    if row[col] not in ["NaN", float('NaN'), float('nan'), 'nan']:
+                        try:
+                            if not math.isnan(float(row[col])):
+                                values.append(float(row[col]))
+                        except ValueError:
+                            values.append(row[col])              
+                
+                value = 'NaN'
+                if len(values)>0:
+                    try:
+                        value = sum(values)/float(len(values))
+                    except TypeError:
+                        value = Counter(values).most_common(1)[0][0]
+                    
+                tissue_cell_allassays[tissue][assay]=value
+                #value_current_row.append(value)
+                
+        #values_to_write.append(value_current_row)
+        #impute missing values
+        for assay in assay_names:
+            assay = '_'.join(assay.replace('(','').replace(')','').replace('-','__').split())
+            tissues_with_NaN_values = []
+            tissues_with_values = []
+            for tissue in tissue_cell_allassays.keys():
+                if tissue_cell_allassays[tissue][assay]=="NaN":
+                    tissues_with_NaN_values.append(tissue)
+                else:
+                    try:
+                        tissues_with_values.append(float(tissue_cell_allassays[tissue][assay]))
+                    except ValueError:
+                        tissues_with_values.append(tissue_cell_allassays[tissue][assay])
+            
+            if len(tissues_with_NaN_values)>0:
+                if len(tissues_with_values)>=4:
+                    value = 'NaN'
+                    try:#FIX: For peaks (ChIP-seq & DNase-seq) don't take the average, rather check if there are more than 4 samples that have a peak then set it to 1 otherwise set it to zero, currently if only one cell has a peak with value x and all other cells have no peak for a motif the imputed value would still be larger than zero. 
+                        value = sum(tissues_with_values)/float(len(tissues_with_values))
+                    except TypeError:
+                        value = Counter(tissues_with_values).most_common(1)[0][0]
+                    if value!='NaN':
+                        for tissue in tissues_with_NaN_values:
+                            tissue_cell_allassays[tissue][assay] = value
+        
+        fscores_per_tissues = [row['mid']]
+        for tissue in sorted(tissue_cell_allassays.keys()):
+            values_selected_row = [row['mid'], 0.0]
+            fscore = 0.0
+            for assay in sorted(tissue_cell_allassays[tissue].keys()):
+                values_selected_row.append(tissue_cell_allassays[tissue][assay])
+                
+                #compute the final score
+                value = tissue_cell_allassays[tissue][assay]
+                fscore+=get_score_from_value(value, assay, feature_weights_dict)
+                
+            values_selected_row[1]=fscore
+            tissues_values[tissue].append(values_selected_row)
+            #for the tissues_fscores table
+            fscores_per_tissues.append(fscore)
+        fscores_per_tissues_allrows.append(fscores_per_tissues)
+    print('t_process (func): ', time.time()-t_process)
+    
+    #insert all collected values to their respective tables/tissues
+    t_insert = time.time()
+    for tissue in sorted(tissues_values.keys()):
+        s_chars = ','.join('%s' for i in range(0, len(tissues_fields[tissue])))
+        field_names=','.join(tissues_fields[tissue])
+        
+        #curs_for_insertion.executemany('insert into {table_name} ({field_names}) values ({values})'.format(table_name='temp'+tissue, field_names=field_names, values=s_chars), tissues_values[tissue])
+        '''execute_values(cur = curs_for_insertion, 
+                       sql = 'insert into {table_name} ({field_names}) values (%s)'.format(table_name=tissue, field_names=','.join(tissues_fields[tissue])), 
+                       argslist = tissues_values[tissue],
+                       template = None,
+                       page_size = 100)
+        '''
+        t_tissues_values = tuple(tissues_values[tissue])
+        dataText = ','.join('('+curs_for_insertion.mogrify(s_chars, row) + ')' for row in t_tissues_values)
+        curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText)) 
+        
+    #insert into tissues_fscores table
+    tissues_names_for_fscores = ['mid']
+    tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
+    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
+    t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
+    fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
+    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
+    
+    print('t_insert (func): ', time.time()-t_insert)
+    conn.commit()
+    del tissues_values
+    del tissues_fields
+    print("Thread {} is done".format(thread_num))
+    curs_for_insertion.close()
+    conn.close()
+    return
+
 def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, table_from,
                            run_in_parallel_param, 
                            number_processes_to_run_in_parallel,
@@ -388,6 +681,8 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             cols_to_write_to_allassays.append(tissue+'___'+assay)
     thread_num = 0
+    
+    col_list_lower = [x.lower() for x in col_list] 
 #     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
 #     curs_for_count = conn.cursor(name = "countcurs", cursor_factory=DictCursor)
 #     thread_num = 0
@@ -403,47 +698,208 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     #t_for_fetch = time.time()
     #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
     #print('t_to_fetch: ', time.time()-t_for_fetch)
-    print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
+    #print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
     t_jobset = time.time()
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         print('Running in parallel')
         i = 0
-        n_lines = 1
-        n_lines_end=number_of_rows_to_load
+        #n_lines = 1
+       # n_lines_end=number_of_rows_to_load
         num_cores = number_processes_to_run_in_parallel
         
         for file_in in scored_motifs_overlapping_tracks_files:
             i = 0
-            n_lines = 1
-            n_lines_end=number_of_rows_to_load
+            file_id=0
+            #divide files into subfiles
+            comm_divide_files ="cat {} | tail -n +2 | split -l {} - {}".format(file_in, str(number_of_rows_to_load), file_in+"_part")
+            print(comm_divide_files)
+            os.system(comm_divide_files)
+            file_list = glob.glob(file+'_part*', recursive=False)
+            n_file_list = len(file_list) 
+            
+            
+            #n_lines = 1
+            #n_lines_end=number_of_rows_to_load
             num_cores = number_processes_to_run_in_parallel
             p = Pool(number_processes_to_run_in_parallel)
-            selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t', dtype=str)
+            #selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t', dtype=str)
+            #selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
+            #to list of tuples
+            #records = selected_rows_df_order.to_records(index=False)
+            #selected_rows = list(records)
+            
+            while i<num_cores:
+                
+                print(file_list[file_id])
+                p.apply_async(insert_into_tissues_from_file, args=(file_list[file_id], col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                                       cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
+                                       db_name, db_user_name, db_host_name, tissues_fscores_table))
+                #num_rows -=len(selected_rows)
+                #print('num_rows: ', n_lines_end)
+                
+               # selected_rows = []
+               # selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
+               # selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
+                #to list of tuples
+                #records = selected_rows_df_order.to_records(index=False)
+                #selected_rows = list(records)
+                #n_lines_end = n_lines_end + number_of_rows_to_load
+                #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
+                
+                if n_file_list==file_id:
+                    p.close()
+                    p.join()
+                    break
+                if i==num_cores-1:
+                    p.close()
+                    p.join()
+                    print('t_jobset: ', time.time()-t_jobset)
+                    t_jobset = time.time()
+                    p = Pool(number_processes_to_run_in_parallel)
+                    i=0
+                i+=1
+                thread_num+=1
+                file_id+=1
+                #os.remove(file_list[file_id])
+    else:
+        print('Running sequentially')
+        n_lines = 1
+        n_lines_end=number_of_rows_to_load
+        for file_in in scored_motifs_overlapping_tracks_files:
+            selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t')
             selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
             #to list of tuples
             records = selected_rows_df_order.to_records(index=False)
             selected_rows = list(records)
+        while selected_rows:
+            t_to_insert = time.time()
+            insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                                   cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
+                                   db_name, db_user_name, db_host_name, tissues_fscores_table)
+            
+            print('t_to_insert: ', time.time()-t_to_insert)
+            num_rows -=len(selected_rows)
+            print('num_rows remaining: ', num_rows)
+            t_for_fetch = time.time()
+            selected_rows = []
+            selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
+            selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
+            #to list of tuples
+            records = selected_rows_df_order.to_records(index=False)
+            selected_rows = list(records)
+            n_lines_end = n_lines_end + number_of_rows_to_load
+            #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
+            thread_num+=1
+            print('t_to_fetch: ', time.time()-t_for_fetch)
+            if num_rows<=0:
+                print("All rows are processed and inserted from {} into tissue tables".format(table_from))
+                break
+    
+    #if num_rows==0:
+    #    print("All rows are processed and inserted from {} into tissue tables".format(table_from))
+    #else:
+    #    print("Warning!!! There are {} remaining rows to be inserted".format(num_rows))
+    print('All rows are processed and inserted into tissues tables')
+    curs_for_selection.close()
+    conn.close()
+    return
+
+
+def populate_tissue_values_from_scored_files_per_tissue(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, 
+                           motif_cols_names,
+                           run_in_parallel_param, 
+                           number_processes_to_run_in_parallel,
+                           scored_motifs_overlapping_tracks_files,
+                           feature_weights_dict,
+                           db_name, db_user_name, db_host_name,
+                           tissues_fscores_table,
+                           cols_to_write_to = [], 
+                           cols_to_write_to_allassays = [],
+                           number_of_rows_to_load = 100000,
+                           ):
+    
+    for tissue in sorted(tissue_cell_assays.keys()):
+        for assay in sorted(tissue_cell_assays[tissue].keys()):
+            cols_to_write_to.append(tissue+'___'+assay)
+    
+    for tissue in sorted(tissue_cell_allassays.keys()):
+        for assay in sorted(tissue_cell_allassays[tissue].keys()):
+            cols_to_write_to_allassays.append(tissue+'___'+assay)
+    thread_num = 0
+#     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
+#     curs_for_count = conn.cursor(name = "countcurs", cursor_factory=DictCursor)
+#     thread_num = 0
+#     curs_for_count.execute('select count(posrange) from {}'.format(table_from))
+#     num_rows = int(curs_for_count.fetchone()[0])#85459976
+#     curs_for_count.close()
+#     print('total number of rows to be inserted: ', num_rows)
+#     curs_for_selection = conn.cursor(name = "selectioncurs", cursor_factory=DictCursor)
+#     curs_for_selection.itersize = number_of_rows_to_load
+#     t_for_select =  time.time()
+#     curs_for_selection.execute('select {} from {}'.format(','.join(col_list), table_from))
+    #print('t_to_select: ', time.time() - t_for_select)
+    #t_for_fetch = time.time()
+    #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
+    #print('t_to_fetch: ', time.time()-t_for_fetch)
+    #print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
+    list_tissues = list(sorted(tissue_cell_allassays.keys()))
+    num_tissues = len(list_tissues)
+    t_jobset = time.time()
+    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
+        print('Running in parallel')
+       # n_lines = 1
+        #n_lines_end=number_of_rows_to_load
+        num_cores = number_processes_to_run_in_parallel
+        
+        for file_in in scored_motifs_overlapping_tracks_files:
+            i = 0
+            #n_lines = 1
+           # n_lines_end=number_of_rows_to_load
+            num_cores = number_processes_to_run_in_parallel
+            p = Pool(number_processes_to_run_in_parallel)
+            #selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t', dtype=str)
+           # selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
+            #to list of tuples
+            #records = selected_rows_df_order.to_records(index=False)
+            #selected_rows = list(records)
+            
+
+            
             
             while i<num_cores:
                 
-                    
-                p.apply_async(insert_into_tissues, args=(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                tissue = list_tissues[i]
+                print(tissue)
+                scored_motifs_overlapping_tracks_files_tissue = file_in + '_' + tissue
+                #cell_assay for tissue
+                tissue_cell_assays_v=[]
+                tissue_cell_assays_v.extend(motif_cols_names)
+                tissue_cell_assays_v = list(tissue_cell_assays[tissue].values())
+                #find indeces of tissue-related columns
+                tissue_cell_assays_id = [i for i in range(len(col_list)) if col_list[i] in tissue_cell_assays_v]
+                #select columns for selected tissue
+                comm_cut_tissue = ('cut -f{} {} > {}'.format(','.join([str(id) for id in tissue_cell_assays_id]), file_in, scored_motifs_overlapping_tracks_files_tissue))
+                print(comm_cut_tissue)
+                os.system(comm_cut_tissue)   
+                
+                
+                p.apply_async(insert_into_tissues_per_tissue, args=(scored_motifs_overlapping_tracks_files_tissue, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table))
                 #num_rows -=len(selected_rows)
                 print(file_in)
-                print('num_rows: ', n_lines_end)
+                #print('num_rows: ', n_lines_end)
                 
-                selected_rows = []
-                selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
-                selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
+                #selected_rows = []
+                #selected_rows_df= pd.read_csv(file_in,skiprows=range(n_lines,n_lines_end), nrows=number_of_rows_to_load, sep='\t', dtype=str)
+                #selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
                 #to list of tuples
-                records = selected_rows_df_order.to_records(index=False)
-                selected_rows = list(records)
-                n_lines_end = n_lines_end + number_of_rows_to_load
+                #records = selected_rows_df_order.to_records(index=False)
+                #selected_rows = list(records)
+                #n_lines_end = n_lines_end + number_of_rows_to_load
                 #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
-                
-                if len(selected_rows)<=0:
+                num_tissues -=1
+                if num_tissues<=0:
                     p.close()
                     p.join()
                     break
@@ -497,7 +953,6 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     curs_for_selection.close()
     conn.close()
     return
-
 def get_weights_per_feature(annotation_weights_inputfile, skip_negative_weights):
     
     feature_weights = {}
@@ -563,9 +1018,10 @@ def generate_tissue_tables(db_name,
                                number_of_rows_to_load = number_of_rows_to_load,
                                )
     else:
-        populate_tissue_values_from_scored_files(tissue_cell_assays, 
+        populate_tissue_values_from_scored_file(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, run_in_parallel_param, number_processes_to_run_in_parallel, scored_motifs_overlapping_tracks_files, feature_weights_dict, db_name, db_user_name, db_host_name, tissues_fscores_table, cols_to_write_to, cols_to_write_to_allassays, number_of_rows_to_load)(tissue_cell_assays, 
                                tissue_cell_allassays, 
                                assay_names, col_list, 
+                               motif_cols_names,
                                run_in_parallel_param=run_in_parallel_param, 
                                number_processes_to_run_in_parallel=number_processes_to_run_in_parallel, 
                                scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
@@ -574,6 +1030,7 @@ def generate_tissue_tables(db_name,
                                tissues_fscores_table=tissues_fscores_table,
                                number_of_rows_to_load = number_of_rows_to_load,
                                )
+    
     print("Creating index on tissues tables")
     for tissue_table in sorted(tissue_cols.keys()):
         DBUtilities.create_index(db_name, db_user_name, db_host_name, 
