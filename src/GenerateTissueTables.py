@@ -1018,7 +1018,7 @@ def generate_tissue_tables(db_name,
                                number_of_rows_to_load = number_of_rows_to_load,
                                )
     else:
-        populate_tissue_values_from_scored_file(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, run_in_parallel_param, number_processes_to_run_in_parallel, scored_motifs_overlapping_tracks_files, feature_weights_dict, db_name, db_user_name, db_host_name, tissues_fscores_table, cols_to_write_to, cols_to_write_to_allassays, number_of_rows_to_load)(tissue_cell_assays, 
+        populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, run_in_parallel_param, number_processes_to_run_in_parallel, scored_motifs_overlapping_tracks_files, feature_weights_dict, db_name, db_user_name, db_host_name, tissues_fscores_table, cols_to_write_to, cols_to_write_to_allassays, number_of_rows_to_load)(tissue_cell_assays, 
                                tissue_cell_allassays, 
                                assay_names, col_list, 
                                motif_cols_names,
