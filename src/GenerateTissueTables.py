@@ -746,8 +746,9 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                 #selected_rows = list(records)
                 #n_lines_end = n_lines_end + number_of_rows_to_load
                 #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
+                
                 file_id+=1
-                if (n_file_list-1)==file_id:
+                if n_file_list==file_id:
                     p.close()
                     p.join()
                     break
@@ -760,8 +761,10 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                     i=0
                 i+=1
                 thread_num+=1
+            
+            for file_in_part in  file_list:
+                os.remove(file_in_part)   
                 
-                #os.remove(file_list[file_id])
     else:
         print('Running sequentially')
         n_lines = 1

@@ -166,7 +166,7 @@ if __name__ == '__main__':
                     number_processes_to_run_in_parallel,
                     scored_motifs_overlapping_tracks_files,
                     motif_cols_names=motif_cols_names,
-                    number_of_rows_to_load=100000,
+                    number_of_rows_to_load=1000000,
                     annotation_weights_inputfile=params['annotation_weights_inputfile'],
                     skip_negative_weights=Utilities.get_value(params['skip_negative_weights']),
                     generate_tissue_from_db=Utilities.get_value(params['generate_tissue_from_db'])
