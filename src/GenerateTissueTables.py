@@ -698,7 +698,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     #t_for_fetch = time.time()
     #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
     #print('t_to_fetch: ', time.time()-t_for_fetch)
-    #print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
+    print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
     t_jobset = time.time()
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         print('Running in parallel')
@@ -1018,10 +1018,10 @@ def generate_tissue_tables(db_name,
                                number_of_rows_to_load = number_of_rows_to_load,
                                )
     else:
-        populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_allassays, assay_names, col_list, run_in_parallel_param, number_processes_to_run_in_parallel, scored_motifs_overlapping_tracks_files, feature_weights_dict, db_name, db_user_name, db_host_name, tissues_fscores_table, cols_to_write_to, cols_to_write_to_allassays, number_of_rows_to_load)(tissue_cell_assays, 
+        populate_tissue_values_from_scored_files(tissue_cell_assays, 
                                tissue_cell_allassays, 
                                assay_names, col_list, 
-                               motif_cols_names,
+
                                run_in_parallel_param=run_in_parallel_param, 
                                number_processes_to_run_in_parallel=number_processes_to_run_in_parallel, 
                                scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
@@ -1030,6 +1030,8 @@ def generate_tissue_tables(db_name,
                                tissues_fscores_table=tissues_fscores_table,
                                number_of_rows_to_load = number_of_rows_to_load,
                                )
+        
+        
     
     print("Creating index on tissues tables")
     for tissue_table in sorted(tissue_cols.keys()):
