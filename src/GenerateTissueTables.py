@@ -804,8 +804,8 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     #else:
     #    print("Warning!!! There are {} remaining rows to be inserted".format(num_rows))
     print('All rows are processed and inserted into tissues tables')
-    curs_for_selection.close()
-    conn.close()
+    #curs_for_selection.close()
+    #conn.close()
     return
 
 
@@ -954,8 +954,8 @@ def populate_tissue_values_from_scored_files_per_tissue(tissue_cell_assays, tiss
         print("All rows are processed and inserted from {} into tissue tables".format(table_from))
     else:
         print("Warning!!! There are {} remaining rows to be inserted".format(num_rows))
-    curs_for_selection.close()
-    conn.close()
+    #curs_for_selection.close()
+    #conn.close()
     return
 def get_weights_per_feature(annotation_weights_inputfile, skip_negative_weights):
     
