@@ -716,7 +716,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             print(comm_divide_files)
             os.system(comm_divide_files)
             part_file_list = glob.glob(file_in+'_part*', recursive=False)
-            part_file_list = len(part_file_list)
+            n_part_file_list = len(part_file_list)
             print(n_part_file_list)
             
             
