@@ -38,22 +38,22 @@ def insert_from_file(motif_cols_names, i_file, n, db_name, db_user_name,
 
 def insert_into_db(motif_cols_names, db_name, db_user_name, db_host_name,  
                        motif_table, 
-                       scored_motifs_overlapping_tracks_files, 
+                       scored_motifs_overlapping_tracks_files_in, 
                        run_in_parallel_param,
                        number_processes_to_run_in_parallel
                        ):#, dir_to_import, keyword_to_check, header):
     log_file = open("log_file.txt", 'w')
-    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
+    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files_in)>1:
         p = Pool(number_processes_to_run_in_parallel)
     thread_num=0
-    for i_file in scored_motifs_overlapping_tracks_files:#[f for f in glob.glob('{}/*{}*'.format(dir_to_import, keyword_to_check))]
-        if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
+    for i_file in scored_motifs_overlapping_tracks_files_in:#[f for f in glob.glob('{}/*{}*'.format(dir_to_import, keyword_to_check))]
+        if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files_in)>1:
             thread_num+=1
             p.apply_async(insert_from_file, args=[motif_cols_names, i_file, 100000, db_name, db_user_name, db_host_name, motif_table,  thread_num])
         else:
             insert_from_file(motif_cols_names, i_file, 100000, db_name, db_user_name, db_host_name, motif_table)
         log_file.write(i_file+'\n')
-    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
+    if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files_in)>1:
         p.close()
         p.join()
     
@@ -105,7 +105,7 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     conn.close()
 
 
-def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_motifs_overlapping_tracks_files = scored_motifs_overlapping_tracks_files, motif_cols=motif_cols, motif_cols_names=motif_cols_names, new_table_name=new_table_name, run_in_parallel_param=run_in_parallel_param,
+def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, motif_cols=motif_cols, motif_cols_names=motif_cols_names, new_table_name=new_table_name, run_in_parallel_param=run_in_parallel_param,
                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel):
     
     #create database
@@ -131,7 +131,7 @@ def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_mo
                        db_user_name=db_user_name, 
                        db_host_name=db_host_name, 
                        motif_table=new_table_name, 
-                       scored_motifs_overlapping_tracks_files=file_in, 
+                       scored_motifs_overlapping_tracks_files_in=file_in, 
                        run_in_parallel_param=run_in_parallel_param,
                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
     
