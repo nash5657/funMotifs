@@ -48,6 +48,7 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
                     #print(cell)
                     if cell in cell_assays.keys():
                         cell_updated=cell
+                        
                         if cell[0].isdigit():
                             #if cell=='22Rv1' or cell=='8988T':
                                 cell_updated='a'+cell
@@ -275,7 +276,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 
-def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict, 
@@ -709,14 +710,14 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         
         for file_in in scored_motifs_overlapping_tracks_files:
             i = 0
-            file_id=0
+            #file_id=0
             #divide files into subfiles
             comm_divide_files ="cat {} | tail -n +2 | split -l {} - {}".format(file_in, str(number_of_rows_to_load), file_in+"_part")
             print(comm_divide_files)
             os.system(comm_divide_files)
-            file_list = glob.glob(file_in+'_part*', recursive=False)
-            n_file_list = len(file_list)
-            print(n_file_list)
+            part_file_list = glob.glob(file_in+'_part*', recursive=False)
+            part_file_list = len(part_file_list)
+            print(n_part_file_list)
             
             
             #n_lines = 1
@@ -729,12 +730,14 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #records = selected_rows_df_order.to_records(index=False)
             #selected_rows = list(records)
             
-            while i<num_cores:
-                
-                print(file_list[file_id])
-                p.apply_async(insert_into_tissues_from_file, args=(file_list[file_id], col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+            #while i<num_cores:
+            for part_file in part_file_list: 
+                print(part_file)
+                res = p.apply_async(insert_into_tissues_from_file, args=(part_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table))
+                print(res.get())
+                thread_num+=1
                 #num_rows -=len(selected_rows)
                 #print('num_rows: ', n_lines_end)
                 
@@ -747,23 +750,23 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                 #n_lines_end = n_lines_end + number_of_rows_to_load
                 #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
                 
-                file_id+=1
-                if n_file_list==file_id:
-                    p.close()
-                    p.join()
-                    break
-                if i==num_cores-1:
-                    p.close()
-                    p.join()
-                    print('t_jobset: ', time.time()-t_jobset)
-                    t_jobset = time.time()
-                    p = Pool(number_processes_to_run_in_parallel)
-                    i=0
-                i+=1
-                thread_num+=1
+                #file_id+=1
+                #if n_file_list==file_id:
+            p.close()
+            p.join()
+                #   break
+                #if i==num_cores-1:
+                #    p.close()
+                #    p.join()
+                #    print('t_jobset: ', time.time()-t_jobset)
+                #    t_jobset = time.time()
+                #    p = Pool(number_processes_to_run_in_parallel)
+                #    i=0
+                #i+=1
+                
             
-            for file_in_part in  file_list:
-                os.remove(file_in_part)   
+            #for file_in_part in  file_list:
+             #   os.remove(file_in_part)   
                 
     else:
         print('Running sequentially')
@@ -1000,6 +1003,7 @@ def generate_tissue_tables(db_name,
                                                                                        assay_names, 
                                                                                        tissue_cell_mappings_file,  
                                                                                        motif_cols = motif_cols_names)
+    print(col_list)
     tissue_cols = db_setup_tissues(tissue_cell_allassays, 
                                    assay_cells_datatypes, 
                                    motif_cols = ['mid INTEGER', 'fscore NUMERIC'], 
