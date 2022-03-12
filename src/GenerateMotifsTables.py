@@ -87,6 +87,7 @@ def generate_PFM_table(PFMs_dict, PFM_table_name,
     conn.commit()
     curs.close()
     conn.close()
+    return
     
  
 def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif_cols, new_table_name):
@@ -103,10 +104,11 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     conn.commit()
     curs.close()
     conn.close()
+    return
 
 
-def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_motifs_overlapping_tracks_files, motif_cols=motif_cols, motif_cols_names=motif_cols_names, new_table_name=new_table_name, run_in_parallel_param=run_in_parallel_param,
-                       number_processes_to_run_in_parallel=number_processes_to_run_in_parallel):
+def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_motifs_overlapping_tracks_files, motif_cols, motif_cols_names, new_table_name, run_in_parallel_param,
+                       number_processes_to_run_in_parallel):
     
     #create database
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
@@ -140,7 +142,8 @@ def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_mo
     
     
     
-    
+    conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
+    curs = conn.cursor()
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}tfname on {1} using btree(name);'.format(new_table_name, new_table_name))
@@ -148,6 +151,7 @@ def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_mo
     conn.commit()
     curs.close()
     conn.close()
+    return
     
     
 def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr, motif_cols):
@@ -162,6 +166,7 @@ def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr
     conn.commit()
     curs.close()
     conn.close()
+    return
     
 
 def split_motifs_table_by_chr(db_name, db_user_name, db_host_name, 
@@ -188,4 +193,4 @@ def motif_names_table(db_name, db_user_name, db_host_name,
     curs.execute('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     conn.commit()
     curs.close()
-    
+    return
