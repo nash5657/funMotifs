@@ -6,7 +6,7 @@ Created on 6 Oct 2017
 
 from collections import Counter
 from multiprocessing import Pool
-import pathos.multiprocessing as pPool
+import pathos.multiprocessing as mp
 import time
 import math
 import psycopg2
@@ -724,7 +724,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #n_lines = 1
             #n_lines_end=number_of_rows_to_load
             num_cores = number_processes_to_run_in_parallel
-            p = pPool(number_processes_to_run_in_parallel)
+            p = mp.Pool(number_processes_to_run_in_parallel)
             #selected_rows_df= pd.read_csv(file_in, nrows=number_of_rows_to_load, sep='\t', dtype=str)
             #selected_rows_df_order = selected_rows_df.reindex(columns=col_list[1::])
             #to list of tuples
