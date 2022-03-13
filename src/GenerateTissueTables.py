@@ -733,9 +733,9 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #while i<num_cores:
             for part_file in part_file_list: 
                 print(part_file)
-                res = p.apply_async(insert_into_tissues_from_file, args=(part_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
-                                       db_name, db_user_name, db_host_name, tissues_fscores_table))
+                                       db_name, db_user_name, db_host_name, tissues_fscores_table])
                 print(res.get())
                 thread_num+=1
                 #num_rows -=len(selected_rows)
