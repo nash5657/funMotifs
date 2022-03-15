@@ -15,6 +15,7 @@ import DBUtilities
 import pandas as pd
 import os
 import glob
+import json
 
 def get_tissue_cell_mappings(cell_assays, assay_names, 
                              tissue_cell_mappings_file, 
@@ -277,13 +278,24 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 
-def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, col_list_lower, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict, 
                            db_name, db_user_name, db_host_name, tissues_fscores_table):
     
+    
     print("Thread {} has started".format(thread_num))
+    
+    
+    with open(tissue_cell_assays_file, 'r') as tissue_cell_assays_infile:
+            tissue_cell_assays = tissue_cell_assays_infile.readline().strip()
+            return json.loads(tissue_cell_assays)
+        
+    with open(tissue_cell_allassays_file, 'r') as tissue_cell_allassays_infile:
+        tissue_cell_allassays = tissue_cell_allassays_infile.readline().strip()
+        return json.loads(tissue_cell_allassays)
+    
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs_for_insertion = conn.cursor()
     
@@ -679,9 +691,23 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         for assay in sorted(tissue_cell_assays[tissue].keys()):
             cols_to_write_to.append(tissue+'___'+assay)
     
+    dir_in = os.path.dirname(scored_motifs_overlapping_tracks_files[0])
+    tissue_cell_assays_file = path_in+"/tissue_cell_assays_dict"
+    tissue_cell_allassays_file = path_in+"/tissue_cell_allassays_dict"
+
+    
+    with open(tissue_cell_assays_file, 'w') as tissue_cell_assays_outfile:
+        json.dump(tissue_cell_assays, tissue_cell_assays_outfile)
+    
+    
     for tissue in sorted(tissue_cell_allassays.keys()):
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             cols_to_write_to_allassays.append(tissue+'___'+assay)
+            
+            
+    with open(tissue_cell_allassays_file, 'w') as tissue_cell_allassays_outfile:
+        json.dump(tissue_cell_allassays, tissue_cell_allassays_outfile)        
+            
     thread_num = 0
     
     col_list_lower = [x.lower() for x in col_list] 
@@ -734,9 +760,11 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #while i<num_cores:
             for part_file in part_file_list: 
                 print(part_file)
-                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, col_list_lower, tissue_cell_assays, tissue_cell_allassays, assay_names,
+                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, col_list_lower, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table])
+                
+                
                 print(res.get())
                 thread_num+=1
                 #num_rows -=len(selected_rows)
