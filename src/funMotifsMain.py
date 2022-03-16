@@ -192,7 +192,14 @@ if __name__ == '__main__':
                                                          motif_cols_names=motif_cols_names, 
                                                          new_table_name=new_table_name)
             else:
-                GenerateMotifsTables.create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_motifs_overlapping_tracks_files, motif_cols=motif_cols_names, new_table_name=new_table_name, run_in_parallel_param=run_in_parallel_param, number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
+                GenerateMotifsTables.create_motifs_table_from_file(db_name, db_user_name, 
+                                                                   db_host_name, 
+                                                                   scored_motifs_overlapping_tracks_files, 
+                                                                   motif_cols=motif_cols, 
+                                                         motif_cols_names=motif_cols_names,
+                                                          new_table_name=new_table_name, 
+                                                          run_in_parallel_param=run_in_parallel_param, 
+                                                          number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
             
             GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name, 
                                                       motifs_table=new_table_name,

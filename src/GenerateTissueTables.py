@@ -692,8 +692,8 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             cols_to_write_to.append(tissue+'___'+assay)
     
     dir_in = os.path.dirname(scored_motifs_overlapping_tracks_files[0])
-    tissue_cell_assays_file = path_in+"/tissue_cell_assays_dict"
-    tissue_cell_allassays_file = path_in+"/tissue_cell_allassays_dict"
+    tissue_cell_assays_file = dir_in+"/tissue_cell_assays_dict"
+    tissue_cell_allassays_file = dir_in+"/tissue_cell_allassays_dict"
 
     
     with open(tissue_cell_assays_file, 'w') as tissue_cell_assays_outfile:
