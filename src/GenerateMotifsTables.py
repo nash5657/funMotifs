@@ -125,8 +125,8 @@ def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_mo
     #retrive motif info from files
     for file_in in scored_motifs_overlapping_tracks_files:
         comm_cut_files ="cut -f1-{} {}| tail -n +2 > {}".format(len(motif_cols_names), file_in,  file_in+"_motifs")
-        print(comm_divide_files)
-        os.system(comm_divide_files)
+        print(comm_cut_files)
+        os.system(comm_cut_files)
         
         insert_into_db(motif_cols_names,
                        db_name = db_name, 
