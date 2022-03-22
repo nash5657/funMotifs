@@ -398,6 +398,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                 tissues_values[tissue].append(values_selected_row)
                 #for the tissues_fscores table
                 fscores_per_tissues.append(fscore)
+            print(t_process)
             fscores_per_tissues_allrows.append(fscores_per_tissues)
             l = data_infile.readline()
     print('t_process (func): ', time.time()-t_process)
@@ -417,21 +418,26 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
         '''
         t_tissues_values = tuple(tissues_values[tissue])
         dataText = ','.join('('+curs_for_insertion.mogrify(s_chars, row) + ')' for row in t_tissues_values)
-        curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText)) 
-        
-    #insert into tissues_fscores table
-    tissues_names_for_fscores = ['mid']
-    tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
-    s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
-    t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
-    fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
-    curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
+        try:
+            curs_for_insertion.execute('insert into {table_name} ({field_names}) values ({values})'.format(table_name=tissue, field_names=field_names, values=dataText)) 
+            tissues_names_for_fscores = ['mid']
+            tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
+            s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
+            t_tissues_fscores_values = tuple(fscores_per_tissues_allrows)
+            fscores_per_tissues_dataText = ','.join('('+curs_for_insertion.mogrify(s_chars_for_fscores, row) + ')' for row in t_tissues_fscores_values)
+            curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissues_fscores_table, field_names=', '.join(tissues_names_for_fscores), values=fscores_per_tissues_dataText)) 
     
-    print('t_insert (func): ', time.time()-t_insert)
-    conn.commit()
+            print('t_insert (func): ', time.time()-t_insert)
+            conn.commit()
+            print("Data inserted into DB")
+        except:
+            print("Thread coundn't insert to DB ")
+    #insert into tissues_fscores table
+    
     del tissues_values
     del tissues_fields
     print("Thread {} is done".format(thread_num))
+    
     curs_for_insertion.close()
     conn.close()
     return
@@ -777,31 +783,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             
             #while i<num_cores:
             for part_file in part_file_list: 
-                print(part_file)
-                print('col_list_lower')
-                print(col_list_lower)
-                print('tissue_cell_assays_file')
-                print(tissue_cell_assays_file)
-                print('tissue_cell_allassays_file')
-                print(tissue_cell_allassays_file)
-                print('assay_names')
-                print(list(assay_names))
-                print('cols_to_write_to')
-                print(cols_to_write_to)
-                print('cols_to_write_to_allassays')
-                print(cols_to_write_to_allassays)
-                print(thread_num)
-                print('thread_num')
-                print('feature_weights_dict_file')
-                print(feature_weights_dict_file)
-                print(db_name)
-                print('db_name')
-                print('db_user_name')
-                print(db_user_name)
-                print('db_host_name')
-                print(db_host_name)
-                print('tissues_fscores_table')
-                print(tissues_fscores_table)
+                
                 res = p.apply_async(insert_into_tissues_from_file, args=[part_file, col_list_lower, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict_file,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table])
