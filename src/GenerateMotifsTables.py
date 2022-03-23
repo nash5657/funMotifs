@@ -4,6 +4,8 @@ Created on 15 Oct 2017
 @author: husensofteng
 '''
 from multiprocessing import Pool
+import os
+import sys
 import DBUtilities
 
 def insert_from_file(motif_cols_names, i_file, n, db_name, db_user_name, 

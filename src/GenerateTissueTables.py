@@ -313,10 +313,12 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
     tissues_values = {}
     tissues_fields = {}
     for tissue in sorted(tissue_cell_allassays.keys()):
+        print(tissues)
         tissues_fields[tissue] = ['mid', 'fscore']
         tissues_values[tissue] = []
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
             tissues_fields[tissue].append(assay.lower())
+    
     fscores_per_tissues_allrows = []
     #values_to_write = []
     t_process = time.time()
@@ -324,6 +326,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
         l = data_infile.readline()
         while l:
             row = l.strip().split('\t')
+            print(row)
     #for row in selected_rows:
         #value_current_row = [row['mid']]
         #reset tissue_cell_allassays for every new row
@@ -338,7 +341,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                         #col = col.encode('ascii','ignore').lower()
                         #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
                         col_id = col_list_lower.index(col)
-                        print(col_id)
+                        #print(col_id)
                         if row[col_id] not in ["NaN", float('NaN'), float('nan'), 'nan']:
                             print(row[col_id])
                             try:
@@ -398,7 +401,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                 tissues_values[tissue].append(values_selected_row)
                 #for the tissues_fscores table
                 fscores_per_tissues.append(fscore)
-            print(t_process)
+            print(fscores_per_tissues)
             fscores_per_tissues_allrows.append(fscores_per_tissues)
             l = data_infile.readline()
     print('t_process (func): ', time.time()-t_process)
@@ -712,7 +715,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     tissue_cell_assays_file = dir_in+"/tissue_cell_assays_dict"
     tissue_cell_allassays_file = dir_in+"/tissue_cell_allassays_dict"
     feature_weights_dict_file = dir_in+ "/feature_weights_dict"
-    assay_names_file = dir_in+ "/assay_names"
+    #assay_names_file = dir_in+ "/assay_names"
     
     with open(tissue_cell_assays_file, 'w') as tissue_cell_assays_outfile:
         json.dump(tissue_cell_assays, tissue_cell_assays_outfile)
@@ -750,7 +753,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     #t_for_fetch = time.time()
     #selected_rows = curs_for_selection.fetchmany(size=number_of_rows_to_load)
     #print('t_to_fetch: ', time.time()-t_for_fetch)
-    print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
+    #print("Selected {} rows for insertion.".format(str(number_of_rows_to_load)))
     t_jobset = time.time()
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         print('Running in parallel')
