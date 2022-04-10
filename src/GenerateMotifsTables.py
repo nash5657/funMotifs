@@ -59,7 +59,7 @@ def insert_into_db(motif_cols_names, db_name, db_user_name, db_host_name,
         p.close()
         p.join()
     
-    print("Data insertion into {} is done".format(cell_table))
+    print("Data insertion into {} is done".format(motif_table))
     return
 
 
