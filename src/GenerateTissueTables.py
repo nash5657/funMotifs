@@ -765,7 +765,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             i = 0
             #file_id=0
             #read header of scored motifs file
-            with open(scored_motifs_overlapping_tracks_files) as f:
+            with open(file_in) as f:
                 header_scored = f.readline().strip('"').split('\t')
             
             header_scored_lower = [x.lower().replace('"','') for x in header_scored] 
