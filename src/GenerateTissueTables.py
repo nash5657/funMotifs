@@ -289,16 +289,13 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
     
     
     with open(tissue_cell_assays_file, 'r') as tissue_cell_assays_infile:
-            tissue_cell_assays = tissue_cell_assays_infile.readline().strip()
-            return json.loads(tissue_cell_assays)
+        tissue_cell_assays = json.loads(tissue_cell_assays)
         
     with open(tissue_cell_allassays_file, 'r') as tissue_cell_allassays_infile:
-        tissue_cell_allassays = tissue_cell_allassays_infile.readline().strip()
-        return json.loads(tissue_cell_allassays)
+        tissue_cell_allassays = json.loads(tissue_cell_allassays)
     
     with open(feature_weights_dict_file, 'r') as feature_weights_dict_infile:
-            feature_weights_dict = feature_weights_dict_file.readline().strip()
-            return json.loads(feature_weights_dict)
+            feature_weights_dict = json.loads(feature_weights_dict)
         
     #with open(assay_names_file, 'r') as assay_names_infile:
     #    assay_names = assay_names_infile.readline().strip()
@@ -313,7 +310,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
     tissues_values = {}
     tissues_fields = {}
     for tissue in sorted(tissue_cell_allassays.keys()):
-        print(tissues)
+        print(tissue)
         tissues_fields[tissue] = ['mid', 'fscore']
         tissues_values[tissue] = []
         for assay in sorted(tissue_cell_allassays[tissue].keys()):
