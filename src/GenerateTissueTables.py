@@ -278,7 +278,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 
-def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, col_list_lower, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, header_scored_lower, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict_file, 
@@ -323,7 +323,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
         l = data_infile.readline()
         while l:
             row = l.strip().split('\t')
-            print(row)
+            #print(row)
     #for row in selected_rows:
         #value_current_row = [row['mid']]
         #reset tissue_cell_allassays for every new row
@@ -334,18 +334,20 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
             for tissue in sorted(tissue_cell_assays.keys()):
                 for assay in sorted(tissue_cell_assays[tissue].keys()):
                     values = []
-                    for col in tissue_cell_assays[tissue][assay]:
+                    for assay_cell in tissue_cell_assays[tissue][assay]:
                         #col = col.encode('ascii','ignore').lower()
                         #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
-                        col_id = col_list_lower.index(col)
+                        assay_col_id = header_scored_lower.index(assay_cell)
                         #print(col_id)
-                        if row[col_id] not in ["NaN", float('NaN'), float('nan'), 'nan']:
-                            print(row[col_id])
+                        row_assay_col = row[assay_col_id]
+                        
+                        if row_assay_col not in ["NaN", float('NaN'), float('nan'), 'nan']:
+                            #print(row_assay_col)
                             try:
-                                if not math.isnan(float(row[col_id])):
-                                    values.append(float(row[col_id]))
+                                if not math.isnan(float(row_assay_col)):
+                                    values.append(float(row_assay_col))
                             except ValueError:
-                                values.append(row[col_id])              
+                                values.append(row_assay_col)              
                     
                     value = 'NaN'
                     if len(values)>0:
@@ -762,9 +764,15 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         for file_in in scored_motifs_overlapping_tracks_files:
             i = 0
             #file_id=0
+            #read header of scored motifs file
+            with open(scored_motifs_overlapping_tracks_files) as f:
+                header_scored = f.readline().strip('"').split('\t')
+            
+            header_scored_lower = [x.lower().replace('"','') for x in header_scored] 
+            
             #divide files into subfiles
             comm_divide_files ="cat {} | tail -n +2 | split -l {} - {}".format(file_in, str(number_of_rows_to_load), file_in+"_part")
-            print(comm_divide_files)
+            #print(comm_divide_files)
             os.system(comm_divide_files)
             part_file_list = glob.glob(file_in+'_part*', recursive=False)
             n_part_file_list = len(part_file_list)
@@ -784,7 +792,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #while i<num_cores:
             for part_file in part_file_list: 
                 
-                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, col_list_lower, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
+                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict_file,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table])
                 

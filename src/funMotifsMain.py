@@ -79,6 +79,7 @@ if __name__ == '__main__':
                                                                                               tissues_with_gene_expression = tissues_with_gene_expression)
     
     assay_names=assay_cells.keys()
+    print(assay_names)
     
     cells_assays_dict = DataProcessing.generate_cells_assays_matrix(cell_assays, 
                                                      cell_names=representative_cell_name_matchings_dict.keys(), 
