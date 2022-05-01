@@ -289,13 +289,13 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
     
     
     with open(tissue_cell_assays_file, 'r') as tissue_cell_assays_infile:
-        tissue_cell_assays = json.loads(tissue_cell_assays_infile)
+        tissue_cell_assays = json.load(tissue_cell_assays_infile)
         
     with open(tissue_cell_allassays_file, 'r') as tissue_cell_allassays_infile:
-        tissue_cell_allassays = json.loads(tissue_cell_allassays_infile)
+        tissue_cell_allassays = json.load(tissue_cell_allassays_infile)
     
     with open(feature_weights_dict_file, 'r') as feature_weights_dict_infile:
-        feature_weights_dict = json.loads(feature_weights_dict_infile)
+        feature_weights_dict = json.load(feature_weights_dict_infile)
         
     #with open(assay_names_file, 'r') as assay_names_infile:
     #    assay_names = assay_names_infile.readline().strip()
