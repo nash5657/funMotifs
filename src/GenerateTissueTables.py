@@ -717,7 +717,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
     #assay_names_file = dir_in+ "/assay_names"
     
     with open(tissue_cell_assays_file, 'w') as tissue_cell_assays_outfile:
-        json.dumps(tissue_cell_assays, tissue_cell_assays_outfile)
+        json.dump(tissue_cell_assays, tissue_cell_assays_outfile)
     
     
     for tissue in sorted(tissue_cell_allassays.keys()):
@@ -726,10 +726,10 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             
             
     with open(tissue_cell_allassays_file, 'w') as tissue_cell_allassays_outfile:
-        json.dumps(tissue_cell_allassays, tissue_cell_allassays_outfile)        
+        json.dump(tissue_cell_allassays, tissue_cell_allassays_outfile)        
         
     with open(feature_weights_dict_file, 'w') as feature_weights_dict_outfile:
-        json.dumps(feature_weights_dict, feature_weights_dict_outfile) 
+        json.dump(feature_weights_dict, feature_weights_dict_outfile) 
         
    # with open(assay_names_file, 'w') as assay_names_outfile:
     #    json.dump(assay_names, assay_names_outfile) 
