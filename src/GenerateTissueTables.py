@@ -546,6 +546,8 @@ def insert_into_tissues_per_tissue(scored_motifs_overlapping_tracks_files, tissu
                         for tissue in tissues_with_NaN_values:
                             tissue_cell_allassays[tissue][assay] = value
         
+        
+        # BUG: here is the bug. 'mid' not defined but called. taking over the code base. 
         fscores_per_tissues = [row['mid']]
         for tissue in sorted(tissue_cell_allassays.keys()):
             values_selected_row = [row['mid'], 0.0]
