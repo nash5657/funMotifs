@@ -278,7 +278,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 
-def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, header_scored_lower, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, header_scored_lower, part_file_num_lines, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict_file, 
@@ -321,8 +321,11 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
     t_process = time.time()
     with open(scored_motifs_overlapping_tracks_files_tissue) as data_infile:
         l = data_infile.readline()
+        i=0
         while l:
             row = l.strip().split('\t')
+            mid = part_file_num_lines[i]
+            print('mid' + mid)
             #print(row)
     #for row in selected_rows:
         #value_current_row = [row['mid']]
@@ -385,9 +388,11 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                             for tissue in tissues_with_NaN_values:
                                 tissue_cell_allassays[tissue][assay] = value
             
-            fscores_per_tissues = [row['mid']]
+            #fscores_per_tissues = [row['mid']]
+            fscores_per_tissues = [mid]
             for tissue in sorted(tissue_cell_allassays.keys()):
-                values_selected_row = [row['mid'], 0.0]
+                #values_selected_row = [row['mid'], 0.0]
+                values_selected_row = [mid, 0.0]
                 fscore = 0.0
                 for assay in sorted(tissue_cell_allassays[tissue].keys()):
                     values_selected_row.append(tissue_cell_allassays[tissue][assay])
@@ -402,6 +407,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                 fscores_per_tissues.append(fscore)
             print(fscores_per_tissues)
             fscores_per_tissues_allrows.append(fscores_per_tissues)
+            i+=1 
             l = data_infile.readline()
     print('t_process (func): ', time.time()-t_process)
     
@@ -777,8 +783,8 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             #print(comm_divide_files)
             os.system(comm_divide_files)
             part_file_list = glob.glob(file_in+'_part*', recursive=False)
-            n_part_file_list = len(part_file_list)
-            print(n_part_file_list)
+            #n_part_file_list = len(part_file_list)
+            #print(n_part_file_list)
             
             
             #n_lines = 1
@@ -799,7 +805,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                 print(mid_value)
                 i = i + part_file_num_lines
                 
-                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
+                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, part_file_num_lines, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict_file,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table])
                 
