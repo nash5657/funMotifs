@@ -764,7 +764,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
         num_cores = number_processes_to_run_in_parallel
         
         for file_in in scored_motifs_overlapping_tracks_files:
-            i = 0
+            #i = 0
             #file_id=0
             #read header of scored motifs file
             with open(file_in) as f:
@@ -793,6 +793,11 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
             
             #while i<num_cores:
             for part_file in part_file_list: 
+                
+                part_file_num_lines = sum(1 for _ in open(part_file))
+                mid_value = list(range(i,i+part_file_num_lines))
+                print(mid_value)
+                i = i + part_file_num_lines
                 
                 res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict_file,
