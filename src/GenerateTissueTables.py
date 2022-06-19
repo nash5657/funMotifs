@@ -278,7 +278,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
     return
 
 
-def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, header_scored_lower, part_file_num_lines, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
+def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue, header_scored_lower, mid_value, tissue_cell_assays_file, tissue_cell_allassays_file, assay_names,
                            cols_to_write_to,
                            cols_to_write_to_allassays,thread_num, 
                            feature_weights_dict_file, 
@@ -324,7 +324,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
         i=0
         while l:
             row = l.strip().split('\t')
-            mid = part_file_num_lines[i]
+            mid = mid_value[i]
             print('mid' + mid)
             #print(row)
     #for row in selected_rows:
@@ -805,7 +805,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                 print(mid_value)
                 i = i + part_file_num_lines
                 
-                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, part_file_num_lines, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
+                res = p.apply_async(insert_into_tissues_from_file, args=[part_file, header_scored_lower, mid_value, tissue_cell_assays_file, tissue_cell_allassays_file, list(assay_names),
                                        cols_to_write_to, cols_to_write_to_allassays, thread_num, feature_weights_dict_file,
                                        db_name, db_user_name, db_host_name, tissues_fscores_table])
                 
