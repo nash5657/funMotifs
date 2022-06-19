@@ -325,7 +325,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
         while l:
             row = l.strip().split('\t')
             mid = mid_value[i]
-            print('mid' + mid)
+            print('mid' + str(mid))
             #print(row)
     #for row in selected_rows:
         #value_current_row = [row['mid']]
