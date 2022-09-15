@@ -233,6 +233,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
         chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
         if (chr_n_file in chromatin_tracks_files):#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_sites_input_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
+            print("MotifAnno, Line 236, It is:  ", motifs_overlapping_tracks_file)
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             print("in overlay_resources_score_motifs: " + motifs_overlapping_tracks_file)
             print(os.path.exists(motifs_overlapping_tracks_file))
@@ -388,17 +389,21 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                 all_chromatin_makrs_all_cells_combined_dir_path, 
                                                 chromatin_tracks_files)
 
+    #Debug: make sure that motifs_overlapping_tracks_files is a list
+    print(type(motifs_overlapping_tracks_files))
+    print("Test1: ", motifs_overlapping_tracks_files)
+    if not isinstance(motifs_overlapping_tracks_files, list):
+        motifs_overlapping_tracks_files = list(motifs_overlapping_tracks_files.split(" "))
     #score intersected track files
-    print("Test: ", motifs_overlapping_tracks_files)
+    print("Test2: ", motifs_overlapping_tracks_files)
     scored_motifs_overlapping_tracks_files =[]
     for motifs_overlapping_tracks_file in motifs_overlapping_tracks_files:
         scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
-        print("Test: ", motifs_overlapping_tracks_file)
+        print("Test3: ", motifs_overlapping_tracks_file)
         #if statement inserted for debugging
-        print("\'")
-        if motifs_overlapping_tracks_file[0] is not "\'":
-            motifs_overlapping_tracks_file = "\'" + motifs_overlapping_tracks_file + "\'"
-        print("Test: ", motifs_overlapping_tracks_file)
+        #if motifs_overlapping_tracks_file[0] is not "\'":
+        #    motifs_overlapping_tracks_file = "\'" + motifs_overlapping_tracks_file + "\'"
+        #print("Test: ", motifs_overlapping_tracks_file)
         with open(motifs_overlapping_tracks_file) as f:
                     count = sum(1 for _ in f)
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):#score each motif-track_overlapping file file
