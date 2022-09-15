@@ -216,8 +216,8 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
 
 def overlay_resources_score_motifs(motif_sites_input_file, 
                                    motifs_overlapping_tracks_output_dir,
-                                   chromatin_tracks_dir_path,  
-                                   chromatin_tracks_files): 
+                                   chromatin_tracks_dir_path,
+                                   chromatin_tracks_files):
     
     
 
@@ -359,6 +359,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motif_sites_dir = "."
     else:
         motif_files = os.listdir(motif_sites_dir)
+        #this would return a list
 
    
     motif_files_full_path =  [motif_sites_dir+'/' + s  for s in motif_files]
@@ -390,6 +391,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                 chromatin_tracks_files)
 
     #Debug: make sure that motifs_overlapping_tracks_files is a list
+    #is list if previous if statement was executed, should be string for else statement
     print(type(motifs_overlapping_tracks_files))
     print("Test1: ", motifs_overlapping_tracks_files)
     if not isinstance(motifs_overlapping_tracks_files, list):
