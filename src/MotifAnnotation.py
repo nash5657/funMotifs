@@ -228,12 +228,14 @@ def overlay_resources_score_motifs(motif_sites_input_file,
     """
     
     #for motif_sites_input_file in motif_sites_input_files:
+    print("Called here, motifanno, line 231")
     with open(motif_sites_input_file) as f:
         chr_n_file = f.readline().strip().split('\t')[0].strip()+'.bed'
         if (chr_n_file in chromatin_tracks_files):#it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir+'/' + '.'.join(motif_sites_input_file.split('/')[-1].split('.')[0:-1])+'_overlapping_tracks' + '.bed7'
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             print("in overlay_resources_score_motifs: " + motifs_overlapping_tracks_file)
+            print(os.path.exists(motifs_overlapping_tracks_file))
             if not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path +'/'+ chr_n_file
@@ -250,11 +252,14 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 
                 with open(motifs_overlapping_tracks_file_tmp, 'r') as infile, open(motifs_overlapping_tracks_file, 'w') as outfile:
                         line = infile.readline()
+                        # print("Here: ", line)
                         while line:
                             
                             sline = line.split('\t')
-                            #print(sline)
+                            print("Here, Motifanno, line 258: ", len(sline))
                             if(len(sline)>6):
+                                print("here, motifanno, line 260", len(sline))
+                                print(sline[7], '\t', sline[8])
                                 if(sline[7]!='.'):
                                     my_list=sline[7].split(',')
                                     cell_assay_values_dict_ChromHMM = {}
@@ -363,26 +368,37 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         os.makedirs(motifs_overlapping_tracks_output_dir)
     #scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
     #if not (os.path.exists(motifs_overlapping_tracks_file) and os.path.exists(scored_motifs_chromatin_tracks_output_file)):
+    print(run_in_parallel_param, motif_files)
     if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
-        motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path , 
+        print("Here, MotifAnnot, Line373")
+        print(motif_files_full_path, [motifs_overlapping_tracks_output_dir], [all_chromatin_makrs_all_cells_combined_dir_path], [chromatin_tracks_files])
+        motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path, 
                                                                     [motifs_overlapping_tracks_output_dir],
                                                                      [all_chromatin_makrs_all_cells_combined_dir_path],
                                                                     [chromatin_tracks_files]))
+        print("Here, MotifAnnot, Line378")
         p.close()
         p.join()
     else:
-    
-        motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_files_full_path, 
+        print("Here, Motifanno, Line383")
+        print(motif_files_full_path)
+        motifs_overlapping_tracks_files = overlay_resources_score_motifs(motif_files_full_path[0], 
                                                 motifs_overlapping_tracks_output_dir,
                                                 all_chromatin_makrs_all_cells_combined_dir_path, 
                                                 chromatin_tracks_files)
 
     #score intersected track files
-    print(motifs_overlapping_tracks_files)
+    print("Test: ", motifs_overlapping_tracks_files)
     scored_motifs_overlapping_tracks_files =[]
     for motifs_overlapping_tracks_file in motifs_overlapping_tracks_files:
         scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
+        print("Test: ", motifs_overlapping_tracks_file)
+        #if statement inserted for debugging
+        print("\'")
+        if motifs_overlapping_tracks_file[0] is not "\'":
+            motifs_overlapping_tracks_file = "\'" + motifs_overlapping_tracks_file + "\'"
+        print("Test: ", motifs_overlapping_tracks_file)
         with open(motifs_overlapping_tracks_file) as f:
                     count = sum(1 for _ in f)
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):#score each motif-track_overlapping file file
