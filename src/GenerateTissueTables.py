@@ -425,6 +425,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                        page_size = 100)
         '''
         t_tissues_values = tuple(tissues_values[tissue])
+        # BUG: here is the bug. "can only concatenate str (not "bytes") to str"
         dataText = ','.join('('+curs_for_insertion.mogrify(s_chars, row) + ')' for row in t_tissues_values)
         try:
             curs_for_insertion.execute('insert into {table_name} ({field_names}) values ({values})'.format(table_name=tissue, field_names=field_names, values=dataText)) 
@@ -553,7 +554,7 @@ def insert_into_tissues_per_tissue(scored_motifs_overlapping_tracks_files, tissu
                             tissue_cell_allassays[tissue][assay] = value
         
         
-        # BUG: here is the bug. 'mid' not defined but called. taking over the code base. 
+        
         fscores_per_tissues = [row['mid']]
         for tissue in sorted(tissue_cell_allassays.keys()):
             values_selected_row = [row['mid'], 0.0]
