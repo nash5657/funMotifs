@@ -185,12 +185,14 @@ if __name__ == '__main__':
             if process_cell_table:
                 motifs_table = cell_table
                 
+                # comment out motif_cols_names as not declared in function definition 
                 GenerateMotifsTables.create_motifs_table(db_name, 
                                                          db_user_name, 
                                                          db_host_name, 
                                                          motifs_table=motifs_table, 
-                                                         motif_cols=motif_cols, 
-                                                         motif_cols_names=motif_cols_names, 
+                                                         #motif_cols=motif_cols,
+                                                         # use only the simplified list to prevent syntax error 
+                                                         motif_cols=motif_cols_names, 
                                                          new_table_name=new_table_name)
             else:
                 GenerateMotifsTables.create_motifs_table_from_file(db_name, db_user_name, 
