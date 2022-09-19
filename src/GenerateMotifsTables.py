@@ -98,7 +98,9 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     
     curs.execute('drop table if exists {0};'.format(new_table_name))
     print('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
-    curs.execute('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
+    # only take first work of new_table_name names to prevent syntax error
+    # print("create_motif_tables, line 102: ", new_table_name, motif_cols.split.split(" "), motifs_table)
+    curs.execute('create table if not exists {0} as (select {1} from {2});'.format(new_table_name.split(" ")[0], ','.join(motif_cols), motifs_table))
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format(new_table_name, new_table_name))
     curs.execute('create index if not exists {0}tfname on {1} using btree(name);'.format(new_table_name, new_table_name))
