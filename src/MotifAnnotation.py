@@ -5,7 +5,7 @@ Created on 28 Sep 2017
 '''
 
 import sys, os
-from multiprocessing import Pool
+from multiprocessing.pool import Pool
 from pybedtools import BedTool, set_tempdir, cleanup
 import glob
 from itertools import starmap 
@@ -253,16 +253,12 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 
                 with open(motifs_overlapping_tracks_file_tmp, 'r') as infile, open(motifs_overlapping_tracks_file, 'w') as outfile:
                         line = infile.readline()
-                        # print("Here: ", line)
                         while line:
                             
                             sline = line.split('\t')
-                            print("Here, Motifanno, line 258: ", len(sline))
                             if(len(sline)>6):
-                                print("here, motifanno, line 260", len(sline))
-                                print(sline[7], '\t', sline[8])
-                                if(sline[7]!='.'):
-                                    my_list=sline[7].split(',')
+                                if(sline[6]!='.'):
+                                    my_list=sline[6].split(',')
                                     cell_assay_values_dict_ChromHMM = {}
                                     cell_assay_values_dict_cCRE = {}
                                     cell_assay_values_dict_IndexDHS = {}
@@ -371,17 +367,24 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     #scored_motifs_chromatin_tracks_output_file = '.'.join(motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10' 
     #if not (os.path.exists(motifs_overlapping_tracks_file) and os.path.exists(scored_motifs_chromatin_tracks_output_file)):
     print(run_in_parallel_param, motif_files)
-    if run_in_parallel_param and len(motif_files)>1:
+    # introduce dummy if block
+    if False:
+        print(" ")
+        # Pool.starmap has issues with Python 2 that should be gone when running with Python 3
+        # This part will be added after converting to Python 3
+        '''if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
         print("Here, MotifAnnot, Line373")
         print(motif_files_full_path, [motifs_overlapping_tracks_output_dir], [all_chromatin_makrs_all_cells_combined_dir_path], [chromatin_tracks_files])
-        motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path, 
-                                                                    [motifs_overlapping_tracks_output_dir],
-                                                                     [all_chromatin_makrs_all_cells_combined_dir_path],
-                                                                    [chromatin_tracks_files]))
+        #motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
+        #                                                                                    [
+        #                                                                                        motifs_overlapping_tracks_output_dir],
+        #                                                                                    [
+        #                                                                                        all_chromatin_makrs_all_cells_combined_dir_path],
+        #                                                                                    [chromatin_tracks_files]))
         print("Here, MotifAnnot, Line378")
         p.close()
-        p.join()
+        p.join()'''
     else:
         print("Here, Motifanno, Line383")
         print(motif_files_full_path)
@@ -430,7 +433,11 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                             header_line.append('"'+cell_name+'"')
                     #print(header_line)
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
-            if (run_in_parallel_param):
+            # same as above: starmap will be introduced after updating to Python 3
+            # introduce dummy if block
+            if False:
+                print(" ")
+                '''if (run_in_parallel_param):
                 os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
@@ -461,7 +468,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         f_score_ifile.close()
                         os.remove(f)
                         os.remove(f+'_scored')   
-                scored_motifs_writefile.close()
+                scored_motifs_writefile.close()'''
             else:
                 score_motifs_per_cell(motifs_overlapping_tracks_file, 
                                       normal_expression_per_tissue_origin_per_TF, 
