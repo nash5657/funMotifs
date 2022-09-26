@@ -6,7 +6,10 @@ Created on 28 Sep 2017
 
 import os, json, sys
 from glob import glob
-'''Combine data from .bed files listed under data_tracks in the main conf file'''
+
+"""Combine data from .bed files listed under data_tracks in the main conf file
+if the data was not already combined"""
+
 
 def collect_all_data(data_dir , data_tracks, sep='\t'):
     
@@ -44,11 +47,11 @@ def get_assay_cell_info(data_dir ,
                         generated_dicts_output_file, 
                         tissues_with_gene_expression):
     '''Get information (dicts) about the cells and assays from the input data_dir files'''
-    assay_cells = {}#e.g DNase-seq: [HepG2,K562,...],...
+    assay_cells = {} # e.g DNase-seq: [HepG2,K562,...],...
     assay_cells_datatypes = {}
-    cell_assays = {}#e.g HepG2: [DNase-seq,TFBinding,ReplicationDomains], K562: [...], ...
-    cell_tfs = {}#e.g HepG2: [CTCF, FOXA1,...], K562: [...], ...
-    tf_cells = {}#e.g CTCF: [HepG2, K562,...], FOXA1: [...], ...
+    cell_assays = {} # e.g HepG2: [DNase-seq,TFBinding,ReplicationDomains], K562: [...], ...
+    cell_tfs = {} # e.g HepG2: [CTCF, FOXA1,...], K562: [...], ...
+    tf_cells = {} # e.g CTCF: [HepG2, K562,...], FOXA1: [...], ...
     if not os.path.exists(generated_dicts_output_file):
         #add cells/tissues that have gene expr to the dicts
         assay_name = 'TFExpr'
