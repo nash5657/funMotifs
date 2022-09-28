@@ -3,11 +3,13 @@ Created on Nov 13, 2016
 
 @author: Husen M. Umer
 
-Score motifs: collects cell-type specific data from several public resources and generates a cell-type specific score for each motif instance in the human genome
-Input: TF PWMs, human genome, TF chip-seq resources, DNase1 resources, ChromHMM labels, Gene expression, CAGE peaks, HIC domains, HIC loops, Replication domains
-Output: A list of motif instances with a functionality score per cell type
-Process: the module has three sections 1)collects and processes data from the provided resources, 2) combines data from the collections and overlays them with motifs,
-    3) computes a score for each motif instance
+Score motifs: collects cell-type specific data from several public resources and generates a cell-type specific score
+for each motif instance in the human genome Input: TF PWMs, human genome, TF chip-seq resources, DNase1 resources,
+ChromHMM labels, Gene expression, CAGE peaks, HIC domains, HIC loops, Replication domains Output: A list of motif
+instances with a functionality score per cell type Process: the module has three sections
+1) collects and processes data from the provided resources,
+2) combines data from the collections and overlays them with motifs,
+3) computes a score for each motif instance
 """
 import os
 import sys
@@ -45,15 +47,18 @@ if __name__ == '__main__':
     set_tempdir(args.temp_dir)
 
     """Section 1: Collect resources"""
+
     # Combine all data tracks into a bed4 files one per chr, also record assay types
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'],
                                                params['data_tracks'])
 
     # Retrieves the TF family name for each TF name
+    # TODO: unittest for function
     motifTFName_TFNames_matches_dict = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(
         params['TF_family_matches_file'])
 
     # Given a GTEX file retrieve gene expression from each tissue for each TF name
+    # TODO: unittest for function
     normal_expression_per_tissue_origin_per_TF = ProcessTFMotifs.get_expression_level_per_originType_per_TF(
         motifTFName_TFNames_matches_dict,
         normal_gene_expression_inputfile=params['normal_gene_expression_inputfile'],
@@ -67,12 +72,14 @@ if __name__ == '__main__':
     tissues_with_gene_expression = normal_expression_per_tissue_origin_per_TF.keys()
 
     # returns cell names to consider and their different names as dictionary
+    # TODO: unittest for function
     representative_cell_name_matchings_dict, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
         params['cell_names_matchings_dict'],
         key_value_sep='=',
         values_sep=',')
 
     # get assay cell info
+    # TODO: unittest for function
     assay_cells, cell_assays, cell_tfs, tf_cells, assay_cells_datatypes = DataProcessing.get_assay_cell_info(
         data_dir=params['all_chromatin_makrs_all_cells_combined_dir_path'],
         sep='\t',
@@ -80,16 +87,21 @@ if __name__ == '__main__':
         generated_dicts_output_file=params['all_chromatin_makrs_all_cells_combined_dir_path'] + "_generated_dicts.txt",
         tissues_with_gene_expression=tissues_with_gene_expression)
 
+    # get assay cell names
     assay_names = assay_cells.keys()
-    print(assay_names)
 
+    # Generate a default dict based on the information obtained from the tracks in data_dir
+    # TODO: unittest for function
     cells_assays_dict = DataProcessing.generate_cells_assays_matrix(cell_assays,
                                                                     cell_names=representative_cell_name_matchings_dict.keys(),
                                                                     assay_cells_datatypes=assay_cells_datatypes,
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
+
+    """ Section 2: Overlap between the generated resources and motifs """
+
     header = True
 
-    """ Section2 Overlap between the generated resources and motifs """
+    # summarize overlapping motifs and their annotations
     motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = MotifAnnotation.run_overlay_resources_score_motifs(
         params['motif_sites_dir'],
         params['all_chromatin_makrs_all_cells_combined_dir_path'],
@@ -106,6 +118,7 @@ if __name__ == '__main__':
         header)
 
     """ Section 3: Score motifs """
+
     '''
     Annotation Scores:
     Collect motifs from the training sets
@@ -114,6 +127,7 @@ if __name__ == '__main__':
     '''
 
     """ Section 4. DB generation """
+
     # write results to the main cellmotifs table
     if Utilities.get_value(params['create_database']):
         import DBUtilities, GenerateCellTable, GenerateTissueTables
