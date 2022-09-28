@@ -78,7 +78,6 @@ def get_motif_score(split_line,
                             normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif])
         except ValueError:
             pass
-
     for trackname in split_line[index_track_names].split(','):
         ts = trackname.split('#')
         matching_tissues_cell = []
@@ -193,6 +192,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
         sep = '\t'
         with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(
                 scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
+            print(motifs_overlapping_tracks_readfile)
             line = motifs_overlapping_tracks_readfile.readline()
             while line:
                 split_line = line.strip().split(sep)
@@ -215,6 +215,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
                                                                        scored_motif_per_cell_per_assay,
                                                                        cells_assays_dict)
 
+                print('\t'.join(field_values) + '\n')
                 scored_motifs_writefile.write('\t'.join(field_values) + '\n')
                 line = motifs_overlapping_tracks_readfile.readline()
 
@@ -226,20 +227,21 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                    chromatin_tracks_dir_path,
                                    chromatin_tracks_files):
     """intersect motifs with chromatin tracks, sort and group the tracks per motif
-    Input: moitf instances file (motif pos, name_id, scorePval, strand)
+    Input: motif instances file (motif pos, name_id, scorePval, strand)
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
     Return a file in bed7 format (motif info (6cols), overlapping_tracks. 
     """
 
     # for motif_sites_input_file in motif_sites_input_files:
-    print("Called here, motifanno, line 231")
     with open(motif_sites_input_file) as f:
         chr_n_file = f.readline().strip().split('\t')[0].strip() + '.bed'
         # it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
+        # TODO: missing else statement
         if chr_n_file in chromatin_tracks_files:
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir + '/' + '.'.join(
             motif_sites_input_file.split('/')[-1].split('.')[0:-1]) + '_overlapping_tracks' + '.bed7'
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
+            # TODO: missing else statement
             if not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
@@ -271,10 +273,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                 cell_assay_values_dict_RegElem = {}
                                 cell_assay_values_dict_DNaseq = {}
                                 elem_list = []
-                                # elem_list_EpiMap =[]
                                 for elem in my_list:
-                                    # print(elem)
-
                                     cell_value = elem.split('#')[0]
                                     assay_value = elem.split('#')[1]
                                     if len(elem.split('#')) > 2:
@@ -283,31 +282,36 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                     if assay_value == "ChromHMM":
                                         if cell_value not in cell_assay_values_dict_ChromHMM.keys():
                                             cell_assay_values_dict_ChromHMM[cell_value] = []
-
                                         cell_assay_values_dict_ChromHMM[cell_value].append(state_value)
+
                                     elif assay_value == "cCRE":
                                         if cell_value not in cell_assay_values_dict_cCRE.keys():
                                             cell_assay_values_dict_cCRE[cell_value] = []
                                         cell_assay_values_dict_cCRE[cell_value].append(state_value)
+
                                     elif assay_value == "IndexDHS":
                                         if cell_value not in cell_assay_values_dict_IndexDHS.keys():
                                             cell_assay_values_dict_IndexDHS[cell_value] = []
                                         cell_assay_values_dict_IndexDHS[cell_value].append(state_value)
+
                                     elif assay_value == "RegElem":
                                         if cell_value not in cell_assay_values_dict_RegElem.keys():
                                             cell_assay_values_dict_RegElem[cell_value] = []
                                         cell_assay_values_dict_RegElem[cell_value].append(state_value)
+
                                     elif assay_value == "DNase-seq":
                                         if cell_value not in cell_assay_values_dict_DNaseq.keys():
                                             cell_assay_values_dict_DNaseq[cell_value] = []
                                         cell_assay_values_dict_DNaseq[cell_value].append(float(state_value))
-                                    else:
 
+                                    else:
                                         elem_list.append(elem.rstrip("\n"))
+
                                 for cell in cell_assay_values_dict_ChromHMM:
                                     elem_list.append(cell + "#ChromHMM#" +
                                                      Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][
                                                          0])
+
                                 for cell in cell_assay_values_dict_cCRE.keys():
                                     elem_list.append(
                                         cell + "#cCRE#" + Counter(cell_assay_values_dict_cCRE[cell]).most_common(1)[0][
@@ -317,14 +321,17 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                     elem_list.append(cell + "#IndexDHS#" +
                                                      Counter(cell_assay_values_dict_IndexDHS[cell]).most_common(1)[0][
                                                          0])
+
                                 for cell in cell_assay_values_dict_RegElem.keys():
                                     elem_list.append(cell + "#RegElem#" +
                                                      Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
+
                                 for cell in cell_assay_values_dict_DNaseq.keys():
                                     elem_list.append(
                                         cell + "#DNase-seq#" + str(max(cell_assay_values_dict_DNaseq[cell])))
 
-                                outfile.write('\t'.join(sline[0:7]) + '\t' + ','.join(elem_list) + '\n')
+                                # TODO: changed 7 to 6 --> control
+                                outfile.write('\t'.join(sline[0:6]) + '\t' + ','.join(elem_list) + '\n')
 
                         line = infile.readline()
                 os.remove(motif_sites_input_file_sorted)
@@ -357,7 +364,6 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     Recommended: name files in both dirs as chrNumber, chrX or chrY (where number is between 1-22)
     """
 
-    motif_files = []
     # check if input motif_sites_dir is directory and get files from it
     # TODO: what if neither file nor directory?
     if not os.path.isdir(motif_sites_dir) and os.path.isfile(motif_sites_dir):
@@ -365,7 +371,6 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motif_sites_dir = "."
     else:
         motif_files = os.listdir(motif_sites_dir)
-        # this would return a list
 
     # get list of paths to all motif files
     motif_files_full_path = [motif_sites_dir + '/' + s for s in motif_files]
@@ -413,11 +418,13 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         scored_motifs_chromatin_tracks_output_file = '.'.join(
             motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10'
         with open(motifs_overlapping_tracks_file) as f:
+            # TODO: what is this variable needed for?
             count = sum(1 for _ in f)
         # TODO: missing else statement for code below (assumes correct file exist already otherwise)
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
             print("computing scores to: " + scored_motifs_chromatin_tracks_output_file)
-            index_track_names = 7
+            # TODO: control change below
+            index_track_names = 6 # changed from 7 to 6 possible index error
             index_motif_name = 3
             with open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
                 if header:
@@ -469,7 +476,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         os.remove(f+'_scored')   
                 scored_motifs_writefile.close()'''
             else:
-                score_motifs_per_cell(motifs_overlapping_tracks_file,
+                scored_file_tmp = score_motifs_per_cell(motifs_overlapping_tracks_file,
                                       normal_expression_per_tissue_origin_per_TF,
                                       matching_cell_name_representative_dict,
                                       motifTFName_TFNames_matches_dict,
@@ -479,5 +486,10 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                       assay_cells_datatypes,
                                       index_track_names,
                                       index_motif_name)
+                # write scores into scored file with header
+                with open(scored_file_tmp, 'r') as infile,\
+                        open(scored_motifs_chromatin_tracks_output_file, 'a') as outfile:
+                    outfile.write(infile.read())
+
         scored_motifs_overlapping_tracks_files.append(scored_motifs_chromatin_tracks_output_file)
     return motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files
