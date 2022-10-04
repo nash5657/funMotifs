@@ -33,7 +33,7 @@ def reset_cells_assays_matrix(tf_name_from_motif_name,
             elif "TFExpr" in assay:
                 cells_assays_dict[representative_cell][assay] = "NaN"
 
-            elif "TFBinding" in assay:  # checking wether this TF is available in the current cell
+            elif "TFBinding" in assay:  # checking whether this TF is available in the current cell
                 tf_exists = 0
                 if tf_name_from_motif_name in tf_cells:
                     if representative_cell in tf_cells[tf_name_from_motif_name]:
@@ -265,7 +265,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
 
                         sline = line.split('\t')
                         if len(sline) > 6:
-                            if sline[6] != '.':
+                            if sline[6] != '.' and sline[6] != ".\n":
                                 my_list = sline[6].split(',')
                                 cell_assay_values_dict_ChromHMM = {}
                                 cell_assay_values_dict_cCRE = {}
@@ -274,6 +274,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                 cell_assay_values_dict_DNaseq = {}
                                 elem_list = []
                                 for elem in my_list:
+                                    print(len(elem.split('#')), elem.split('#'))
                                     cell_value = elem.split('#')[0]
                                     assay_value = elem.split('#')[1]
                                     if len(elem.split('#')) > 2:

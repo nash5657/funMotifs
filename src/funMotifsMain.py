@@ -99,6 +99,7 @@ if __name__ == '__main__':
 
     """ Section 2: Overlap between the generated resources and motifs """
 
+    # TODO: remove hard-coded variable
     header = True
 
     # summarize overlapping motifs and their annotations
@@ -125,6 +126,10 @@ if __name__ == '__main__':
     Use the cell_table above to annotate the motifs in the same cell lines
     Run a log model to generate coeff for each annotation
     '''
+
+
+
+
 
     """ Section 4. DB generation """
 
