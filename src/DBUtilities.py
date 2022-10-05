@@ -37,7 +37,8 @@ def create_db(db_name, db_user_name, db_host_name):
         else:
             return False
 
-def open_connection(db_name, db_user_name, db_host_name):
+# TODO: change input
+def open_connection(db_name, db_user_name = 'mm99', db_host_name = 'localhost'):
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
     #conn.row_factory = psycopg2.Row
     return conn

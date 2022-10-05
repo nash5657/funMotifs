@@ -17,7 +17,7 @@ def get_value(str):
 def get_params(param_file):
     params = {}
     
-   
+    print(param_file)
     with open(param_file, 'r') as params_infile:
         params_from_file = params_infile.readlines()
         for line in params_from_file:

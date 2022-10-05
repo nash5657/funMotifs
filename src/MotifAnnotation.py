@@ -274,7 +274,6 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                 cell_assay_values_dict_DNaseq = {}
                                 elem_list = []
                                 for elem in my_list:
-                                    print(len(elem.split('#')), elem.split('#'))
                                     cell_value = elem.split('#')[0]
                                     assay_value = elem.split('#')[1]
                                     if len(elem.split('#')) > 2:

@@ -5,7 +5,7 @@ Created on 6 Oct 2017
 '''
 import sys
 from itertools import islice
-from multiprocessing import Pool
+from multiprocessing.pool import Pool
 import psycopg2
 import DBUtilities
 
@@ -20,7 +20,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
     field_names = []
     col_names = []
     field_names.extend(motif_cols)
-    col_names.extend(motif_col_names )
+    col_names.extend(motif_col_names)
     for cell in sorted(cells_assays_dict.keys()):
         for assay in sorted(cells_assays_dict[cell].keys()):
             data_type = 'text'

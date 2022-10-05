@@ -11,7 +11,7 @@ from glob import glob
 if the data was not already combined"""
 
 
-def collect_all_data(data_dir , data_tracks, sep='\t'):
+def collect_all_data(data_dir, data_tracks, sep='\t'):
     
     """Combine all data tracks into a bed4 files one per chr, also record assay types"""
     if not os.path.exists(data_dir):
@@ -39,9 +39,10 @@ def collect_all_data(data_dir , data_tracks, sep='\t'):
         print("Combined data from the listed tracks.")
     else:
         print("Using existing data tracks from: " + data_dir)
+        # TODO: verify that the data in the directory is correct
     return data_dir
 
-def get_assay_cell_info(data_dir , 
+def get_assay_cell_info(data_dir,
                         sep, 
                         matching_rep_cell_names_dict, 
                         generated_dicts_output_file, 
@@ -191,7 +192,7 @@ def generate_cells_assays_matrix(cell_assays,
                                  cell_names, 
                                  assay_cells_datatypes, 
                                  tissues_with_gene_expression):
-    '''Generate a default dict based on the information obtained from the tracks in data_dir'''
+    ''' Generate a default dict based on the information obtained from the tracks in data_dir '''
     cells_assays_dict = {}
     for cell_name in cell_assays.keys():
         if not (cell_name in cell_names or cell_name in tissues_with_gene_expression):#only consider cells that are listed in the dict or the gene expr file
