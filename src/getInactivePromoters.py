@@ -100,6 +100,7 @@ def get_cell_info_for_regions(regions_input_file, db_name='testregmotifs', cell_
         while line:
             sline = line.strip().split(sep)
             conds = []
+            print('sline: ', sline)
             motif_info_to_query = [sline[0], sline[1], sline[2]]  # get it from the file
 
             if len(motif_info_to_query) >= 3:
@@ -211,7 +212,7 @@ def get_unactive_motifs(sys_args, db_name, prom_unactive_genes_start_index_param
 if __name__ == '__main__':
     db_name = "funmotifsdb"
     args = ['../datafiles/GeneExp/ENCODE/HepG2.bed', '../datafiles/TrainingSets/HepG2_unactive_proms.bed',
-            '../datafiles/TrainingSets/HepG2_unactive_proms_motifs.df', 'HepG", Liver']
+            '../datafiles/TrainingSets/HepG2_unactive_proms_motifs.df', 'HepG2,Liver']
     prom_unactive_genes_start_index_params = 0
     col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
     get_unactive_motifs(args, db_name, prom_unactive_genes_start_index_params, col_names)
