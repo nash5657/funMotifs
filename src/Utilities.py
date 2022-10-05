@@ -6,6 +6,7 @@ Utility functions
 -set a temp dir for bedtools intermediate files
 -get parameters from the sys.argv and the given conf file
 '''
+import pandas as pd
 
 def get_value(str):
     if 'true' in str.lower() or 'yes' in str.lower():
@@ -53,6 +54,40 @@ def retreive_key_values_from_dict_file(dict_input_file, key_value_sep, values_se
                         value_key_dict[s.strip()].append(key_value)
     return key_values_dict, value_key_dict
     
+
+def bed_to_cell_wise_dataframe(bed_file, cells_to_assay, output_columns=None):
+    # TODO: write unit test
+    """
+    Function takes bed file and transforms it to data frame.
+    Motifs that appear in several cells will be in a separate line per cell
+    """
+    if output_columns is None:
+        output_columns = ['posrange', 'cell', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+    df = pd.read_csv(bed_file, sep='\t')
+    cells = []
+    for c in df.columns:
+        if c not in output_columns:
+            if not c.__contains__('___'):
+                output_columns.append(c)
+            else:
+                tmp = c.split('___')
+                cells.append(tmp[0])
+                assay = tmp[1]
+                if assay not in output_columns:
+                    output_columns.append(assay)
+    new_df = pd.DataFrame(columns=output_columns)
+    for ind in df.index:
+        for cell in cells:
+            tmp_df = {'cell': cell}
+            for col in output_columns:
+                if col in df.columns:
+                    tmp_df[col] = df[col][ind]
+            # TODO: check for upper or lowercase letters and prevent errors
+            for assay in cells_to_assay[cell]:
+                tmp_df[assay] = df[cell+'___'+assay][ind]
+        new_df.append(tmp_df)
+    new_df.to_csv('...')
+    return new_df
 
 '''
 desc: reports motif-breaking info for mutations in each motif sites. It check the difference between nucleotide frequency of the ref allele and the mutated-to allele of each mutation in the PWM of the anchor motif.
