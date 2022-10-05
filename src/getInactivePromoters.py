@@ -100,7 +100,6 @@ def get_cell_info_for_regions(regions_input_file, db_name='testregmotifs', cell_
         while line:
             sline = line.strip().split(sep)
             conds = []
-            print('sline: ', sline)
             motif_info_to_query = [sline[0], sline[1], sline[2]]  # get it from the file
 
             if len(motif_info_to_query) >= 3:
@@ -109,7 +108,6 @@ def get_cell_info_for_regions(regions_input_file, db_name='testregmotifs', cell_
                     int(sline[1]), int(sline[2]) + 1))
             cond_stmt = get_cond_stmt(conds)
             rows = run_query(col_names_to_retrieve, cond_stmt, limit_stmt, cell_table, curs)
-            print("rows: ", rows)
             cols_to_report_from_file = []
             for c in cols_indices_to_report_from_file:
                 cols_to_report_from_file.append(sline[c])
@@ -163,7 +161,6 @@ def get_cell_info_for_regions(regions_input_file, db_name='testregmotifs', cell_
     for region in results_regions.keys():
         for motif_region in results_regions[region]:
             results_lines.append(motif_region)
-    print(results_lines, results_regions)
     results_df = pd.DataFrame(data=results_lines, columns=reported_col_names)
     results_df.to_pickle(df_output_file)
 
