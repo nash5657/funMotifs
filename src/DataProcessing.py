@@ -22,8 +22,9 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
             if os.path.exists(data_track) or '*' in data_track:
                 #on linux use awk to generate a file per chr
                 if sys.platform == "linux" or sys.platform == "linux2":
-                    print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
-                    os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
+                    if os.path.exists(data_track):
+                        print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
+                        os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
                 else: #otherwise use readline (it is much slower than awk)
                     for f in glob(data_track):
                         #read the file content and add each line to the chrX file based on col1
