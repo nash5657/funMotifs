@@ -439,6 +439,6 @@ if __name__ == '__main__':
 
     print(logit_params.summary())
     print(np.exp(logit_params.params))
-    cleanup() 
-    
+    cleanup()
+
 
