@@ -58,11 +58,11 @@ def get_data_API(biosamples_out_dir="./", biosample_term_names_to_get=[],assembl
                 f_info = requests.get("https://www.encodeproject.org/{}/".format(f), headers=HEADERS).json()
                 bio_sample = (f_info['biosample_ontology']['term_name'])
     
-                if 'assembly' in list(f_info.keys()) and f_info['file_type']=='tsv' and f_info['output_type']=='gene quantifications':
+                if 'assembly' in f_info.keys() and f_info['file_type']=='tsv' and f_info['output_type']=='gene quantifications':
                     if f_info['assembly'] == assembly:
                         if not os.path.exists(biosamples_out_dir+bio_sample):
                             os.makedirs(biosamples_out_dir+bio_sample)
-                        print((biosamples_out_dir+bio_sample + ':' + f_info['href']))
+                        print(biosamples_out_dir+bio_sample + ':' + f_info['href'])
                         if not os.path.exists(biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1]):
                             urllib.request.urlretrieve('https://www.encodeproject.org/{}'.format(f_info['href']), biosamples_out_dir+bio_sample+'/'+f_info['href'].split('/')[-1])
 
@@ -81,9 +81,9 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
             bio_samples = json.load(bio_samples_infile_dict)
         return bio_samples
     for bio_sample_input_path in listdir_nohidden(input_dir_path):
-        print(('bio_sample_input_dir:', bio_sample_input_path))
+        print('bio_sample_input_dir:', bio_sample_input_path)
         bio_sample_input_dir = bio_sample_input_path.split('/')[-1]
-        print((input_dir_path+'/'+bio_sample_input_dir+'/'+bio_sample_input_dir+".bed"))
+        print(input_dir_path+'/'+bio_sample_input_dir+'/'+bio_sample_input_dir+".bed")
         if os.path.exists(input_dir_path+'/'+bio_sample_input_dir+'/'+bio_sample_input_dir+".bed"):
             continue
         bio_samples[bio_sample_input_dir] = {}
@@ -99,7 +99,7 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
                         continue
                     gene_id = g.strip().split(sep)[gene_id_index].split('.')[0]
                     gene_value = float(g.strip().split(sep)[gene_value_index])
-                    if gene_id not in list(bio_samples[bio_sample_input_dir].keys()):
+                    if gene_id not in bio_samples[bio_sample_input_dir].keys():
                         bio_samples[bio_sample_input_dir][gene_id] = []
                     bio_samples[bio_sample_input_dir][gene_id].append(gene_value)
     with open(bio_samples_output_dict, 'w') as bio_samples_output_dict_outfile:
@@ -108,8 +108,8 @@ def process_RNA_seq_datafolder(input_dir_path, num_header_lines=1,
 
 def get_expr_per_bio_sample(bio_samples, gencode_id_info_dict, output_dir_path):
     #remove double quotas
-    gencode_id_info_dict = {key.replace('"', ''):val for key, val in list(gencode_id_info_dict.items())}
-    print((list(gencode_id_info_dict.keys())))
+    gencode_id_info_dict = {key.replace('"', ''):val for key, val in gencode_id_info_dict.items()}
+    print(list(gencode_id_info_dict.keys()))
     genes_with_gencode_info_dict = {}
     for bio_sample in bio_samples:
         genes_with_gencode_info_dict[bio_sample] = {}
@@ -118,7 +118,7 @@ def get_expr_per_bio_sample(bio_samples, gencode_id_info_dict, output_dir_path):
             return genes_with_gencode_info_dict
         with open(output_dir_path+'/'+bio_sample + '/' + bio_sample+".bed", 'w') as bio_sample_outfile:
             for gene_id in bio_samples[bio_sample]:
-                if gene_id in list(gencode_id_info_dict.keys()):
+                if gene_id in gencode_id_info_dict.keys():
                     genes_with_gencode_info_dict[bio_sample][gene_id] = np.mean(bio_samples[bio_sample][gene_id])
                     gene_info = '\t'.join(gencode_id_info_dict[gene_id])
                     bio_sample_outfile.write(gene_info.replace('"', '') + '\t' + str(np.mean(bio_samples[bio_sample][gene_id])) + '\n')

@@ -29,11 +29,11 @@ def insert_from_file(motif_cols_names, i_file, n, db_name, db_user_name,
                 try:
                     curs.executemany('insert into {} ({}) values({})'.format(motif_table, ', '.join(motif_cols_names), ', '.join(value_marks)), lines_as_lists)
                     conn.commit()
-                    print(("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)))
+                    print("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed))
                 except:
-                    print(("Thread {} coundn't insert to DB ({})".format(thread_num, i_file)))
+                    print("Thread {} coundn't insert to DB ({})".format(thread_num, i_file))
             except (ValueError, IndexError):
-                print(("Empty file" + i_file + "in thread" + str(thread_num)))
+                print("Empty file" + i_file + "in thread" + str(thread_num))
     curs.close()
     conn.close()
     return
@@ -59,7 +59,7 @@ def insert_into_db(motif_cols_names, db_name, db_user_name, db_host_name,
         p.close()
         p.join()
     
-    print(("Data insertion into {} is done".format(motif_table)))
+    print("Data insertion into {} is done".format(motif_table))
     return
 
 
@@ -72,10 +72,10 @@ def generate_PFM_table(PFMs_dict, PFM_table_name,
     each contains: motif_name, position in the motif, allele of the position, frequency of this allele in this position
     '''
     rows_to_insert = []
-    for motif in list(PFMs_dict.keys()):
+    for motif in PFMs_dict.keys():
         for pos in range(0, len(PFMs_dict[motif])):
             PFMs_dict[motif][0]
-            for allele in list(PFMs_dict[motif][pos].keys()):
+            for allele in PFMs_dict[motif][pos].keys():
                 rows_to_insert.append([motif, pos+1, allele, PFMs_dict[motif][pos][allele]])
     
     value_marks = ['%s' for i in range(0, len(rows_to_insert[0]))]
@@ -97,7 +97,7 @@ def create_motifs_table(db_name, db_user_name, db_host_name, motifs_table, motif
     curs = conn.cursor()
     
     curs.execute('drop table if exists {0};'.format(new_table_name))
-    print(('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table)))
+    print('create table if not exists {0} as (select {1} from {2});'.format(new_table_name, ','.join(motif_cols), motifs_table))
     # only take first work of new_table_name names to prevent syntax error
     # print("create_motif_tables, line 102: ", new_table_name, motif_cols.split.split(" "), motifs_table)
     curs.execute('create table if not exists {0} as (select {1} from {2});'.format(new_table_name.split(" ")[0], ','.join(motif_cols), motifs_table))
@@ -125,7 +125,7 @@ def create_motifs_table_from_file(db_name, db_user_name, db_host_name, scored_mo
     curs.close()
     DBUtilities.close_connection(conn)
     
-    print(("Inserting data into: ", new_table_name))
+    print("Inserting data into: ", new_table_name)
     #retrive motif info from files
     for file_in in scored_motifs_overlapping_tracks_files:
         comm_cut_files ="cut -f1-{} {}| tail -n +2 > {}".format(len(motif_cols_names), file_in,  file_in+"_motifs")
@@ -163,7 +163,7 @@ def split_motifs_parallel(db_name, db_user_name, db_host_name, motifs_table, chr
     curs = conn.cursor()
     new_table_name = "chr"+str(chr)+"motifs"
     curs.execute('drop table if exists {0};'.format(new_table_name))
-    print(('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr)))
+    print('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr))
     curs.execute('create table if not exists {0} as (select {1} from {2} where chr={3});'.format(new_table_name, ','.join(motif_cols), motifs_table, chr))
     curs.execute('create index if not exists {0}mid on {1} using btree(mid);'.format("chr"+str(chr), new_table_name))
     curs.execute('create index if not exists {0}posrange on {1} using gist(posrange);'.format("chr"+str(chr), new_table_name))
@@ -193,7 +193,7 @@ def motif_names_table(db_name, db_user_name, db_host_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     curs.execute('drop table if exists {0};'.format(motif_names_table))
-    print(('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table)))
+    print('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     curs.execute('create table if not exists {0} as (select distinct(name) from {1});'.format(motif_names_table, motifs_table))
     conn.commit()
     curs.close()

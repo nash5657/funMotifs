@@ -89,7 +89,7 @@ class TestSection1(unittest.TestCase):
     def test_get_assay_cell_info(self):
         data_dir = "./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/"
         matching_cell_name_representative_dict = self.test_retreive_key_values_from_dict_file()[1]
-        tissues_with_gene_expression = self.test_get_expression_level_per_originType_per_TF().keys()
+        tissues_with_gene_expression = list(self.test_get_expression_level_per_originType_per_TF().keys())
         x = DataProcessing.get_assay_cell_info(
             data_dir=data_dir,
             sep='\t',
@@ -105,10 +105,10 @@ class TestSection1(unittest.TestCase):
     def test_generate_cells_assays_matrix(self):
         _, cell_assays, _, _, assay_cells_datatypes = self.test_get_assay_cell_info()
         x = DataProcessing.generate_cells_assays_matrix(cell_assays,
-                                                        cell_names=self.test_retreive_key_values_from_dict_file()[
-                                                            0].keys(),
+                                                        cell_names=list(self.test_retreive_key_values_from_dict_file()[
+                                                            0].keys()),
                                                         assay_cells_datatypes=assay_cells_datatypes,
-                                                        tissues_with_gene_expression=self.test_get_expression_level_per_originType_per_TF().keys())
+                                                        tissues_with_gene_expression=list(self.test_get_expression_level_per_originType_per_TF().keys()))
         print(x)
         # TODO: implement assert statements
         return x

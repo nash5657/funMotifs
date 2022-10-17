@@ -40,7 +40,7 @@ def extract_expression_per_peak_per_cell(cell_to_sampleID_mapping_inputfile,
                             sample_ids_from_expr_file.append(x.strip())
                 elif line.startswith(peak_lines_starting_keyword):
                     new_line = []
-                    for cell in list(cell_sample_dict.keys()):
+                    for cell in cell_sample_dict.keys():
                         list_of_expression_in_this_peak_from_all_samples_of_this_cell = []
                         for sampleID in cell_sample_dict[cell]:
                             list_of_expression_in_this_peak_from_all_samples_of_this_cell.append(float(split_line[start_index_expr_values+sample_ids_from_expr_file.index(sampleID)]))

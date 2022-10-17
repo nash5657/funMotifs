@@ -32,7 +32,7 @@ def get_params(params_list, params_without_value):
                         v=False
                     params[arg] =  v
                 except IndexError:
-                    print(("no value is given for parameter: ", arg))
+                    print("no value is given for parameter: ", arg)
     return params
 
 def open_connection():
@@ -60,7 +60,7 @@ def run_query(cols_to_retrieve, from_tabes, cond_statement, order_by_stmt, conn,
         curs.execute(stmt)
     except psycopg2.ProgrammingError:
         conn.rollback()
-        print(("error in line number (", n, ")"))
+        print("error in line number (", n, ")")
         return []
     if curs is not None:
         return curs.fetchall()
@@ -94,7 +94,7 @@ def read_infile(input_file):
             sline = line.strip().split(params['-sep'])
             number_lines_processed+=1
             if (line.startswith('#') or line.startswith('//') or len(sline)<3):
-                print(('Warning -- skipped line number (', number_lines_processed, '): ', line))
+                print('Warning -- skipped line number (', number_lines_processed, '): ', line)
                 line = infile.readline()
                 continue
             if params['-variants']:#the input is variant
@@ -109,12 +109,12 @@ def read_infile(input_file):
                          sline[params['-ref']]!='del' and sline[params['-alt']]!='ins'
                          )):#skip mis appropriate lines
                             if params['-verbose']:
-                                print(('Warning -- skipped line number (', number_lines_processed, '). The variant length does not match the ref/alt length: ', line))
+                                print('Warning -- skipped line number (', number_lines_processed, '). The variant length does not match the ref/alt length: ', line)
                             line = infile.readline()
                             continue
                 except IndexError:
                     if params['-verbose']:
-                        print(('Warning -- line number (', number_lines_processed, ') is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line))
+                        print('Warning -- line number (', number_lines_processed, ') is not a variant (fewer than 5 columns (chr,start,end,ref,alt) detected): ', line)
                     params['-variants'] = False
                     
             updated_chr = sline[params['-chr']].replace('X', '23').replace('Y', '24').replace('MT','25').replace('M','25')
@@ -152,7 +152,7 @@ def read_infile(input_file):
                     except TypeError:
                         entropy = 'NA'
                         if params['-verbose']:
-                            print(('Warning: ref/alt allele are not correctly given in: ' +  line))
+                            print('Warning: ref/alt allele are not correctly given in: ' +  line)
                         pass
                 if row['numothertfbinding']<=0.0:
                     row['othertfbinding'] = "None"
@@ -188,8 +188,8 @@ def read_infile(input_file):
             line = infile.readline()
             
             if number_lines_processed % int(params['-restart_conn_after_n_queries']) == 0:
-                print(('{} Lines are processed from {}'.format(number_lines_processed, input_file)))
-                print((time.time()-t))
+                print('{} Lines are processed from {}'.format(number_lines_processed, input_file))
+                print(time.time()-t)
                 t = time.time()
                 conn.close()
                 curs_for_pfms.close()
@@ -202,10 +202,10 @@ def run_regDriver(user_args):
         print("Usage: python regDriver.py -f input_file -tissue tissue_name [options]")
         sys.exit(0)
     get_params(user_args, params_without_value=[])
-    print((params['-tissue']))
-    if '-f' in list(params.keys()):
+    print(params['-tissue'])
+    if '-f' in params.keys():
         read_infile(params['-f'])
-    elif '-dir' in list(params.keys()):
+    elif '-dir' in params.keys():
         if params['-run_parallel']:
             p = mp.Pool(int(params['-num_cores']))
         for f in os.listdir(params['-dir']):
@@ -226,5 +226,5 @@ if __name__ == '__main__':
     try:
         run_regDriver(sys.argv[1:])
     except KeyError:
-        print(("No value was found for one or more of the arguments:\n", params))
+        print("No value was found for one or more of the arguments:\n", params)
         print("Usage: python regDriver.py -f file_name -tissue tissue_name")

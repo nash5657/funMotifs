@@ -67,7 +67,7 @@ if __name__ == '__main__':
         sep='\t')
 
     # get tissues with gene expression
-    tissues_with_gene_expression = list(normal_expression_per_tissue_origin_per_TF.keys())
+    tissues_with_gene_expression = normal_expression_per_tissue_origin_per_TF.keys()
 
     # returns cell names to consider and their different names as dictionary
     representative_cell_name_matchings_dict, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
@@ -84,12 +84,12 @@ if __name__ == '__main__':
         tissues_with_gene_expression=tissues_with_gene_expression)
 
     # get assay cell names
-    assay_names = list(assay_cells.keys())
+    assay_names = assay_cells.keys()
 
     # Generate a default dict based on the information obtained from the tracks in data_dir
     # TODO: unittest for function
     cells_assays_dict = DataProcessing.generate_cells_assays_matrix(cell_assays,
-                                                                    cell_names=list(representative_cell_name_matchings_dict.keys()),
+                                                                    cell_names=representative_cell_name_matchings_dict.keys(),
                                                                     assay_cells_datatypes=assay_cells_datatypes,
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
                 GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
                                                                motifs_table=new_table_name,
                                                                motif_cols=motif_cols_names,
-                                                               chr_names=list(range(1, 26)))
+                                                               chr_names=range(1, 26))
 
             # get PFM for motifs
             PFM_table_name = "motifs_pfm"

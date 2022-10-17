@@ -42,10 +42,10 @@ def generate_list_of_accession_info(encode_metadata_inputfile,
                 target_name = split_line[index_target].replace("-human", "").replace("eGFP-", "").replace("HA-", "").replace("FLAG-", "") #all the factor names end with -human so there is no need to keep them; some factor names are written as eGFP-factorName or HA-factorName to indidicate the antibody type so they have to be removed to combine the same factors regardless of their antibody type 
                 if target_name=="" or target_name=="NA":
                     target_name=default_target_name
-                if target_name not in list(targets_dict.keys()):
+                if target_name not in targets_dict.keys():
                     targets_dict[target_name] = {}
                 file_format_output_type = split_line[index_file_format]+"_"+split_line[index_output_type]
-                if file_format_output_type not in list(targets_dict[target_name].keys()):
+                if file_format_output_type not in targets_dict[target_name].keys():
                     targets_dict[target_name][file_format_output_type]=[]
                 targets_dict[target_name][file_format_output_type].append(split_line[index_file_accession])
         except IndexError:
@@ -67,7 +67,7 @@ def parse_cellinfodict_to_populate_data(cellinfodict_inputfile,
             break
         elif line.startswith(cell_names_start_with):
             cell_name=line.strip().strip(cell_names_start_with)
-            if cell_name not in list(dict_cell_lines_info.keys()):
+            if cell_name not in dict_cell_lines_info.keys():
                 dict_cell_lines_info[cell_name]={}
         elif (not line.startswith(cell_names_start_with)) and "=" in line:
             split_line = line.strip().split('=')            
@@ -86,13 +86,13 @@ def select_ENCODE_datasets_per_factor(ENCODE_accession_codes_dict,
                                       limit_to_highest_priority_output_types=False):
  
     selected_datasets_per_factor = {}
-    for factor in list(ENCODE_accession_codes_dict.keys()):
-        if factor not in list(selected_datasets_per_factor.keys()):
+    for factor in ENCODE_accession_codes_dict.keys():
+        if factor not in selected_datasets_per_factor.keys():
             selected_datasets_per_factor[factor] = []
         else:
-            print(("Warning: duplicate Factors:" + factor))
+            print("Warning: duplicate Factors:" + factor)
         
-        for output_type in list(ENCODE_accession_codes_dict[factor].keys()):
+        for output_type in ENCODE_accession_codes_dict[factor].keys():
             quality_flag= flag_indicating_low_qualtity_peaks
             for highest_priority_output_type in highest_priority_output_types:
                 if output_type==highest_priority_output_type:
@@ -128,7 +128,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
         os.makedirs(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type)
     os.chdir(target_cellinfo_dirs_path+'/'+cell_name+'/'+assay_type)
     if not os.path.exists(final_dataset_of_this_assay_cell):
-        for factor in list(assay_info_dict.keys()):
+        for factor in assay_info_dict.keys():
             print(factor)
             peak_score_from_peak_file_exists = True
             final_dataset = factor+".bed4"
@@ -137,7 +137,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                 continue
             list_of_high_quality_datasets_from_this_factor = []
             list_of_low_quality_datasets_from_this_factor = []
-            print((assay_info_dict[factor]))
+            print(assay_info_dict[factor])
             if 'high' in assay_info_dict[factor]:
                 if number_of_files_to_consider_from_highquality_datasets=='all':
                     list_of_high_quality_datasets_from_this_factor=assay_info_dict[factor][assay_info_dict[factor].index("high")+1]
@@ -173,7 +173,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
                             downloaded_obj = urllib.request.urlopen(dataset_path)
-                            print(("downloading.... " + dataset_path))
+                            print("downloading.... " + dataset_path)
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         with gzip.open(dataset_name+".gz", 'rb') as dataset_name_zip, open(dataset_name, 'wb') as dataset_name_unzipped:
@@ -192,7 +192,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     else:
                         if not os.path.exists(dataset_name):
                             downloaded_obj = urllib.request.urlopen(dataset_path)
-                            print(("downloading.... " + dataset_path))
+                            print("downloading.... " + dataset_path)
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         if "." in dataset_name: 
@@ -236,7 +236,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
             #Combine all high quality peak files into one
             peak_score_from_peak_file_exists = True
             if len(list_of_high_quality_peakfiles_from_this_factor)!=0:
-                print((cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor)))
+                print(cell_name + ": high: " + assay_type + ":" + factor + ": "  + ','.join(list_of_high_quality_peakfiles_from_this_factor))
                 #merge the high quality datasets
                 if len(list_of_high_quality_peakfiles_from_this_factor)==1:
                     if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type =="Reg_elem_EpiMap":
@@ -306,7 +306,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     if not os.path.exists(dataset_name):
                         if not os.path.exists(dataset_name+".gz"):
                             downloaded_obj = urllib.request.urlopen(dataset_path)
-                            print(("downloading.... " + dataset_path))
+                            print("downloading.... " + dataset_path)
                             with open(os.path.basename(dataset_name+".gz"), 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         with gzip.open(dataset_name+".gz", 'rb') as dataset_name_zip, open(dataset_name, 'wb') as dataset_name_unzipped:
@@ -326,7 +326,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
                     else:
                         if not os.path.exists(dataset_name):
                             downloaded_obj = urllib.request.urlopen(dataset_path)
-                            print(("downloading.... " + dataset_path))
+                            print("downloading.... " + dataset_path)
                             with open(dataset_name, 'wb') as local_file:
                                 local_file.write(downloaded_obj.read())
                         if "." in dataset_name: 
@@ -368,7 +368,7 @@ def download_and_unify_datasets(cell_name, assay_type, assay_info_dict, target_c
             #Combine all low quality peak files into one
             peak_score_from_peak_file_exists = True
             if len(list_of_low_quality_peakfiles_from_this_factor)!=0:
-                print((cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor)))
+                print(cell_name + ": low: " + assay_type + ":" + factor + ": "  + ','.join(list_of_low_quality_peakfiles_from_this_factor))
                 #merge the low quality datasets
                 if len(list_of_low_quality_peakfiles_from_this_factor)==1:
                     if assay_type == "ChromatinStates" or assay_type == "cCRE" or assay_type=="Reg_elem_EpiMap":
@@ -552,8 +552,8 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                         if len(selected_datasets_per_factor_dict)==0:
                             selected_datasets_per_factor_dict=selected_datasets_per_factor_dict_from_metadatafile
                         else:
-                            for factor in list(selected_datasets_per_factor_dict_from_metadatafile.keys()):
-                                if factor not in list(selected_datasets_per_factor_dict.keys()):
+                            for factor in selected_datasets_per_factor_dict_from_metadatafile.keys():
+                                if factor not in selected_datasets_per_factor_dict.keys():
                                     selected_datasets_per_factor_dict[factor]=selected_datasets_per_factor_dict_from_metadatafile[factor]
                                 else:
                                     for items in range(0,len(selected_datasets_per_factor_dict_from_metadatafile[factor]),2):
@@ -565,7 +565,7 @@ def populate_cellinfo_dirs(dict_cell_lines_info, target_cellinfo_dirs_path, asse
                         factor_name_from_otherdatasource = datasource_split[0]
                         quality_level_from_otherdatasource = datasource_split[1]
                         source_from_otherdatasource = datasource_split[2].split(';')
-                        if factor_name_from_otherdatasource not in list(selected_datasets_per_factor_dict.keys()):
+                        if factor_name_from_otherdatasource not in selected_datasets_per_factor_dict.keys():
                             selected_datasets_per_factor_dict[factor_name_from_otherdatasource] = []
                         if quality_level_from_otherdatasource in selected_datasets_per_factor_dict[factor_name_from_otherdatasource]:
                             selected_datasets_per_factor_dict[factor_name_from_otherdatasource][selected_datasets_per_factor_dict[factor_name_from_otherdatasource].index(quality_level_from_otherdatasource)+1].extend(source_from_otherdatasource)

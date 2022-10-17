@@ -23,7 +23,7 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
                 #on linux use awk to generate a file per chr
                 if sys.platform == "linux" or sys.platform == "linux2":
                     if os.path.exists(data_track):
-                        print(("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track))
+                        print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
                         os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
                 else: #otherwise use readline (it is much slower than awk)
                     for f in glob(data_track):
@@ -39,7 +39,7 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
                     
         print("Combined data from the listed tracks.")
     else:
-        print(("Using existing data tracks from: " + data_dir))
+        print("Using existing data tracks from: " + data_dir)
         # TODO: verify that the data in the directory is correct
     return data_dir
 
@@ -66,7 +66,7 @@ def get_assay_cell_info(data_dir,
         
         for chr_file in os.listdir(data_dir):
             if "chr" in chr_file:
-                print(('reading from: ' + data_dir + '/' + chr_file))
+                print('reading from: ' + data_dir + '/' + chr_file)
                 with open(data_dir+'/'+chr_file, 'r') as data_infile:
                     l = data_infile.readline()
                     while l:
@@ -196,7 +196,7 @@ def generate_cells_assays_matrix(cell_assays,
                                  tissues_with_gene_expression):
     ''' Generate a default dict based on the information obtained from the tracks in data_dir '''
     cells_assays_dict = {}
-    for cell_name in list(cell_assays.keys()):
+    for cell_name in cell_assays.keys():
         if not (cell_name in cell_names or cell_name in tissues_with_gene_expression):#only consider cells that are listed in the dict or the gene expr file
             continue
         cells_assays_dict[cell_name] = {}
