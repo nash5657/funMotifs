@@ -7,7 +7,6 @@ import json, os
 
 def retreive_TFFamilyName_for_motifNames(TF_family_matches_file):#TFFamilyName TF_name
     "Retrieves the TF family name for each TF name"
-    
     motifTFName_TFNames_matches_dict = {}
     with open(TF_family_matches_file, 'r') as TFFamily_matches_infile:
         lines = TFFamily_matches_infile.readlines()
@@ -33,6 +32,7 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                                                index_gene_values_start, 
                                                sep):
     tissue_origin_gene_expression_values = {}
+    # TODO: check else statement
     if not os.path.exists(origin_gene_expression_values_outputfile):
         tf_names_to_extract_gene_expression_for = []#list_tf_names_from_tracks#get names of TFs from the TFFamily file and the dirs contaning ChIP-seq datasets
         for k in motifTFName_TFNames_matches_dict.keys():
@@ -44,6 +44,8 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                 line = normal_gene_expression_infile.readline()#skip until it gets to the tissue names row
             tissue_names = normal_gene_expression_infile.readline().strip().split(sep)[index_gene_names_col+1::]
             line = normal_gene_expression_infile.readline()
+            print(tissue_names)
+            print(line)
             
             #iniatilze the tissue_origin_gene_expression_values matrix
             for tissue in tissue_names:

@@ -1,0 +1,4 @@
+//get info for the following cells (one column for each of their assays)
+SWE=Sweden, Sverige
+MEX=Mexico
+GER=Germany

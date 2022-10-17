@@ -53,12 +53,10 @@ if __name__ == '__main__':
                                                params['data_tracks'])
 
     # Retrieves the TF family name for each TF name
-    # TODO: unittest for function
     motifTFName_TFNames_matches_dict = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(
         params['TF_family_matches_file'])
 
     # Given a GTEX file retrieve gene expression from each tissue for each TF name
-    # TODO: unittest for function
     normal_expression_per_tissue_origin_per_TF = ProcessTFMotifs.get_expression_level_per_originType_per_TF(
         motifTFName_TFNames_matches_dict,
         normal_gene_expression_inputfile=params['normal_gene_expression_inputfile'],
@@ -72,14 +70,12 @@ if __name__ == '__main__':
     tissues_with_gene_expression = normal_expression_per_tissue_origin_per_TF.keys()
 
     # returns cell names to consider and their different names as dictionary
-    # TODO: unittest for function
     representative_cell_name_matchings_dict, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
         params['cell_names_matchings_dict'],
         key_value_sep='=',
         values_sep=',')
 
     # get assay cell info
-    # TODO: unittest for function
     assay_cells, cell_assays, cell_tfs, tf_cells, assay_cells_datatypes = DataProcessing.get_assay_cell_info(
         data_dir=params['all_chromatin_makrs_all_cells_combined_dir_path'],
         sep='\t',
