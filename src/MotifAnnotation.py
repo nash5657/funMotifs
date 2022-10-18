@@ -391,24 +391,14 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
 
     # compute overlay resources score motif to find overlapping structures
     # Debug: print(run_in_parallel_param, motif_files)
-    # TODO: remove introduced dummy if block when updated to Python 3
-    if False:
-        print(" ")
-        # Pool.starmap has issues with Python 2 that should be gone when running with Python 3
-        # This part will be added after converting to Python 3
-        '''if run_in_parallel_param and len(motif_files)>1:
+    if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
-        print("Here, MotifAnnot, Line373")
-        print(motif_files_full_path, [motifs_overlapping_tracks_output_dir], [all_chromatin_makrs_all_cells_combined_dir_path], [chromatin_tracks_files])
-        #motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
-        #                                                                                    [
-        #                                                                                        motifs_overlapping_tracks_output_dir],
-        #                                                                                    [
-        #                                                                                        all_chromatin_makrs_all_cells_combined_dir_path],
-        #                                                                                    [chromatin_tracks_files]))
-        print("Here, MotifAnnot, Line378")
+        motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
+                                                                                            [motifs_overlapping_tracks_output_dir],
+                                                                                            [all_chromatin_makrs_all_cells_combined_dir_path],
+                                                                                            [chromatin_tracks_files]))
         p.close()
-        p.join()'''
+        p.join()
     else:
         print(motif_files_full_path)
         motifs_overlapping_tracks_files = []
@@ -447,12 +437,8 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                             header_line.append('"' + cell_name + '"')
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
             # score motifs
-            # same as above: starmap will be introduced after updating to Python 3
-            # TODO: remove introduced dummy if block
-            if False:
-                print(" ")
-                '''if (run_in_parallel_param):
-                os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
+            if (run_in_parallel_param):
+                os.system("""split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
                 p.starmap(score_motifs_per_cell, product(motifs_overlapping_tracks_file_splitted, 
@@ -482,7 +468,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         f_score_ifile.close()
                         os.remove(f)
                         os.remove(f+'_scored')   
-                scored_motifs_writefile.close()'''
+                scored_motifs_writefile.close()
             else:
                 scored_file_tmp = score_motifs_per_cell(motifs_overlapping_tracks_file,
                                       normal_expression_per_tissue_origin_per_TF,
