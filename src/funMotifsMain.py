@@ -70,6 +70,7 @@ if __name__ == '__main__':
     # get tissues with gene expression
     tissues_with_gene_expression = normal_expression_per_tissue_origin_per_TF.keys()
 
+    # TODO: purge cell_names_to_consider.txt for unique values
     # returns cell names to consider and their different names as dictionary
     representative_cell_name_matchings_dict, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
         params['cell_names_matchings_dict'],
@@ -96,7 +97,7 @@ if __name__ == '__main__':
 
     """ Section 2: Overlap between the generated resources and motifs """
 
-    # TODO: remove hard-coded variable
+    # TODO: remove hard-coded variable. is there a point of having an file without header
     header = True
 
     # summarize overlapping motifs and their annotations

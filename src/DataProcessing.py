@@ -165,6 +165,7 @@ def get_assay_cell_info(data_dir,
     else:
         with open(generated_dicts_output_file, 'r') as generated_dicts_outfile:
             lines_from_dict_file = generated_dicts_outfile.readlines()
+            # TODO: load json on dictionary & check keys => retrieve values
             number_of_loaded_dicts = 0
             for l in lines_from_dict_file:
                 if '=' in l:
@@ -212,4 +213,3 @@ def generate_cells_assays_matrix(cell_assays,
             except ValueError:#consider it as text if no data type was found
                 cells_assays_dict[cell_name][assay_name] = "NO"
     return cells_assays_dict
-

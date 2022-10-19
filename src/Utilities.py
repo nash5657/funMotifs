@@ -44,6 +44,7 @@ def retreive_key_values_from_dict_file(dict_input_file, key_value_sep, values_se
                 key_values_dict[key_value] = []
             if key_value not in value_key_dict:
                 value_key_dict[key_value]=[key_value]
+            # TODO: check if two or more values are present. this check should not be neccesary if file is purged for one column values
             if len(sl)>1:
                 for s in sl[1].split(values_sep):
                     if s.strip()!="" and s.strip() not in key_values_dict[key_value]:
