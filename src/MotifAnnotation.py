@@ -371,12 +371,15 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     """
 
     # check if input motif_sites_dir is directory and get files from it
-    # TODO: what if neither file nor directory?
-    if not os.path.isdir(motif_sites_dir) and os.path.isfile(motif_sites_dir):
-        motif_files = [motif_sites_dir]
-        motif_sites_dir = "."
+    if os.path.exists(motif_sites_dir):
+        if not os.path.isdir(motif_sites_dir) and os.path.isfile(motif_sites_dir):
+            motif_files = [motif_sites_dir]
+            motif_sites_dir = "."
+        else:
+            motif_files = os.listdir(motif_sites_dir)
     else:
-        motif_files = os.listdir(motif_sites_dir)
+        print('TODO ERROR')
+        # TODO: unrecoverable error for non-existing directory
 
     # get list of paths to all motif files
     motif_files_full_path = [motif_sites_dir + '/' + s for s in motif_files]
@@ -446,6 +449,10 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                   .replace('-', '__').replace('.', '').replace("'", "")).split())
                             header_line.append('"' + cell_name + '"')
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
+                else:
+                    print('TODO ERROR')
+                    # TODO: throw an unrecoverable error
+
             # score motifs
             # same as above: starmap will be introduced after updating to Python 3
             # TODO: remove introduced dummy if block
