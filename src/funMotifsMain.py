@@ -30,6 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
     parser.add_argument('--temp_dir', default='', help='')
+    parser.add_argument('--force-overwrite', default=False)
 
     args, unknown = parser.parse_known_args()
     return args
