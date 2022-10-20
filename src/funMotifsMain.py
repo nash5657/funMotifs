@@ -142,11 +142,14 @@ if __name__ == '__main__':
         db_host_name = params['db_host_name']
         cell_table = 'cell_table'
         tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
+        db_dir = params['db_dir']
+        logfile = params['logfile']
 
         motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER',
                       'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
         motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
+        DBUtilities.start_psql_server(db_dir, logfile)
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
         process_cell_table = Utilities.get_value(params['generate_cell_table'])
