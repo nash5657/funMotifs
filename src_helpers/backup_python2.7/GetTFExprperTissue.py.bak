@@ -1,12 +1,15 @@
 '''
-Created on 28 Sep 2017
+Created on 2 Oct 2017
 
 @author: husensofteng
+@desc Given a GTEX file retrieve gene expression from each tissue for each TF name that is given in the retreive_TFFamilyName_for_motifNames input file
 '''
-import json, os
+import sys, os, json
+import argparse
 
 def retreive_TFFamilyName_for_motifNames(TF_family_matches_file):#TFFamilyName TF_name
     "Retrieves the TF family name for each TF name"
+    
     motifTFName_TFNames_matches_dict = {}
     with open(TF_family_matches_file, 'r') as TFFamily_matches_infile:
         lines = TFFamily_matches_infile.readlines()
@@ -14,7 +17,7 @@ def retreive_TFFamilyName_for_motifNames(TF_family_matches_file):#TFFamilyName T
             sl = line.strip().split('\t')
             if len(sl)>1:
                 motifTF_name = sl[0].strip().upper()
-                if motifTF_name not in list(motifTFName_TFNames_matches_dict.keys()):
+                if motifTF_name not in motifTFName_TFNames_matches_dict.keys():
                     motifTFName_TFNames_matches_dict[motifTF_name] = []
                 for s in sl:
                     if s.strip().upper()!="": 
@@ -28,20 +31,13 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                                                normal_gene_expression_inputfile,
                                                origin_gene_expression_values_outputfile, 
                                                index_tissues_names_row_start, 
-                                               index_gene_names_col,
+                                               index_gene_names_col, 
                                                index_gene_values_start, 
                                                sep):
     tissue_origin_gene_expression_values = {}
-
-    # TODO: add arg for force overwrite. refactor else branch into function & call directly
-    if os.path.exists(origin_gene_expression_values_outputfile):
-        with open(origin_gene_expression_values_outputfile, 'r') as origin_gene_expression_values_infile:
-            # TODO: file format
-            tissue_origin_gene_expression_values = json.load(origin_gene_expression_values_infile)
-        return tissue_origin_gene_expression_values
-    else:
+    if not os.path.exists(origin_gene_expression_values_outputfile):
         tf_names_to_extract_gene_expression_for = []#list_tf_names_from_tracks#get names of TFs from the TFFamily file and the dirs contaning ChIP-seq datasets
-        for k in list(motifTFName_TFNames_matches_dict.keys()):
+        for k in motifTFName_TFNames_matches_dict.keys():
             tf_names_to_extract_gene_expression_for.append(k)
         tf_names_to_extract_gene_expression_for = list(set(tf_names_to_extract_gene_expression_for))
         TFs_extract_expression = get_TFs_extract_expression(tf_names_to_extract_gene_expression_for)
@@ -50,8 +46,6 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                 line = normal_gene_expression_infile.readline()#skip until it gets to the tissue names row
             tissue_names = normal_gene_expression_infile.readline().strip().split(sep)[index_gene_names_col+1::]
             line = normal_gene_expression_infile.readline()
-            print(tissue_names)
-            print(line)
             
             #iniatilze the tissue_origin_gene_expression_values matrix
             for tissue in tissue_names:
@@ -76,6 +70,10 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
             #for tissue_name in tissue_origin_gene_expression_values:
             #    for gene_name in tissue_origin_gene_expression_values[tissue_name]:
             #        origin_gene_expression_values_outfile.write(tissue_name + sep + gene_name + sep + str(tissue_origin_gene_expression_values[tissue_name][gene_name]) + '\n')
+    else:
+        with open(origin_gene_expression_values_outputfile, 'r') as origin_gene_expression_values_infile:
+            tissue_origin_gene_expression_values = json.load(origin_gene_expression_values_infile)
+    return tissue_origin_gene_expression_values
 
 def get_tfName_fromGeneName(TFs_extract_expression, gene_name):
     motif_tf_names_corresponding_to_this_gene = []
@@ -100,3 +98,35 @@ def get_TFs_extract_expression(list_of_tf_names):
                     if s not in TFs_extract_expression[tf_name]:
                         TFs_extract_expression[tf_name].append(s)
     return TFs_extract_expression
+
+def parse_args():
+    '''Parse command line arguments'''
+    print('parse')
+    parser = argparse.ArgumentParser(description='Get Gene Expression Data from ENCODE')
+    parser.add_argument('--TF_family_matches_file', default='', help='')
+    parser.add_argument('--normal_gene_expression_inputfile', default='', help='')  
+
+    
+    return parser.parse_args(sys.argv[1:])
+ 
+
+if __name__ == '__main__':
+    
+    args = parse_args()
+
+    
+    TF_family_matches_file = args.TF_family_matches_file
+    normal_gene_expression_inputfile = args.normal_gene_expression_inputfile
+    origin_gene_expression_values_outputfile = normal_gene_expression_inputfile+"_perTissue_perTF"
+    #get TF name and their matching names as defined in the given file
+    motifTFName_TFNames_matches_dict = retreive_TFFamilyName_for_motifNames(TF_family_matches_file)
+    
+    normal_expression_per_tissue_origin_per_TF = get_expression_level_per_originType_per_TF(
+        motifTFName_TFNames_matches_dict, 
+        normal_gene_expression_inputfile,
+        origin_gene_expression_values_outputfile, 
+        index_tissues_names_row_start = 2, 
+        index_gene_names_col = 1, 
+        index_gene_values_start=2, 
+        sep='\t')
+    

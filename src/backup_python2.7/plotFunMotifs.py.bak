@@ -44,7 +44,7 @@ def get_params(params_list, params_without_value):
                         v=False
                     params[arg] =  v
                 except IndexError:
-                    print(("no value is given for parameter: ", arg ))
+                    print("no value is given for parameter: ", arg )
     return params
 
 def open_connection():
@@ -124,7 +124,7 @@ def plot_fscore_all(ax, table_name, motifs_table, tissue_names, fig_name):
     scores_all = curs.fetchall()
     curs.close()
     df = pd.DataFrame(scores_all, columns=tissue_names)
-    print((df.head()))
+    print(df.head())
     
     sns.swarmplot(data=df, ax=ax, color='grey', linewidth=0.5)
     sns.despine(right=True, top=True, bottom=False, left=False)
@@ -145,10 +145,10 @@ def plot_fscore_all_selected_tfs(ax, table_name, motifs_table, tissue_names, tfs
         curs.execute(stmt_all)
         tf_scores = curs.fetchall()
         tf_scores_list = pd.DataFrame(tf_scores, columns=tissue_names).stack().tolist()
-        print((len(tf_scores_list)))
+        print(len(tf_scores_list))
         scores_all.append(tf_scores_list)
     curs.close()
-    print((len(scores_all)))
+    print(len(scores_all))
     
     sns.swarmplot(data=scores_all, color='grey', ax=ax, linewidth=0.5)
     ax.set_xticklabels(tfs)
@@ -172,7 +172,7 @@ def plot_fscores_myloid(ax, table_name, fig_name):
     curs.execute(stmts_boundmotifs)
     fscores_boundmotifs = curs.fetchall()
     fscores_boundmotifs_list = pd.DataFrame(fscores_boundmotifs, columns=['fscore']).stack().tolist()
-    print((len(fscores_boundmotifs_list)))
+    print(len(fscores_boundmotifs_list))
     scores_all.append(fscores_boundmotifs_list)
     
     print(stmts_unboundmotifs)
@@ -205,7 +205,7 @@ def plot_heatmap(motifs_table,tissue_table, fig_name, threshold_to_include_tf, o
     for c in df_pivot.columns:
             if df_pivot[c].sum()>threshold_to_include_tf:
                 df_pivot_filtered[c] = df_pivot[c] 
-    print((df_pivot_filtered.head()))
+    print(df_pivot_filtered.head())
     if len(df_pivot_filtered)>0:
         s = sns.heatmap(data=df_pivot_filtered, square=True, cbar=True)
         ss = s.get_figure()
@@ -229,7 +229,7 @@ def plot_scatter_plot(motifs_table, tissue_tables, otherconditions, figname):
         dfs.append(df)
     curs.close()
     all_dfs = pd.concat(dfs)
-    print((all_dfs.head()))
+    print(all_dfs.head())
     
     fig = plt.figure(figsize=(13,8))
     s = sns.stripplot(x='Tissue', y='Number of Functional Motifs per TF', data=all_dfs, jitter=True)
@@ -258,12 +258,12 @@ def run_query(query_stmt, tissue_table, cols):
     curs.execute(query_stmt)
     query_results = curs.fetchall()
     df = pd.DataFrame(query_results, columns=cols)
-    print((df.head()))
+    print(df.head())
     df.to_csv(tissue_table, sep='\t', index=False)
     df_bed = BedTool.from_dataframe(df).sort().merge(c=[4,5,6,7,8,9],o=['distinct','max', 'distinct', 'max','max', 'distinct'])
     df = BedTool.to_dataframe(df_bed, names=cols)
     df.to_csv(tissue_table+'_merged', sep='\t', index=False)
-    print((df.head()))
+    print(df.head())
     curs.close()
     conn.close()
     
@@ -295,8 +295,8 @@ def plot_freq(file_x, file_y):
         for l in fy:
             (k, v) = l.strip().split('\t')
             d_y[k] = int(v)
-        if len(list(d_x.keys())) > len(list(d_y.keys())):
-            for k in list(d_x.keys()):
+        if len(d_x.keys()) > len(d_y.keys()):
+            for k in d_x.keys():
                 x.append(d_x[k])
                 names.append(k.split('_')[0])
                 try:
@@ -304,7 +304,7 @@ def plot_freq(file_x, file_y):
                 except KeyError:
                     y.append(0)
         else:
-            for k in list(d_y.keys()):
+            for k in d_y.keys():
                 y.append(d_y[k])
                 names.append(k.split('_')[0])
                 try:
@@ -379,7 +379,7 @@ if __name__ == '__main__':
         #plot_heatmap(motifs_table=motifs_table,tissue_table=tissue_table, fig_name='fig3_heatmap_min10_'+tissue_table, threshold_to_include_tf=threshold_to_include_tf_in_heatmap, otherconditions=otherconditions)
     
     
-    if '-fig2' in list(params.keys()):
+    if '-fig2' in params.keys():
         print('plotting figure 2')
         for tf in sorted(tfs):
             fig = plt.figure(figsize=(12,6))

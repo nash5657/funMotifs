@@ -78,11 +78,11 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
                 try:
                     curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ', '.join(value_marks)), lines_as_lists)
                     conn.commit()
-                    print(("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)))
+                    print("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed))
                 except:
-                    print(("Thread {} coundn't insert to DB ({})".format(thread_num, i_file)))
+                    print("Thread {} coundn't insert to DB ({})".format(thread_num, i_file))
             except (ValueError, IndexError):
-                print(("Empty file" + i_file + "in thread" + str(thread_num)))
+                print("Empty file" + i_file + "in thread" + str(thread_num))
     curs.close()
     conn.close()
     return
@@ -109,7 +109,7 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
         p.close()
         p.join()
     
-    print(("Data insertion into {} is done".format(cell_table)))
+    print("Data insertion into {} is done".format(cell_table))
     return
 
 def generate_cell_table(db_name,
@@ -133,7 +133,7 @@ def generate_cell_table(db_name,
         field_names = create_cell_table(db_name, db_user_name, db_host_name,
             cells_assays_dict, assay_cells_datatypes, cell_table, motif_cols_names[1:], motif_cols)
         
-        print(("Inserting data into: ", cell_table))
+        print("Inserting data into: ", cell_table)
         insert_into_db(field_names, db_name = db_name, 
                        db_user_name=db_user_name, 
                        db_host_name=db_host_name, 
@@ -143,7 +143,7 @@ def generate_cell_table(db_name,
                        run_in_parallel_param=run_in_parallel_param,
                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
         # dir_to_import=params['motifs_overlapping_tracks_output_dir'], keyword_to_check="_scored.bed10", header=header)
-        print(("Creating index on: ", cell_table))
+        print("Creating index on: ", cell_table)
         DBUtilities.create_index(db_name, db_user_name, db_host_name, 
                                  cell_table, index_name=cell_index_name, index_method = cell_index_method, index_cols = cell_index_cols)
         

@@ -67,7 +67,7 @@ def get_sig_motif_instances(instances_file_fimo_format,
                             number_of_highest_ranked_instances_wrote+=1
                         bed_outfile.write(line_to_write)
                     
-    print((sig_bed_output_file + "(len_all_instances,mean_scores,sd_scores,sig_instances,highest_ranked_instances):\t" + str(lenght_all_instances) + '\t' + str(mean_scores) + '\t' + str(sd_scores) + '\t' + str(number_of_sig_instances_wrote) + '\t' + str(number_of_highest_ranked_instances_wrote)))
+    print(sig_bed_output_file + "(len_all_instances,mean_scores,sd_scores,sig_instances,highest_ranked_instances):\t" + str(lenght_all_instances) + '\t' + str(mean_scores) + '\t' + str(sd_scores) + '\t' + str(number_of_sig_instances_wrote) + '\t' + str(number_of_highest_ranked_instances_wrote))
     return bed_input_file, sig_bed_output_file
     
         

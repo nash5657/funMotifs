@@ -83,7 +83,7 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
                     sl = line.strip().split('\t')
                     if len(sl[9].split(',')) == (
                             (int(sl[2]) - int(sl[1])) + 1):  # only keep if all bases of the motif were in the region
-                        if sl[10] not in list(regions.keys()):
+                        if sl[10] not in regions.keys():
                             regions[sl[10]] = [sl[0:10]]
                         else:
                             if max_motif_score_per_region:
@@ -95,7 +95,7 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
                     line = r.readline()
 
     with open(motifs_scored_output_file, 'w') as motifs_scored_outfile:
-        for region in list(regions.keys()):
+        for region in regions.keys():
             for motif_region in regions[region]:
                 motif_region[7] = "{:.3f}".format(float(motif_region[7]))
                 motifs_scored_outfile.write('\t'.join(motif_region) + '\t' + region + '\n')
@@ -110,7 +110,7 @@ def get_promoters_of_unactive_genes(genes_input_file, proms_of_unactive_genes_ou
     if os.path.exists(proms_of_unactive_genes_output_file):
         return proms_of_unactive_genes_output_file
     with open(genes_input_file, 'r') as genes_infile, open(proms_of_unactive_genes_output_file, 'w') as outfile:
-        print(('Getting promoters (size={}) of KNOWN protein_coding genes that have expr <= {} in {}'.format(num_bp_for_prom, unactive_expr_thresh, genes_input_file)))
+        print('Getting promoters (size={}) of KNOWN protein_coding genes that have expr <= {} in {}'.format(num_bp_for_prom, unactive_expr_thresh, genes_input_file))
         l = genes_infile.readline()
         while l:
             sl = l.strip().split(sep)
@@ -128,7 +128,7 @@ def getBed(coordinates_input_file, input_file, output_file):
     oligos_dict = {}
     for o in oligos:
         so = o.strip().split('\t')
-        if so[3] not in list(oligos_dict.keys()):
+        if so[3] not in oligos_dict.keys():
             oligos_dict[so[3]] = [so[0], so[1], so[2]]
             
     lines = open(input_file, 'r').readlines()
@@ -437,8 +437,8 @@ if __name__ == '__main__':
     #                  datafiles_HepG2_geneexpr_dir, datafiles_K562_geneexpr_dir, datafiles_GM12878_geneexpr_dir, #datafiles_MCF7_geneexpr_dir,
     #                  cell_table)
 
-    print((logit_params.summary()))
-    print((np.exp(logit_params.params)))
+    print(logit_params.summary())
+    print(np.exp(logit_params.params))
     cleanup()
 
 

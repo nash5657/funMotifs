@@ -217,7 +217,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
                                                                            scored_motif_per_cell_per_assay,
                                                                            cells_assays_dict)
 
-                    print(('\t'.join(field_values) + '\n'))
+                    print('\t'.join(field_values) + '\n')
                     scored_motifs_writefile.write('\t'.join(field_values) + '\n')
                     line = motifs_overlapping_tracks_readfile.readline()
 
@@ -249,7 +249,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
                 chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
 
-                print(("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file))
+                print("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
 
                 os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(motif_sites_input_file,
                                                                         motif_sites_input_file_sorted))
@@ -284,27 +284,27 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                             state_value = elem.split('#')[2].rstrip("\n")
 
                                         if assay_value == "ChromHMM":
-                                            if cell_value not in list(cell_assay_values_dict_ChromHMM.keys()):
+                                            if cell_value not in cell_assay_values_dict_ChromHMM.keys():
                                                 cell_assay_values_dict_ChromHMM[cell_value] = []
                                             cell_assay_values_dict_ChromHMM[cell_value].append(state_value)
 
                                         elif assay_value == "cCRE":
-                                            if cell_value not in list(cell_assay_values_dict_cCRE.keys()):
+                                            if cell_value not in cell_assay_values_dict_cCRE.keys():
                                                 cell_assay_values_dict_cCRE[cell_value] = []
                                             cell_assay_values_dict_cCRE[cell_value].append(state_value)
 
                                         elif assay_value == "IndexDHS":
-                                            if cell_value not in list(cell_assay_values_dict_IndexDHS.keys()):
+                                            if cell_value not in cell_assay_values_dict_IndexDHS.keys():
                                                 cell_assay_values_dict_IndexDHS[cell_value] = []
                                             cell_assay_values_dict_IndexDHS[cell_value].append(state_value)
 
                                         elif assay_value == "RegElem":
-                                            if cell_value not in list(cell_assay_values_dict_RegElem.keys()):
+                                            if cell_value not in cell_assay_values_dict_RegElem.keys():
                                                 cell_assay_values_dict_RegElem[cell_value] = []
                                             cell_assay_values_dict_RegElem[cell_value].append(state_value)
 
                                         elif assay_value == "DNase-seq":
-                                            if cell_value not in list(cell_assay_values_dict_DNaseq.keys()):
+                                            if cell_value not in cell_assay_values_dict_DNaseq.keys():
                                                 cell_assay_values_dict_DNaseq[cell_value] = []
                                             cell_assay_values_dict_DNaseq[cell_value].append(float(state_value))
 
@@ -318,21 +318,21 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                                      Counter(cell_assay_values_dict_ChromHMM[cell]).most_common(1)[0][
                                                          0])
 
-                                for cell in list(cell_assay_values_dict_cCRE.keys()):
+                                for cell in cell_assay_values_dict_cCRE.keys():
                                     elem_list.append(
                                         cell + "#cCRE#" + Counter(cell_assay_values_dict_cCRE[cell]).most_common(1)[0][
                                             0])
 
-                                for cell in list(cell_assay_values_dict_IndexDHS.keys()):
+                                for cell in cell_assay_values_dict_IndexDHS.keys():
                                     elem_list.append(cell + "#IndexDHS#" +
                                                      Counter(cell_assay_values_dict_IndexDHS[cell]).most_common(1)[0][
                                                          0])
 
-                                for cell in list(cell_assay_values_dict_RegElem.keys()):
+                                for cell in cell_assay_values_dict_RegElem.keys():
                                     elem_list.append(cell + "#RegElem#" +
                                                      Counter(cell_assay_values_dict_RegElem[cell]).most_common(1)[0][0])
 
-                                for cell in list(cell_assay_values_dict_DNaseq.keys()):
+                                for cell in cell_assay_values_dict_DNaseq.keys():
                                     elem_list.append(
                                         cell + "#DNase-seq#" + str(max(cell_assay_values_dict_DNaseq[cell])))
 
@@ -371,15 +371,12 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     """
 
     # check if input motif_sites_dir is directory and get files from it
-    if os.path.exists(motif_sites_dir):
-        if not os.path.isdir(motif_sites_dir) and os.path.isfile(motif_sites_dir):
-            motif_files = [motif_sites_dir]
-            motif_sites_dir = "."
-        else:
-            motif_files = os.listdir(motif_sites_dir)
+    # TODO: what if neither file nor directory?
+    if not os.path.isdir(motif_sites_dir) and os.path.isfile(motif_sites_dir):
+        motif_files = [motif_sites_dir]
+        motif_sites_dir = "."
     else:
-        print('TODO ERROR')
-        # TODO: unrecoverable error for non-existing directory
+        motif_files = os.listdir(motif_sites_dir)
 
     # get list of paths to all motif files
     motif_files_full_path = [motif_sites_dir + '/' + s for s in motif_files]
@@ -394,14 +391,24 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
 
     # compute overlay resources score motif to find overlapping structures
     # Debug: print(run_in_parallel_param, motif_files)
-    if run_in_parallel_param and len(motif_files)>1:
+    # TODO: remove introduced dummy if block when updated to Python 3
+    if False:
+        print(" ")
+        # Pool.starmap has issues with Python 2 that should be gone when running with Python 3
+        # This part will be added after converting to Python 3
+        '''if run_in_parallel_param and len(motif_files)>1:
         p = Pool(int(number_processes_to_run_in_parallel))
-        motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
-                                                                                            [motifs_overlapping_tracks_output_dir],
-                                                                                            [all_chromatin_makrs_all_cells_combined_dir_path],
-                                                                                            [chromatin_tracks_files]))
+        print("Here, MotifAnnot, Line373")
+        print(motif_files_full_path, [motifs_overlapping_tracks_output_dir], [all_chromatin_makrs_all_cells_combined_dir_path], [chromatin_tracks_files])
+        #motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
+        #                                                                                    [
+        #                                                                                        motifs_overlapping_tracks_output_dir],
+        #                                                                                    [
+        #                                                                                        all_chromatin_makrs_all_cells_combined_dir_path],
+        #                                                                                    [chromatin_tracks_files]))
+        print("Here, MotifAnnot, Line378")
         p.close()
-        p.join()
+        p.join()'''
     else:
         print(motif_files_full_path)
         motifs_overlapping_tracks_files = []
@@ -423,7 +430,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
             count = sum(1 for _ in f)
         # TODO: missing else statement for code below (assumes correct file exist already otherwise)
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
-            print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
+            print("computing scores to: " + scored_motifs_chromatin_tracks_output_file)
             # TODO: control change below
             index_track_names = 6 # changed from 7 to 6 possible index error
             index_motif_name = 3
@@ -439,13 +446,13 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                   .replace('-', '__').replace('.', '').replace("'", "")).split())
                             header_line.append('"' + cell_name + '"')
                     scored_motifs_writefile.write('\t'.join(header_line) + '\n')
-                else:
-                    print('TODO ERROR')
-                    # TODO: throw an unrecoverable error
-
             # score motifs
-            if (run_in_parallel_param):
-                os.system("""split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
+            # same as above: starmap will be introduced after updating to Python 3
+            # TODO: remove introduced dummy if block
+            if False:
+                print(" ")
+                '''if (run_in_parallel_param):
+                os.system( """split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
                 p.starmap(score_motifs_per_cell, product(motifs_overlapping_tracks_file_splitted, 
@@ -475,7 +482,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         f_score_ifile.close()
                         os.remove(f)
                         os.remove(f+'_scored')   
-                scored_motifs_writefile.close()
+                scored_motifs_writefile.close()'''
             else:
                 scored_file_tmp = score_motifs_per_cell(motifs_overlapping_tracks_file,
                                       normal_expression_per_tissue_origin_per_TF,
