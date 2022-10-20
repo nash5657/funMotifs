@@ -10,27 +10,35 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
-def start_psql_server(db="../database", logfile="../logfile"):
-    # TODO: find solution for non Linux systems, call function where needed
+def start_psql_server(db_user_name, db_host_name, db="../database", logfile="../logfile"):
+    # TODO: call function only when needed
     # start the PostgreSQL server
-    if sys.platform == "linux" or sys.platform == "linux2":
-        try:
-            os.system("""pg_ctl restart -D """ + db + """ -l """ + logfile)
+    try:
+        # test if server is already running
+        con_postgres = psycopg2.connect(dbname='postgres', user=db_user_name, host=db_host_name)
+        curs = con_postgres.cursor()
+        curs.close()
+        con_postgres.close()
 
-        except:
+    except:
+        if sys.platform == "linux" or sys.platform == "linux2":
             try:
-                if os.path.exists(db):
-                    os.system("""pg_ctl initdb -D """ + db)
-                    os.system("""pg_ctl -D """ + db + """ -l logfile start""")
-                else:
-                    os.system("""mkdir """ + db)
-                    os.system("""pg_ctl initdb -D """ + db)
-                    os.system("""pg_ctl -D """ + db + """ -l logfile start""")
+                os.system("""pg_ctl restart -D """ + db + """ -l """ + logfile)
+
             except:
-                raise Exception("PostgreSQL server could not be started. Please check your permissions or start "
-                                "database  manually, then run the program again.")
-    else:
-        raise Exception("First start the PostgreSQL server, then run the program again.")
+                try:
+                    if os.path.exists(db):
+                        os.system("""pg_ctl initdb -D """ + db)
+                        os.system("""pg_ctl -D """ + db + """ -l logfile start""")
+                    else:
+                        os.system("""mkdir """ + db)
+                        os.system("""pg_ctl initdb -D """ + db)
+                        os.system("""pg_ctl -D """ + db + """ -l logfile start""")
+                except:
+                    raise Exception("PostgreSQL server could not be started. Please check your permissions or start "
+                                    "database  manually, then run the program again.")
+        else:
+            raise Exception("First start the PostgreSQL server, then run the program again.")
     return
 
 
