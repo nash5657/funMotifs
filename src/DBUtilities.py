@@ -23,8 +23,10 @@ def start_psql_server(db_user_name, db_host_name, db="../database", logfile="../
     except:
         if sys.platform == "linux" or sys.platform == "linux2":
             try:
-                os.system("""pg_ctl restart -D """ + db + """ -l """ + logfile)
-
+                if os.path.exists(db):
+                    os.system("""pg_ctl restart -D """ + db + """ -l """ + logfile)
+                else:
+                    raise Exception("Path does not yet exist")
             except:
                 try:
                     if os.path.exists(db):
