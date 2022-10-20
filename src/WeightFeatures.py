@@ -323,10 +323,16 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
     del new_cols_to_weight[new_cols_to_weight.index(outcome_col)]
 
     # compute parameters
-    logit = sm.Logit(new_df[outcome_col], new_df[new_cols_to_weight]).fit(method='bfgs', maxiter=10000, full_output=True)# y=df[outcome_col], x=df[['intercept', 'HepG2___DNase__seq']])#sm.OLS(y,X).fit()#method='bfgs', full_output=True)#, maxiter=1000000000
+    # logit = sm.Logit(new_df[outcome_col], new_df[new_cols_to_weight]).fit(method='bfgs', maxiter=10000, full_output=True)# y=df[outcome_col], x=df[['intercept', 'HepG2___DNase__seq']])#sm.OLS(y,X).fit()#method='bfgs', full_output=True)#, maxiter=1000000000
     
-    return dfout_filename, logit
+    # compute parameters & return results
+    return dfout_filename, funMotifs_logit(new_df[outcome_col], new_df[new_cols_to_weight])
 
+def funMotifs_logit(outcome_col, col_weight, method='bfgs', maxiter=10000, full_output=True):
+
+    model = sm.Logit(outcome_col, col_weight).fit(method=method, maxiter=maxiter, full_output=full_output)
+
+    return model
 
 def get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, datafiles_motifs_dir,
                       training_dir_results, training_dir_Ernst, training_dir_Tewhey, training_dir_Vockley,
