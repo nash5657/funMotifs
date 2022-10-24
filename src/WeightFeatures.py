@@ -394,6 +394,7 @@ def get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, 
 
 if __name__ == '__main__':
 
+    # TODO: move hard-coded file paths into ..conf/main_parameters.conf
     temp_dir = '/proj/snic2020-16-187/nobackup/funMotifs_analysis/tmp_pybedtoos/'
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
@@ -425,6 +426,7 @@ if __name__ == '__main__':
     # training_dir_Tewhey = '/data2/husen/ActiveMotifs/datafiles/TrainingSets/Tewhey_Cell2016'
     # training_dir_Vockley = '/data2/husen/ActiveMotifs/datafiles/TrainingSets/Vockley_Cell_2016'
 
+    # TODO: move column names either into conf file too or as command-line option
     motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
     # col_names_to_weight_param = ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(), 'NumOtherTFBinding'.lower(), 'RepliDomain'.lower(), 'TFBinding'.lower(), 'TFExpr'.lower(), 'score'.lower()]#sys.argv[1].split(',')#
 
@@ -433,6 +435,7 @@ if __name__ == '__main__':
                                  'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
                                  'IndexDHS'.lower(), 'RegElem'.lower()]  # sys.argv[1].split(',')#
 
+    # TODO: call this function from funMotifsMain, check output and what is expected
     logit_params = get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, datafiles_motifs_dir,
                                      training_dir_results, training_dir_Ernst, training_dir_Tewhey,
                                      training_dir_Vockley,

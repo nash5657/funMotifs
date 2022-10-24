@@ -56,7 +56,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
 
 
 def insert_from_file(field_names, i_file, n, db_name, db_user_name, 
-                     db_host_name, cell_table, header,
+                     db_host_name, cell_table,
                      thread_num=0):
     
     n_processed = 0
@@ -64,8 +64,7 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
     curs = conn.cursor()
     with open(i_file, 'r') as ifile:
         print(i_file)
-        if header:#read an extra line to skip the first one
-            list(islice(ifile, 1))
+        list(islice(ifile, 1))
         while True:
             #next_n_lines = list(islice(ifile,n))
             lines_as_lists = [l.strip().split('\t') for l in list(islice(ifile,n))]
@@ -89,8 +88,7 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
 
 def insert_into_db(field_names, db_name, db_user_name, db_host_name,  
                        cell_table, 
-                       scored_motifs_overlapping_tracks_files, 
-                       header,
+                       scored_motifs_overlapping_tracks_files,
                        run_in_parallel_param,
                        number_processes_to_run_in_parallel
                        ):#, dir_to_import, keyword_to_check, header):
@@ -101,9 +99,9 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
     for i_file in scored_motifs_overlapping_tracks_files:#[f for f in glob.glob('{}/*{}*'.format(dir_to_import, keyword_to_check))]
         if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
             thread_num+=1
-            p.apply_async(insert_from_file, args=[field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table, header, thread_num])
+            p.apply_async(insert_from_file, args=[field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table, thread_num])
         else:
-            insert_from_file(field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table, header)
+            insert_from_file(field_names, i_file, 100000, db_name, db_user_name, db_host_name, cell_table)
         log_file.write(i_file+'\n')
     if run_in_parallel_param and len(scored_motifs_overlapping_tracks_files)>1:
         p.close()
@@ -120,7 +118,6 @@ def generate_cell_table(db_name,
                     assay_cells_datatypes,
                     run_in_parallel_param,
                     number_processes_to_run_in_parallel,
-                    header,
                     scored_motifs_overlapping_tracks_files,
                     motif_cols,
                     motif_cols_names,
@@ -138,8 +135,7 @@ def generate_cell_table(db_name,
                        db_user_name=db_user_name, 
                        db_host_name=db_host_name, 
                        cell_table=cell_table, 
-                       scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files, 
-                       header=header,
+                       scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
                        run_in_parallel_param=run_in_parallel_param,
                        number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
         # dir_to_import=params['motifs_overlapping_tracks_output_dir'], keyword_to_check="_scored.bed10", header=header)

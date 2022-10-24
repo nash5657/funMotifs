@@ -30,11 +30,11 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                                                index_tissues_names_row_start, 
                                                index_gene_names_col,
                                                index_gene_values_start, 
-                                               sep):
+                                               sep,
+                                               force_overwrite=False):
     tissue_origin_gene_expression_values = {}
 
-    # TODO: add arg for force overwrite. refactor else branch into function & call directly
-    if os.path.exists(origin_gene_expression_values_outputfile):
+    if not force_overwrite or os.path.exists(origin_gene_expression_values_outputfile):
         with open(origin_gene_expression_values_outputfile, 'r') as origin_gene_expression_values_infile:
             # TODO: file format
             tissue_origin_gene_expression_values = json.load(origin_gene_expression_values_infile)

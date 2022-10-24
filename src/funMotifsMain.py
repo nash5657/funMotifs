@@ -30,7 +30,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
     parser.add_argument('--temp_dir', default='', help='')
-    parser.add_argument('--force-overwrite', default=False)
+    parser.add_argument('--force-overwrite', default=False, help="If True, the specified output path will be "
+                                                                 "overwritten if it already exists. If False the files "
+                                                                 "in the existing path will be used in further "
+                                                                 "functions.")
 
     args, unknown = parser.parse_known_args()
     return args
@@ -51,7 +54,8 @@ if __name__ == '__main__':
 
     # Combine all data tracks into a bed4 files one per chr, also record assay types
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'],
-                                               params['data_tracks'])
+                                               params['data_tracks'],
+                                               force_overwrite=args.force_overwrite)
 
     # Retrieves the TF family name for each TF name
     motifTFName_TFNames_matches_dict = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(
@@ -70,9 +74,8 @@ if __name__ == '__main__':
     # get tissues with gene expression
     tissues_with_gene_expression = list(normal_expression_per_tissue_origin_per_TF.keys())
 
-    # TODO: purge cell_names_to_consider.txt for unique values
     # returns cell names to consider and their different names as dictionary
-    representative_cell_name_matchings_dict, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
+    representative_cell_name, matching_cell_name_representative_dict = Utilities.retreive_key_values_from_dict_file(
         params['cell_names_matchings_dict'],
         key_value_sep='=',
         values_sep=',')
@@ -81,9 +84,10 @@ if __name__ == '__main__':
     assay_cells, cell_assays, cell_tfs, tf_cells, assay_cells_datatypes = DataProcessing.get_assay_cell_info(
         data_dir=params['all_chromatin_makrs_all_cells_combined_dir_path'],
         sep='\t',
-        matching_rep_cell_names_dict=matching_cell_name_representative_dict,
+        matching_rep_cell_names_dict=[representative_cell_name, matching_cell_name_representative_dict],
         generated_dicts_output_file=params['all_chromatin_makrs_all_cells_combined_dir_path'] + "_generated_dicts.txt",
-        tissues_with_gene_expression=tissues_with_gene_expression)
+        tissues_with_gene_expression=tissues_with_gene_expression,
+        force_overwrite=args.force_overwrite)
 
     # get assay cell names
     assay_names = list(assay_cells.keys())
@@ -91,14 +95,11 @@ if __name__ == '__main__':
     # Generate a default dict based on the information obtained from the tracks in data_dir
     # TODO: unittest for function
     cells_assays_dict = DataProcessing.generate_cells_assays_matrix(cell_assays,
-                                                                    cell_names=list(representative_cell_name_matchings_dict.keys()),
+                                                                    cell_names=representative_cell_name,
                                                                     assay_cells_datatypes=assay_cells_datatypes,
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
     """ Section 2: Overlap between the generated resources and motifs """
-
-    # TODO: remove hard-coded variable. is there a point of having an file without header
-    header = True
 
     # summarize overlapping motifs and their annotations
     motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = MotifAnnotation.run_overlay_resources_score_motifs(
@@ -108,13 +109,13 @@ if __name__ == '__main__':
         params['run_in_parallel_param'],
         params['number_processes_to_run_in_parallel'],
         normal_expression_per_tissue_origin_per_TF,
-        matching_cell_name_representative_dict,
+        [representative_cell_name, matching_cell_name_representative_dict],
         motifTFName_TFNames_matches_dict,
         cells_assays_dict,
         cell_tfs,
         tf_cells,
         assay_cells_datatypes,
-        header)
+        args.force_overwrite)
 
     """ Section 3: Score motifs """
 
@@ -127,7 +128,7 @@ if __name__ == '__main__':
 
 
 
-
+    # TODO: check if necessary to switch Section 3 and 4
 
     """ Section 4. DB generation """
 
@@ -163,7 +164,6 @@ if __name__ == '__main__':
                                                   assay_cells_datatypes,
                                                   run_in_parallel_param=run_in_parallel_param,
                                                   number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
-                                                  header=header,
                                                   scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
                                                   motif_cols=motif_cols,
                                                   motif_cols_names=motif_cols_names,
@@ -199,6 +199,7 @@ if __name__ == '__main__':
                                                             params['generate_tissue_from_db'])
                                                         )
 
+        # TODO: remove hard-coded variable
         # split motif table per chr
         new_table_name = "motifs"
 

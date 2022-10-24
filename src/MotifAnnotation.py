@@ -83,7 +83,10 @@ def get_motif_score(split_line,
         matching_tissues_cell = []
         # check for matching cell names
         try:
-            matching_tissues_cell = matching_cell_name_representative_dict[ts[0]]  # HepG2: [Liver,...]
+            if ts[0] in matching_cell_name_representative_dict[0]:
+                matching_tissues_cell = ts[0]
+            else:
+                matching_tissues_cell = matching_cell_name_representative_dict[1][ts[0]]  # HepG2: [Liver,...]
         except KeyError:  # skip tracks of cells that have no matching in the rep_cell dict file
             continue
 
@@ -227,7 +230,8 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
 def overlay_resources_score_motifs(motif_sites_input_file,
                                    motifs_overlapping_tracks_output_dir,
                                    chromatin_tracks_dir_path,
-                                   chromatin_tracks_files):
+                                   chromatin_tracks_files,
+                                   force_overwrite):
     """intersect motifs with chromatin tracks, sort and group the tracks per motif
     Input: motif instances file (motif pos, name_id, scorePval, strand)
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
@@ -238,13 +242,12 @@ def overlay_resources_score_motifs(motif_sites_input_file,
     with open(motif_sites_input_file) as f:
         chr_n_file = f.readline().strip().split('\t')[0].strip() + '.bed'
         # it is assumed for every motif file name there exists a matching file name in the chromatin_tracks_input_dir
-        # TODO: missing else statement
         if chr_n_file in chromatin_tracks_files:
             motifs_overlapping_tracks_file = motifs_overlapping_tracks_output_dir + '/' + '.'.join(
             motif_sites_input_file.split('/')[-1].split('.')[0:-1]) + '_overlapping_tracks' + '.bed7'
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
-            # TODO: missing else statement
-            if not os.path.exists(motifs_overlapping_tracks_file):
+            # create or overwrite output files
+            if force_overwrite or not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
                 chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
@@ -310,8 +313,6 @@ def overlay_resources_score_motifs(motif_sites_input_file,
 
                                         else:
                                             elem_list.append(elem.rstrip("\n"))
-                                    else:
-                                        print(elem)
 
                                 for cell in cell_assay_values_dict_ChromHMM:
                                     elem_list.append(cell + "#ChromHMM#" +
@@ -343,7 +344,8 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
                 os.remove(motifs_overlapping_tracks_file_tmp)
-
+        else:
+            print("Specified chromatin track file " + chr_n_file + " cannot be found and will be ignored.")
         cleanup()
     return motifs_overlapping_tracks_file
 
@@ -360,7 +362,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                        cell_tfs,
                                        tf_cells,
                                        assay_cells_datatypes,
-                                       header):
+                                       force_overwrite):
     """pairs matching chromosomes in motif_sites_input_dir and all_chromatin_makrs_all_cells_input_dir and calls
     overlay_resources_score_motifs
     Input: moitf instances input dir (one file per chr) chromatin data collection dir
@@ -378,8 +380,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         else:
             motif_files = os.listdir(motif_sites_dir)
     else:
-        print('TODO ERROR')
-        # TODO: unrecoverable error for non-existing directory
+        sys.exit("Specified path to Motif files does not exist")
 
     # get list of paths to all motif files
     motif_files_full_path = [motif_sites_dir + '/' + s for s in motif_files]
@@ -399,49 +400,46 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
                                                                                             [motifs_overlapping_tracks_output_dir],
                                                                                             [all_chromatin_makrs_all_cells_combined_dir_path],
-                                                                                            [chromatin_tracks_files]))
+                                                                                            [chromatin_tracks_files],
+                                                                                            force_overwrite))
         p.close()
         p.join()
     else:
         print(motif_files_full_path)
         motifs_overlapping_tracks_files = []
         for i in motif_files_full_path:
-            # TODO: check if statement below
             if os.path.exists(i):
                 motifs_overlapping_tracks_file = overlay_resources_score_motifs(i,
                                                                                 motifs_overlapping_tracks_output_dir,
                                                                                 all_chromatin_makrs_all_cells_combined_dir_path,
-                                                                                chromatin_tracks_files)
+                                                                                chromatin_tracks_files,
+                                                                                force_overwrite)
                 motifs_overlapping_tracks_files.append(motifs_overlapping_tracks_file)
+            else:
+                print("Motif file " + i + "cannot be found and will be ignored.")
 
     scored_motifs_overlapping_tracks_files = []
     for motifs_overlapping_tracks_file in motifs_overlapping_tracks_files:
         scored_motifs_chromatin_tracks_output_file = '.'.join(
             motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10'
-        with open(motifs_overlapping_tracks_file) as f:
-            # TODO: what is this variable needed for?
-            count = sum(1 for _ in f)
-        # TODO: missing else statement for code below (assumes correct file exist already otherwise)
-        if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
+        # create or overwrite scored motif (chromatin-wise) files
+        if force_overwrite or not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
             print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
             # TODO: control change below
             index_track_names = 6 # changed from 7 to 6 possible index error
             index_motif_name = 3
             with open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
-                if header:
-                    header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
-                    for cell in sorted(cells_assays_dict.keys()):
-                        for assay in sorted(cells_assays_dict[cell].keys()):
-                            if cell[0].isdigit():
-                                cell = 'a' + cell
+                header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+                for cell in sorted(cells_assays_dict.keys()):
+                    for assay in sorted(cells_assays_dict[cell].keys()):
+                        if cell[0].isdigit():
+                            cell = 'a' + cell
 
-                            cell_name = '_'.join(((cell + "___" + assay).replace('(', '').replace(')', '')
-                                                  .replace('-', '__').replace('.', '').replace("'", "")).split())
-                            header_line.append('"' + cell_name + '"')
-                    scored_motifs_writefile.write('\t'.join(header_line) + '\n')
-                else:
-                    print('TODO ERROR')
-                    # TODO: throw an unrecoverable error
+                        cell_name = '_'.join(((cell + "___" + assay).replace('(', '').replace(')', '')
+                                              .replace('-', '__').replace('.', '').replace("'", "")).split())
+                        header_line.append('"' + cell_name + '"')
+                scored_motifs_writefile.write('\t'.join(header_line) + '\n')
+
 
             # score motifs
             if (run_in_parallel_param):
@@ -459,8 +457,9 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                       [index_track_names], 
                                       [index_motif_name]))
                 p.close()
-                p.join() 
-                #remove tmp splitted files
+                p.join()
+
+                # remove tmp split files
                 with open(scored_motifs_chromatin_tracks_output_file, 'a') as scored_motifs_writefile:
                     for f in motifs_overlapping_tracks_file_splitted:
                         print(f+'_scored')

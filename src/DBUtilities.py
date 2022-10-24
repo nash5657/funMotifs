@@ -11,7 +11,6 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
 def start_psql_server(db_user_name, db_host_name, db="../database", logfile="../logfile"):
-    # TODO: call function only when needed
     # start the PostgreSQL server
     try:
         # test if server is already running
@@ -76,8 +75,8 @@ def create_db(db_name, db_user_name, db_host_name):
             return False
 
 
-# TODO: change input
-def open_connection(db_name, db_user_name='mm99', db_host_name='localhost'):
+
+def open_connection(db_name, db_user_name='user', db_host_name='localhost'):
     conn = psycopg2.connect("dbname={} user={} host={}".format(db_name, db_user_name, db_host_name))
     # conn.row_factory = psycopg2.Row
     return conn

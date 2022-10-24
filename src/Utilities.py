@@ -30,30 +30,33 @@ def get_params(param_file):
 
 
 def retreive_key_values_from_dict_file(dict_input_file, key_value_sep, values_sep):#TFFamilyName TF_name
-    "Retrieves the key and its values"
-    key_values_dict = {}
+    """
+    Retrieves the key and its values"
+    """
+    # list to save representative cell names
+    rep_cell_names = []
+    # dictionary to map cell name onto representative cell name
     value_key_dict = {}
     with open(dict_input_file, 'r') as dict_input_file_infile:
         lines = dict_input_file_infile.readlines()
         for line in lines:
             if line.startswith('//') or line.startswith('#'):# or '=' not in line:
                 continue
-            sl = line.strip().split(key_value_sep)
-            key_value = sl[0].strip()
-            if key_value not in list(key_values_dict.keys()):
-                key_values_dict[key_value] = []
-            if key_value not in value_key_dict:
-                value_key_dict[key_value]=[key_value]
-            # TODO: check if two or more values are present. this check should not be neccesary if file is purged for one column values
-            if len(sl)>1:
-                for s in sl[1].split(values_sep):
-                    if s.strip()!="" and s.strip() not in key_values_dict[key_value]:
-                        key_values_dict[key_value].append(s.strip())
-                    if s.strip()!="":
-                        if s.strip() not in value_key_dict:
-                            value_key_dict[s.strip()]=[]
-                        value_key_dict[s.strip()].append(key_value)
-    return key_values_dict, value_key_dict
+            if not line.__contains__(key_value_sep):
+                rep_cell_names.append(line)
+            else:
+                sl = line.strip().split(key_value_sep)
+                rep_cell_names.append(sl[0].strip())
+                if not sl[1].__contains__(values_sep):
+                    if sl[1].strip() not in list(value_key_dict.keys()):
+                        value_key_dict[sl[1].strip()] = sl[0].strip()
+                else:
+                    values = sl[1].strip().split(values_sep)
+                    for value in values:
+                        if value not in list(value_key_dict.keys()):
+                            value_key_dict[value] = sl[0].strip()
+
+    return rep_cell_names, value_key_dict
     
 
 def bed_to_cell_wise_dataframe(bed_file, cells_to_assay, output_columns=None):
