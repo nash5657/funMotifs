@@ -99,6 +99,7 @@ if __name__ == '__main__':
                                                                     assay_cells_datatypes=assay_cells_datatypes,
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
+    print("Finished Section 1")
     """ Section 2: Overlap between the generated resources and motifs """
 
     # summarize overlapping motifs and their annotations
@@ -116,6 +117,8 @@ if __name__ == '__main__':
         tf_cells,
         assay_cells_datatypes,
         args.force_overwrite)
+
+    print("Finished Section 2")
 
     """ Section 3: Score motifs """
 

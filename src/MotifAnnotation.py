@@ -279,7 +279,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                 cell_assay_values_dict_DNaseq = {}
                                 elem_list = []
                                 for elem in my_list:
-                                    # TODO: check if statemnt below
+                                    # TODO: check if statement below
                                     if elem.__contains__('#'):
                                         cell_value = elem.split('#')[0]
                                         assay_value = elem.split('#')[1]
@@ -344,8 +344,12 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
                 os.remove(motifs_overlapping_tracks_file_tmp)
+                print("Finished intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
+            else:
+                print("Use existing data files in " + motifs_overlapping_tracks_file)
         else:
             print("Specified chromatin track file " + chr_n_file + " cannot be found and will be ignored.")
+
         cleanup()
     return motifs_overlapping_tracks_file
 
@@ -396,6 +400,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     # compute overlay resources score motif to find overlapping structures
     # Debug: print(run_in_parallel_param, motif_files)
     if run_in_parallel_param and len(motif_files)>1:
+        print("Run overlay_resources_score_motifs in parallel")
         p = Pool(int(number_processes_to_run_in_parallel))
         motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
                                                                                             [motifs_overlapping_tracks_output_dir],
@@ -405,6 +410,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         p.close()
         p.join()
     else:
+        print("Do not run overlay_resources_score_motifs in parallel")
         print(motif_files_full_path)
         motifs_overlapping_tracks_files = []
         for i in motif_files_full_path:
@@ -418,6 +424,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
             else:
                 print("Motif file " + i + "cannot be found and will be ignored.")
 
+    print("Finished overlay_resources_score_motifs")
     scored_motifs_overlapping_tracks_files = []
     for motifs_overlapping_tracks_file in motifs_overlapping_tracks_files:
         scored_motifs_chromatin_tracks_output_file = '.'.join(
@@ -443,6 +450,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
 
             # score motifs
             if (run_in_parallel_param):
+                print("Run score_motifs per cell in parallel")
                 os.system("""split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
@@ -476,6 +484,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         os.remove(f+'_scored')   
                 scored_motifs_writefile.close()
             else:
+                print("Do not run score_motifs per cell in parallel")
                 scored_file_tmp = score_motifs_per_cell(motifs_overlapping_tracks_file,
                                       normal_expression_per_tissue_origin_per_TF,
                                       matching_cell_name_representative_dict,
@@ -492,4 +501,5 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                     outfile.write(infile.read())
 
         scored_motifs_overlapping_tracks_files.append(scored_motifs_chromatin_tracks_output_file)
+        print("Finished run_overlay_resources_score_motifs")
     return motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files
