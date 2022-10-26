@@ -14,18 +14,20 @@ if the data was not already combined"""
 def collect_all_data(data_dir, data_tracks, sep='\t', force_overwrite=False):
     """Combine all data tracks into a bed4 files one per chr, also record assay types"""
     if force_overwrite or not os.path.exists(data_dir):
+        # delete previous data_dir to prevent errors
+        if os.path.exists(data_dir):
+            os.remove(data_dir)
         os.makedirs(data_dir)
         print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
-            print(data_track)
-            if os.path.exists(data_track) or '*' in data_track:
-                # on linux use awk to generate a file per chr
-                if sys.platform == "linux" or sys.platform == "linux2":
-                    if os.path.exists(data_track):
-                        print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
-                        os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + data_track)
-                else:  # otherwise use readline (it is much slower than awk)
-                    for f in glob(data_track):
+            for f in glob(data_track):
+                print(f)
+                if os.path.exists(f):
+                    # on linux use awk to generate a file per chr
+                    if sys.platform == "linux" or sys.platform == "linux2":
+                        print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
+                        os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
+                    else:  # otherwise use readline (it is much slower than awk)
                         # read the file content and add each line to the chrX file based on col1
                         with open(f, 'r') as fi:
                             l = fi.readline()
