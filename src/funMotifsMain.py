@@ -30,8 +30,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
     parser.add_argument('--temp_dir', default='', help='')
-    parser.add_argument('--force-overwrite', default=False, type=bool, help="If True, the specified output path will be "
-                                                                 "overwritten if it already exists. If False the files "
+    parser.add_argument('--force_overwrite', default=False, help="If true, the specified output path will be "
+                                                                 "overwritten if it already exists. Else the files "
                                                                  "in the existing path will be used in further "
                                                                  "functions.")
 
