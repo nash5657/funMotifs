@@ -406,7 +406,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                                                                             [motifs_overlapping_tracks_output_dir],
                                                                                             [all_chromatin_makrs_all_cells_combined_dir_path],
                                                                                             [chromatin_tracks_files],
-                                                                                            force_overwrite))
+                                                                                            [force_overwrite]))
         p.close()
         p.join()
     else:
