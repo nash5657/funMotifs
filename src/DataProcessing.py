@@ -14,7 +14,8 @@ if the data was not already combined"""
 def collect_all_data(data_dir, data_tracks, sep='\t', force_overwrite=False):
     """Combine all data tracks into a bed4 files one per chr, also record assay types"""
     if force_overwrite or not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
         print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
             print(data_track)
@@ -75,6 +76,8 @@ def get_assay_cell_info(data_dir,
                             continue
                         tracks = sl[3].split(',')
                         for track in tracks:
+                            if not track.__contains__('#'):
+                                continue
                             info_col = track.split('#')
                             cell_name = info_col[0]
                             rep_cell_names = [cell_name]
