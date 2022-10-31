@@ -101,6 +101,9 @@ if __name__ == '__main__':
                                                                     assay_cells_datatypes=assay_cells_datatypes,
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
+    # Generate mapping from cell types to tissue
+    matching_tissue_to_cell = Utilities.cell_to_tissue_matches(params['TissueCellInfo_matches_dict'])
+
     print("Finished Section 1")
     """ Section 2: Overlap between the generated resources and motifs """
 
@@ -112,7 +115,7 @@ if __name__ == '__main__':
         params['run_in_parallel_param'],
         params['number_processes_to_run_in_parallel'],
         normal_expression_per_tissue_origin_per_TF,
-        [representative_cell_name, matching_cell_name_representative_dict],
+        matching_tissue_to_cell,
         motifTFName_TFNames_matches_dict,
         cells_assays_dict,
         cell_tfs,

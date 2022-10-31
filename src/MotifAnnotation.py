@@ -59,7 +59,7 @@ def reset_cells_assays_matrix(tf_name_from_motif_name,
 
 def get_motif_score(split_line,
                     normal_expression_per_tissue_origin_per_TF,
-                    matching_cell_name_representative_dict,
+                    matching_tissue_to_cell,
                     motifTFName_TFNames_matches_dict,
                     cells_assays_dict,
                     index_track_names,
@@ -83,10 +83,7 @@ def get_motif_score(split_line,
         matching_tissues_cell = []
         # check for matching cell names
         try:
-            if ts[0] in matching_cell_name_representative_dict[0]:
-                matching_tissues_cell = ts[0]
-            else:
-                matching_tissues_cell = matching_cell_name_representative_dict[1][ts[0]]  # HepG2: [Liver,...]
+            matching_tissue_cell = matching_tissue_to_cell[ts[0]]
         except KeyError:  # skip tracks of cells that have no matching in the rep_cell dict file
             continue
 
@@ -176,7 +173,7 @@ def process_scored_motif_per_cell_per_assay(motif_info,
 
 def score_motifs_per_cell(motifs_overlapping_tracks_file,
                           normal_expression_per_tissue_origin_per_TF,
-                          matching_cell_name_representative_dict,
+                          matching_tissue_to_cell,
                           motifTFName_TFNames_matches_dict,
                           cells_assays_dict,
                           cell_tfs,
@@ -191,6 +188,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
     Return: list of scored motifs files 
     """
     scored_motifs_chromatin_tracks_output_file = motifs_overlapping_tracks_file + '_scored'
+    # TODO: check necessity of force_overwrite
     if not os.path.exists(scored_motifs_chromatin_tracks_output_file):
         sep = '\t'
         with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(
@@ -210,7 +208,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
 
                     scored_motif_per_cell_per_assay = get_motif_score(split_line,
                                                                       normal_expression_per_tissue_origin_per_TF,
-                                                                      matching_cell_name_representative_dict,
+                                                                      matching_tissue_to_cell,
                                                                       motifTFName_TFNames_matches_dict,
                                                                       reset_cells_assays_dict,
                                                                       index_track_names,
@@ -258,6 +256,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                                                         motif_sites_input_file_sorted))
                 os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file,
                                                                         chromatin_tracks_input_file_sorted))
+                # TODO: chromatin_tracks_input_file contains non Bed-format lines that cause an error in the next line
 
                 motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
                 motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['collapse']).saveas(
@@ -360,7 +359,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                        run_in_parallel_param,
                                        number_processes_to_run_in_parallel,
                                        normal_expression_per_tissue_origin_per_TF,
-                                       matching_cell_name_representative_dict,
+                                       matching_tissue_to_cell,
                                        motifTFName_TFNames_matches_dict,
                                        cells_assays_dict,
                                        cell_tfs,
@@ -433,7 +432,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         if force_overwrite or not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
             print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
             # TODO: control change below
-            index_track_names = 6 # changed from 7 to 6 possible index error
+            index_track_names = 6
             index_motif_name = 3
             with open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
                 header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
@@ -447,22 +446,22 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                         header_line.append('"' + cell_name + '"')
                 scored_motifs_writefile.write('\t'.join(header_line) + '\n')
 
-
+            # TODO: end previous for loop here, call Rust function, input all files --> minimize switching between them
             # score motifs
             if (run_in_parallel_param):
                 print("Run score_motifs per cell in parallel")
                 os.system("""split -l 200000 {} {}""" .format(motifs_overlapping_tracks_file,motifs_overlapping_tracks_file+'_tmp'))
                 motifs_overlapping_tracks_file_splitted = glob.glob(motifs_overlapping_tracks_file+'_tmp*')
                 p = Pool(int(number_processes_to_run_in_parallel))
-                p.starmap(score_motifs_per_cell, product(motifs_overlapping_tracks_file_splitted, 
+                p.starmap(score_motifs_per_cell, product(motifs_overlapping_tracks_file_splitted,
                                       [normal_expression_per_tissue_origin_per_TF], 
-                                      [matching_cell_name_representative_dict], 
+                                      [matching_tissue_to_cell],
                                       [motifTFName_TFNames_matches_dict], 
                                       [cells_assays_dict], 
                                       [cell_tfs], 
                                       [tf_cells], 
-                                      [assay_cells_datatypes], 
-                                      [index_track_names], 
+                                      [assay_cells_datatypes],
+                                      [index_track_names],
                                       [index_motif_name]))
                 p.close()
                 p.join()
@@ -487,7 +486,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                 print("Do not run score_motifs per cell in parallel")
                 scored_file_tmp = score_motifs_per_cell(motifs_overlapping_tracks_file,
                                       normal_expression_per_tissue_origin_per_TF,
-                                      matching_cell_name_representative_dict,
+                                      matching_tissue_to_cell,
                                       motifTFName_TFNames_matches_dict,
                                       cells_assays_dict,
                                       cell_tfs,
