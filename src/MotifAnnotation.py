@@ -83,10 +83,15 @@ def get_motif_score(split_line,
         matching_tissues_cell = []
         # check for matching cell names
         try:
-            matching_tissue_cell = matching_tissue_to_cell[ts[0]]
+            matching_tissues_cell = matching_tissue_to_cell[ts[0]]
         except KeyError:  # skip tracks of cells that have no matching in the rep_cell dict file
             continue
-
+        type(matching_tissues_cell)
+        if type(matching_tissues_cell) is not list:
+            matching_tissues_cell = [matching_tissues_cell]
+        print(cells_assays_dict)
+        if not matching_tissues_cell in list(cells_assays_dict.keys()):
+            continue
         for matching_tissue_cell in matching_tissues_cell:
             if len(ts) == 2:
                 cells_assays_dict[matching_tissue_cell][ts[1]] = 1
