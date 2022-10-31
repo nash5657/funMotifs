@@ -182,12 +182,14 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                 for col in tissue_cell_assays[tissue][assay]:
                     #col = col.encode('ascii','ignore').lower()
                     #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
-                    if row[col] not in ["NaN", float('NaN'), float('nan'), 'nan']:
-                        try:
-                            if not math.isnan(float(row[col])):
-                                values.append(float(row[col]))
-                        except ValueError:
-                            values.append(row[col])              
+                    # TODO: check if statement below and write else statement
+                    if col in row.keys():
+                        if row[col] not in ["NaN", float('NaN'), float('nan'), 'nan']:
+                            try:
+                                if not math.isnan(float(row[col])):
+                                    values.append(float(row[col]))
+                            except ValueError:
+                                values.append(row[col])              
                 
                 value = 'NaN'
                 if len(values)>0:
@@ -616,7 +618,7 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
                            tissues_fscores_table,
                            cols_to_write_to = [], 
                            cols_to_write_to_allassays = [],
-                           number_of_rows_to_load = 100000,
+                           number_of_rows_to_load = 10,
                            ):
     
     for tissue in sorted(tissue_cell_assays.keys()):
@@ -635,9 +637,15 @@ def populate_tissue_values(tissue_cell_assays, tissue_cell_allassays, assay_name
     num_rows = int(curs_for_count.fetchone()[0])#85459976
     curs_for_count.close()
     print(('total number of rows to be inserted: ', num_rows))
+    curs_for_rownames = conn.cursor(name = "rownamecurs", cursor_factory=DictCursor)
+    curs_for_rownames.execute('SELECT * from {}'.format(table_from))
+    first_row = curs_for_rownames.fetchone()
+    colnames = [desc[0] for desc in curs_for_rownames.description]
     curs_for_selection = conn.cursor(name = "selectioncurs", cursor_factory=DictCursor)
     curs_for_selection.itersize = number_of_rows_to_load
     t_for_select =  time.time()
+    # TODO: check and integrate following line
+    col_list_lower = colnames
     curs_for_selection.execute('select {} from {}'.format(','.join(col_list_lower), table_from))
     print(('t_to_select: ', time.time() - t_for_select))
     t_for_fetch = time.time()
