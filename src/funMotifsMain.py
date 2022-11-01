@@ -55,6 +55,9 @@ if __name__ == '__main__':
     if args.force_overwrite:
         os.removedirs("../results")
 
+    # get run in parallel
+    run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
+
     """Section 1: Collect resources"""
 
     # Combine all data tracks into a bed4 files one per chr, also record assay types
@@ -113,7 +116,7 @@ if __name__ == '__main__':
         params['motif_sites_dir'],
         params['all_chromatin_makrs_all_cells_combined_dir_path'],
         params['motifs_overlapping_tracks_output_dir'],
-        params['run_in_parallel_param'],
+        run_in_parallel_param,
         params['number_processes_to_run_in_parallel'],
         normal_expression_per_tissue_origin_per_TF,
         matching_tissue_to_cell,
@@ -144,7 +147,6 @@ if __name__ == '__main__':
     if Utilities.get_value(params['create_database']):
         import DBUtilities, GenerateCellTable, GenerateTissueTables
 
-        run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
         number_processes_to_run_in_parallel = int(params['number_processes_to_run_in_parallel'])
         db_name = params['db_name'].lower()
         db_user_name = params['db_user_name']

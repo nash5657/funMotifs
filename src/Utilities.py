@@ -11,7 +11,7 @@ import pandas as pd
 
 
 def get_value(str):
-    if 'true' in str.lower() or 'yes' in str.lower():
+    if str in ["yes", "YES", "Yes", "y", "Y", "True", "true", "TRUE", "1", 1, True]:
         return True
     else:
         return False
