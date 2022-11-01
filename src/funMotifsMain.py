@@ -30,10 +30,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
     parser.add_argument('--temp_dir', default='', help='')
-    parser.add_argument('--force_overwrite', default=False, help="If true, the specified output path will be "
-                                                                 "overwritten if it already exists. Else the files "
-                                                                 "in the existing path will be used in further "
-                                                                 "functions.")
+    parser.add_argument('--force_overwrite', default=False, type=bool, help="If true, the specified output path will "
+                                                                            "be overwritten if it already exists. Else"
+                                                                            " the files in the existing path will be"
+                                                                            " used in further functions.")
 
     args, unknown = parser.parse_known_args()
     return args
@@ -50,14 +50,16 @@ if __name__ == '__main__':
     # set the temp dir for bedtools operations
     set_tempdir(args.temp_dir)
 
+    # if force_overwrite, delete results directory to compute section 1 and 2 again
     print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
+    if args.force_overwrite:
+        os.removedirs("../results")
 
     """Section 1: Collect resources"""
 
     # Combine all data tracks into a bed4 files one per chr, also record assay types
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'],
-                                               params['data_tracks'],
-                                               force_overwrite=args.force_overwrite)
+                                               params['data_tracks'])
 
     # Retrieves the TF family name for each TF name
     motifTFName_TFNames_matches_dict = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(
@@ -88,8 +90,7 @@ if __name__ == '__main__':
         sep='\t',
         matching_rep_cell_names_dict=[representative_cell_name, matching_cell_name_representative_dict],
         generated_dicts_output_file=params['all_chromatin_makrs_all_cells_combined_dir_path'] + "_generated_dicts.txt",
-        tissues_with_gene_expression=tissues_with_gene_expression,
-        force_overwrite=args.force_overwrite)
+        tissues_with_gene_expression=tissues_with_gene_expression)
 
     # get assay cell names
     assay_names = list(assay_cells.keys())
@@ -120,8 +121,7 @@ if __name__ == '__main__':
         cells_assays_dict,
         cell_tfs,
         tf_cells,
-        assay_cells_datatypes,
-        args.force_overwrite)
+        assay_cells_datatypes)
 
     print("Finished Section 2")
 

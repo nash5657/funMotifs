@@ -193,7 +193,6 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
     Return: list of scored motifs files 
     """
     scored_motifs_chromatin_tracks_output_file = motifs_overlapping_tracks_file + '_scored'
-    # TODO: check necessity of force_overwrite
     if not os.path.exists(scored_motifs_chromatin_tracks_output_file):
         sep = '\t'
         with open(motifs_overlapping_tracks_file, 'r') as motifs_overlapping_tracks_readfile, open(
@@ -233,8 +232,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
 def overlay_resources_score_motifs(motif_sites_input_file,
                                    motifs_overlapping_tracks_output_dir,
                                    chromatin_tracks_dir_path,
-                                   chromatin_tracks_files,
-                                   force_overwrite):
+                                   chromatin_tracks_files):
     """intersect motifs with chromatin tracks, sort and group the tracks per motif
     Input: motif instances file (motif pos, name_id, scorePval, strand)
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
@@ -250,7 +248,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
             motif_sites_input_file.split('/')[-1].split('.')[0:-1]) + '_overlapping_tracks' + '.bed7'
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             # create or overwrite output files
-            if force_overwrite or not os.path.exists(motifs_overlapping_tracks_file):
+            if not os.path.exists(motifs_overlapping_tracks_file):
                 motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
                 chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
@@ -369,8 +367,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                                        cells_assays_dict,
                                        cell_tfs,
                                        tf_cells,
-                                       assay_cells_datatypes,
-                                       force_overwrite):
+                                       assay_cells_datatypes):
     """pairs matching chromosomes in motif_sites_input_dir and all_chromatin_makrs_all_cells_input_dir and calls
     overlay_resources_score_motifs
     Input: moitf instances input dir (one file per chr) chromatin data collection dir
@@ -409,8 +406,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         motifs_overlapping_tracks_files = p.starmap(overlay_resources_score_motifs, product(motif_files_full_path,
                                                                                             [motifs_overlapping_tracks_output_dir],
                                                                                             [all_chromatin_makrs_all_cells_combined_dir_path],
-                                                                                            [chromatin_tracks_files],
-                                                                                            [force_overwrite]))
+                                                                                            [chromatin_tracks_files]))
         p.close()
         p.join()
     else:
@@ -422,8 +418,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                 motifs_overlapping_tracks_file = overlay_resources_score_motifs(i,
                                                                                 motifs_overlapping_tracks_output_dir,
                                                                                 all_chromatin_makrs_all_cells_combined_dir_path,
-                                                                                chromatin_tracks_files,
-                                                                                force_overwrite)
+                                                                                chromatin_tracks_files)
                 motifs_overlapping_tracks_files.append(motifs_overlapping_tracks_file)
             else:
                 print("Motif file " + i + "cannot be found and will be ignored.")
@@ -434,7 +429,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         scored_motifs_chromatin_tracks_output_file = '.'.join(
             motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10'
         # create or overwrite scored motif (chromatin-wise) files
-        if force_overwrite or not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
+        if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
             print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
             # TODO: control change below
             index_track_names = 6
@@ -505,5 +500,5 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
                     outfile.write(infile.read())
 
         scored_motifs_overlapping_tracks_files.append(scored_motifs_chromatin_tracks_output_file)
-        print("Finished run_overlay_resources_score_motifs")
+    print("Finished run_overlay_resources_score_motifs")
     return motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files
