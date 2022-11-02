@@ -11,12 +11,10 @@ from glob import glob
 if the data was not already combined"""
 
 
-def collect_all_data(data_dir, data_tracks, sep='\t', force_overwrite=False):
+def collect_all_data(data_dir, data_tracks, sep='\t'):
     """Combine all data tracks into a bed4 files one per chr, also record assay types"""
-    if force_overwrite or not os.path.exists(data_dir):
+    if not os.path.exists(data_dir):
         # delete previous data_dir to prevent errors
-        if os.path.exists(data_dir):
-            os.system("""rm -rf {}""".format(data_dir))
         os.makedirs(data_dir)
         print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
@@ -48,15 +46,14 @@ def get_assay_cell_info(data_dir,
                         sep,
                         matching_rep_cell_names_dict,
                         generated_dicts_output_file,
-                        tissues_with_gene_expression,
-                        force_overwrite=False):
+                        tissues_with_gene_expression):
     '''Get information (dicts) about the cells and assays from the input data_dir files'''
     assay_cells = {}  # e.g DNase-seq: [HepG2,K562,...],...
     assay_cells_datatypes = {}
     cell_assays = {}  # e.g HepG2: [DNase-seq,TFBinding,ReplicationDomains], K562: [...], ...
     cell_tfs = {}  # e.g HepG2: [CTCF, FOXA1,...], K562: [...], ...
     tf_cells = {}  # e.g CTCF: [HepG2, K562,...], FOXA1: [...], ...
-    if force_overwrite or not os.path.exists(generated_dicts_output_file):
+    if not os.path.exists(generated_dicts_output_file):
         # add cells/tissues that have gene expr to the dicts
         assay_name = 'TFExpr'
         assay_cells[assay_name] = []

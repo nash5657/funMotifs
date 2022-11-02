@@ -42,7 +42,7 @@ class TestSection1(unittest.TestCase):
                 self.assertNotEqual(line[0], '-')
                 self.assertNotEqual(line[0], '+')
         return
-    '''
+   
 
     def test_retreive_TFFamilyName_for_motifNames(self):
         # TODO: create further working and not working tests (space-separated, self written column?)
@@ -112,6 +112,15 @@ class TestSection1(unittest.TestCase):
         print(x)
         # TODO: implement assert statements
         return x
+    '''
+
+    def test_cell_to_tissue_matches(self):
+        dict_input_file = "./InputTestFilesSection1/TissueCellMatches"
+        x = Utilities.cell_to_tissue_matches(dict_input_file, key_value_sep='=', value_sep=',')
+        y = {'MCF-7': 'Breast', 'T47D': 'Breast', 'HeLa-S3': 'Cervix', 'ME-180': 'Cervix', 'GM12878': 'Blood', 'Colon - Sigmoid': 'Colon'}
+        assert x == y
+
+        return
 
 
 if __name__ == '__main__':
