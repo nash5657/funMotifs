@@ -51,9 +51,10 @@ if __name__ == '__main__':
     set_tempdir(args.temp_dir)
 
     # if force_overwrite, delete results directory to compute section 1 and 2 again
-    print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
+    #print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
     if args.force_overwrite:
-        os.removedirs("../results")
+        os.system("""rm -rf ../results""")
+        #os.removedirs("../results")
 
     # get run in parallel
     run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])

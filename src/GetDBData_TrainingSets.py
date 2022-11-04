@@ -5,7 +5,8 @@ Created on Dec 11, 2016
 '''
 import sys, os
 import pandas as pd
-from score_motifs_tissuepertable import open_connection, close_connection, get_col_names_from_table
+from DBUtilities import open_connection, close_connection, get_col_names_from_table
+
 
 def updateColNames(col_names=[]):
     for i in range(0,len(col_names)):
@@ -57,11 +58,11 @@ def get_col_names_from_cells_assays(col_names, cells, assays, col_names_from_db)
                     col_names.append(c+"___"+a)
     return ','.join(col_names)
     
-def get_cell_info_for_motifs(motifs_input_file, db_name = 'testregmotifs', cell_table='cellmotifs', cells = ['HepG2'], assays = ['all'], 
+def get_cell_info_for_motifs(motifs_input_file, db_name = 'funmotifsdb', cell_table='motifs', cells = ['HepG2'], assays = ['all'],
                              col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'], motif_tf_names_to_consider=[], number_rows_select='all',
                              sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'], df_output_file=''):
     
-    conn = open_connection(db_name)
+    conn = open_connection(db_name, db_user_name="mm99")
     if os.path.exists(df_output_file):
         close_connection(conn)
         return pd.read_pickle(df_output_file)
