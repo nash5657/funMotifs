@@ -5,7 +5,8 @@ Created on Dec 11, 2016
 '''
 import sys, os
 import pandas as pd
-from score_motifs_tissuepertable import open_connection, close_connection, get_col_names_from_table
+from DBUtilities import open_connection, close_connection, get_col_names_from_table
+
 
 def updateColNames(col_names=[]):
     for i in range(0,len(col_names)):
@@ -57,11 +58,12 @@ def get_col_names_from_cells_assays(col_names, cells, assays, col_names_from_db)
                     col_names.append(c+"___"+a)
     return ','.join(col_names)
     
-def get_cell_info_for_motifs(motifs_input_file, db_name = 'testregmotifs', cell_table='cellmotifs', cells = ['HepG2'], assays = ['all'], 
+def get_cell_info_for_motifs(motifs_input_file, db_name = 'funmotifsdb', cell_table='motifs', cells = ['HepG2'], assays = ['all'],
                              col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'], motif_tf_names_to_consider=[], number_rows_select='all',
                              sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'], df_output_file=''):
     
-    conn = open_connection(db_name)
+    # TODO: change db_user_name
+    conn = open_connection(db_name, db_user_name="markmzr")
     if os.path.exists(df_output_file):
         close_connection(conn)
         return pd.read_pickle(df_output_file)
@@ -128,15 +130,17 @@ def get_cell_info_for_motifs(motifs_input_file, db_name = 'testregmotifs', cell_
     
     return results_df
 
-def get_cell_info_for_regions(regions_input_file, db_name = 'testregmotifs', cell_table='cellmotifs', 
+
+def get_cell_info_for_regions(regions_input_file, db_name = 'testregmotifs', cell_table='cell_table',
                               cells = ['HepG2'], assays = ['all'], 
                               col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'], number_rows_select='all',
                               sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[9], cols_names_to_report_from_file=['Activity_Score'], df_output_file='',
                               region_name_index = 6, region_strand_index = 4, region_score_index = 4, motif_score_index = 4, max_number_motifs_to_report = 1,
                               min_dist_from_region_start = True, min_dist_from_region_center = True, max_motif_score = True, max_region_score = True
                               ):
-    
-    conn = open_connection(db_name)
+    # TODO: db_user_name as argument
+
+    conn = open_connection(db_name, db_user_name='markmzr')
     curs = conn.cursor()
     cells = updateColNames(cells)
     assays = updateColNames(assays)

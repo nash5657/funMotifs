@@ -15,12 +15,14 @@ import os
 import sys
 from pybedtools import BedTool, set_tempdir, cleanup
 import argparse
+import numpy as np
 
 import Utilities
 import DataProcessing
 import ProcessTFMotifs
 import MotifAnnotation
 import GenerateMotifsTables
+import WeightFeatures
 import pandas as pd
 
 
@@ -51,9 +53,10 @@ if __name__ == '__main__':
     set_tempdir(args.temp_dir)
 
     # if force_overwrite, delete results directory to compute section 1 and 2 again
-    print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
+    #print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
     if args.force_overwrite:
-        os.removedirs("../results")
+        os.system("""rm -rf ../results""")
+        #os.removedirs("../results")
 
     # get run in parallel
     run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
@@ -261,3 +264,37 @@ if __name__ == '__main__':
                                                     cols=['name text', 'position integer', 'allele char(1)',
                                                           'freq numeric'],
                                                     cols_names=['name', 'position', 'allele', 'freq'])
+
+    """ Temporary: Section 3: Score motifs """
+
+    cell_table = 'cell_table'
+    datafiles_motifs_dir = params['motif_sites_dir']
+
+    datafiles_HepG2_geneexpr_dir = params['datafiles_HepG2_geneexpr_dir']
+    datafiles_K562_geneexpr_dir = params['datafiles_K562_geneexpr_dir']
+    datafiles_GM12878_geneexpr_dir = params['datafiles_GM12878_geneexpr_dir']
+    datafiles_IMR90_geneexpr_dir = params['datafiles_IMR90_geneexpr_dir']
+
+    training_dir_results = params['training_dir_results']
+    training_dir_Ernst = params['training_dir_Ernst']
+    training_dir_Tewhey = params['training_dir_Tewhey']
+    training_dir_Vockley = params['training_dir_Vockley']
+
+    motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+
+    col_names_to_weight_param = ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(),
+                                 'NumOtherTFBinding'.lower(), 'RepliDomain'.lower(), 'TFBinding'.lower(),
+                                 'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
+                                 'IndexDHS'.lower(), 'RegElem'.lower()]
+
+    logit_params = WeightFeatures.get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, datafiles_motifs_dir,
+                                     training_dir_results, training_dir_Ernst, training_dir_Tewhey,
+                                     training_dir_Vockley,
+                                     datafiles_HepG2_geneexpr_dir, datafiles_K562_geneexpr_dir,
+                                     datafiles_GM12878_geneexpr_dir, datafiles_IMR90_geneexpr_dir, cell_table)
+
+
+    print(logit_params.summary())
+    print(np.exp(logit_params.params))
+    print("end of funMotifs")
+    cleanup()
