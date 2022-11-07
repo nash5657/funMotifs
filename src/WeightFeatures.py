@@ -194,7 +194,7 @@ def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_result
              col_names = col_names)
 
     # combine results from above
-    # TODO: check if there is a more clever way to do this
+    # TODO: check if there is a more clever way to do this and change .append to .concat (FutureWarning)
     combined_results = []    
     if "other_active_regions" in actions_list and 'tile_prom_regions' in actions_list and 'prom_unactive' in actions_list:
         combined_results =  df_results.append(prom_results_df)
@@ -329,6 +329,7 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
     return dfout_filename, funMotifs_logit(new_df[outcome_col], new_df[new_cols_to_weight])
 
 def funMotifs_logit(outcome_col, col_weight, method='bfgs', maxiter=10000, full_output=True):
+
 
     model = sm.Logit(outcome_col, col_weight).fit(method=method, maxiter=maxiter, full_output=full_output)
 

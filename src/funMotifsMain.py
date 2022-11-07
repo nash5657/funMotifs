@@ -275,10 +275,10 @@ if __name__ == '__main__':
     datafiles_GM12878_geneexpr_dir = params['datafiles_GM12878_geneexpr_dir']
     datafiles_IMR90_geneexpr_dir = params['datafiles_IMR90_geneexpr_dir']
 
-    training_dir_results = '../datafiles/TrainingSets/Weight_features_analysis_2/'
-    training_dir_Ernst = '../datafiles/TrainingSets/Ernst_NatGen_2016'
-    training_dir_Tewhey = '../datafiles/TrainingSets/Tewhey_Cell2016'
-    training_dir_Vockley = '../datafiles/TrainingSets/Vockley_Cell_2016'
+    training_dir_results = params['training_dir_results']
+    training_dir_Ernst = params['training_dir_Ernst']
+    training_dir_Tewhey = params['training_dir_Tewhey']
+    training_dir_Vockley = params['training_dir_Vockley']
 
     motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
