@@ -60,10 +60,10 @@ def get_col_names_from_cells_assays(col_names, cells, assays, col_names_from_db)
     
 def get_cell_info_for_motifs(motifs_input_file, db_name = 'funmotifsdb', cell_table='motifs', cells = ['HepG2'], assays = ['all'],
                              col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'], motif_tf_names_to_consider=[], number_rows_select='all',
-                             sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'], df_output_file=''):
+                             sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'], df_output_file='', db_user_name=''):
     
-    # TODO: change db_user_name
-    conn = open_connection(db_name, db_user_name="markmzr")
+
+    conn = open_connection(db_name, db_user_name=db_user_name)
     if os.path.exists(df_output_file):
         close_connection(conn)
         return pd.read_pickle(df_output_file)
@@ -131,7 +131,7 @@ def get_cell_info_for_motifs(motifs_input_file, db_name = 'funmotifsdb', cell_ta
     return results_df
 
 
-def get_cell_info_for_regions(regions_input_file, db_name = 'testregmotifs', cell_table='cell_table',
+def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name = 'testregmotifs', cell_table='cell_table',
                               cells = ['HepG2'], assays = ['all'], 
                               col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'], number_rows_select='all',
                               sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[9], cols_names_to_report_from_file=['Activity_Score'], df_output_file='',
@@ -140,7 +140,7 @@ def get_cell_info_for_regions(regions_input_file, db_name = 'testregmotifs', cel
                               ):
     # TODO: db_user_name as argument
 
-    conn = open_connection(db_name, db_user_name='markmzr')
+    conn = open_connection(db_name, db_user_name=db_user_name)
     curs = conn.cursor()
     cells = updateColNames(cells)
     assays = updateColNames(assays)

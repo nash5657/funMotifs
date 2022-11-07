@@ -291,10 +291,13 @@ if __name__ == '__main__':
                                      training_dir_results, training_dir_Ernst, training_dir_Tewhey,
                                      training_dir_Vockley,
                                      datafiles_HepG2_geneexpr_dir, datafiles_K562_geneexpr_dir,
-                                     datafiles_GM12878_geneexpr_dir, datafiles_IMR90_geneexpr_dir, cell_table)
+                                     datafiles_GM12878_geneexpr_dir, datafiles_IMR90_geneexpr_dir, cell_table, db_user_name=db_user_name)
 
 
     print(logit_params.summary())
-    print(np.exp(logit_params.params))
+    try:
+        print(np.exp(logit_params.params))
+    except:
+        print("No parameters have been computed. Check summary above for more information")
     print("end of funMotifs")
     cleanup()

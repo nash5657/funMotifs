@@ -145,7 +145,7 @@ def getBed(coordinates_input_file, input_file, output_file):
     return output_file
 
 
-def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_results, col_names, cell_table):
+def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_results, col_names, cell_table, db_user_name):
     
     actions_list = sys_args[-1].split(',')
     prom_unactive_genes_start_index_params = 0
@@ -168,7 +168,7 @@ def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_result
                              motifs_dir=motifs_dir, motifs_scored_output_file=motifs_scored_output_file, 
                              max_motif_score_per_region=False)
         
-        df_results = get_cell_info_for_motifs(motifs_scored_output_file, db_name = db_name, cells = cells_to_extract_info_from, df_output_file=df_output_file, col_names = col_names, cell_table=cell_table)
+        df_results = get_cell_info_for_motifs(motifs_scored_output_file, db_name = db_name, cells = cells_to_extract_info_from, df_output_file=df_output_file, col_names = col_names, cell_table=cell_table, db_user_name=db_user_name)
         df_results.to_csv(df_output_file+'.tsv', sep='\t')
 
     # get promoters of unactive genes
@@ -179,7 +179,7 @@ def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_result
         cells_to_extract_info_from_for_prom_unactive = sys_args[prom_unactive_genes_start_index_params+3].split(',')
         proms_unactive_genes = get_promoters_of_unactive_genes(genes_input_file=genes_input_file, proms_of_unactive_genes_output_file=proms_of_unactive_genes_output_file, 
                                                                unactive_expr_thresh=0, gene_expression_index=-1, strand_index =5, sep='\t', num_bp_for_prom=1000)
-        prom_results_df = get_cell_info_for_regions(proms_unactive_genes, db_name = db_name, cells = cells_to_extract_info_from_for_prom_unactive, assays = ['all'], df_output_file=prom_df_output_file, col_names = col_names, cols_indices_to_report_from_file=[8])
+        prom_results_df = get_cell_info_for_regions(proms_unactive_genes, db_user_name=db_user_name, db_name = db_name, cells = cells_to_extract_info_from_for_prom_unactive, assays = ['all'], df_output_file=prom_df_output_file, col_names = col_names, cols_indices_to_report_from_file=[8])
         prom_results_df.to_csv(prom_df_output_file+'.tsv', sep='\t')
 
     # get other active regions
@@ -190,7 +190,7 @@ def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_result
         cells_to_extract_info_from = sys_args[-3].split(',')
         regions_df_output_file = sys_args[-2]
         Other_active_regions_df = get_cell_info_for_regions(
-             Other_active_regions_file, db_name = db_name, cells = cells_to_extract_info_from, assays = ['all'], 
+             Other_active_regions_file, db_user_name=db_user_name, db_name = db_name, cells = cells_to_extract_info_from, assays = ['all'],
              sep='\t', report_cols_from_file=True, cols_indices_to_report_from_file=[4], cols_names_to_report_from_file=['Activity_Score'], df_output_file=regions_df_output_file,
              region_name_index = 3, region_strand_index = None, region_score_index = 4, motif_score_index = 4, max_number_motifs_to_report = 1,
              min_dist_from_region_start = False, min_dist_from_region_center = True, max_motif_score = False, max_region_score = False,
@@ -352,7 +352,7 @@ def get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, 
                       training_dir_results, training_dir_Ernst, training_dir_Tewhey, training_dir_Vockley,
                       datafiles_HepG2_geneexpr_dir, datafiles_K562_geneexpr_dir, datafiles_GM12878_geneexpr_dir,
                       datafiles_IMR90_geneexpr_dir,
-                      cell_table):
+                      cell_table, db_user_name):
     training_sets_args = [
         '{training_dir_Ernst}/HEPG2_SHARPR-MPRA_scores/basepredictions_HEPG2_ScaleUpDesign1and2_combinedP_hg38.txt {training_dir_results}/basepredictions_HepG2_ScaleUpDesign1and2_combinedP_perBase.txt HepG2 HepG2,Liver {datafiles_motifs_dir} {training_dir_results}/basepredictions_HepG2_ScaleUpDesign1and2_combinedP_motifs.bed {training_dir_results}/basepredictions_HepG2_ScaleUpDesign1and2_combinedP_motifs.df {datafiles_HepG2_geneexpr_dir} {training_dir_results}/HepG2_unactive_proms.bed {training_dir_results}/HepG2_unactive_proms_motifs.df HepG2,Liver tile_prom_regions,prom_unactive'.format(
             **locals()).split(' '),
@@ -381,7 +381,7 @@ def get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, 
     files_to_use_for_training_tsv = []
     
     for training_set_args in training_sets_args:
-        df, df_tsv = run_subset(training_set_args, col_names_to_weight_param, db_name, training_dir_results+'/', motif_info_col_names[:], cell_table)
+        df, df_tsv = run_subset(training_set_args, col_names_to_weight_param, db_name, training_dir_results+'/', motif_info_col_names[:], cell_table, db_user_name=db_user_name)
         files_to_use_for_training.append(df)
         files_to_use_for_training_tsv.append(df_tsv)
     
