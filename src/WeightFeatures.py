@@ -100,8 +100,11 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
                 motif_region[7] = "{:.3f}".format(float(motif_region[7]))
                 motifs_scored_outfile.write('\t'.join(motif_region) + '\t' + region + '\n')
 
-        if os.path.exists(scores_per_bp_input_file_results_tmp):
+        # TODO: check try except structure belo: check try except structure below
+        try:
             os.remove(scores_per_bp_input_file_results_tmp)
+        except:
+            pass
 
     return regions  # the highest scored motif for each tile region
 
@@ -253,12 +256,16 @@ def run_subset(sys_args, col_names_to_weight_param, db_name, training_dir_result
     return dfout, dfout_filename
     
 def make_binary(x, f=0):
+    if type(x) is str:
+        return x
     if x>f:
         return 1
     else:
         return 0
 
 def make_abs(x):
+    if type(x) is str:
+        return x
     return abs(x)
         
 def inf_to_zero(x):
@@ -330,8 +337,14 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
 
 def funMotifs_logit(outcome_col, col_weight, method='bfgs', maxiter=10000, full_output=True):
 
-
-    model = sm.Logit(outcome_col, col_weight).fit(method=method, maxiter=maxiter, full_output=full_output)
+    #outcome_col = np.asarray(outcome_col)
+    print('outcome_col: \n ', outcome_col)
+    print('___________________')
+    print('col_weight:\n ', col_weight)
+    print('___________________')
+    print(col_weight.dtypes, outcome_col.dtypes)
+    # TODO: remove prints above and check how to incoporate the .astype(float) below best
+    model = sm.Logit(outcome_col.astype(float), col_weight).fit(method=method, maxiter=maxiter, full_output=full_output)
 
     return model
 
