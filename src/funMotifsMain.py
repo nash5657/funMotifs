@@ -54,7 +54,8 @@ if __name__ == '__main__':
 
     # if force_overwrite, delete results directory to compute section 1 and 2 again
     #print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
-    if args.force_overwrite:
+    if Utilities.get_value(args.force_overwrite):
+        # TODO: use specified results directory
         os.system("""rm -rf ../results""")
         #os.removedirs("../results")
 
@@ -109,7 +110,7 @@ if __name__ == '__main__':
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
     # Generate mapping from cell types to tissue
-    matching_tissue_to_cell = Utilities.cell_to_tissue_matches(params['TissueCellInfo_matches_dict'])
+    matching_tissue_to_cell, cell_name_for_tissue = Utilities.cell_to_tissue_matches(params['TissueCellInfo_matches_dict'])
 
     print("Finished Section 1")
     """ Section 2: Overlap between the generated resources and motifs """
@@ -167,7 +168,6 @@ if __name__ == '__main__':
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
         process_cell_table = Utilities.get_value(params['generate_cell_tables'])
-
         if process_cell_table:
             GenerateCellTable.generate_cell_table(db_name,
                                                   cell_table,
@@ -188,6 +188,7 @@ if __name__ == '__main__':
         process_tissues = Utilities.get_value(params['generate_tissue_tables'])
         tissues_fscores_table = "all_tissues"
         # write results to the tissues (based on cell motifs) table
+        print("check 2")
         if process_tissues:
             print('Dropping and Creating tissues tables')
             GenerateTissueTables.generate_tissue_tables(db_name,
@@ -218,7 +219,7 @@ if __name__ == '__main__':
 
         # if process_tissues:
         #    motifs_table = tissues_fscores_table
-
+        print("check 3")
         if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name,
                                                new_table_name):
 
@@ -257,6 +258,7 @@ if __name__ == '__main__':
                                                                chr_names=list(range(1, 26)))
 
             # get PFM for motifs
+            print("check 4")
             PFM_table_name = "motifs_pfm"
             fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(motif_PFM_input_file=params['motif_PFM_file'])
             GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict, PFM_table_name, db_name,
@@ -266,19 +268,11 @@ if __name__ == '__main__':
                                                     cols_names=['name', 'position', 'allele', 'freq'])
 
     """ Temporary: Section 3: Score motifs """
-
+    print("check 5")
     cell_table = 'cell_table'
     datafiles_motifs_dir = params['motif_sites_dir']
 
-    datafiles_HepG2_geneexpr_dir = params['datafiles_HepG2_geneexpr_dir']
-    datafiles_K562_geneexpr_dir = params['datafiles_K562_geneexpr_dir']
-    datafiles_GM12878_geneexpr_dir = params['datafiles_GM12878_geneexpr_dir']
-    datafiles_IMR90_geneexpr_dir = params['datafiles_IMR90_geneexpr_dir']
-
-    training_dir_results = params['training_dir_results']
-    training_dir_Ernst = params['training_dir_Ernst']
-    training_dir_Tewhey = params['training_dir_Tewhey']
-    training_dir_Vockley = params['training_dir_Vockley']
+    training_data_dir = params['trainings_data_dir']
 
     motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
@@ -287,12 +281,10 @@ if __name__ == '__main__':
                                  'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
                                  'IndexDHS'.lower(), 'RegElem'.lower()]
 
-    logit_params = WeightFeatures.get_param_weights(col_names_to_weight_param, db_name, motif_info_col_names, datafiles_motifs_dir,
-                                     training_dir_results, training_dir_Ernst, training_dir_Tewhey,
-                                     training_dir_Vockley,
-                                     datafiles_HepG2_geneexpr_dir, datafiles_K562_geneexpr_dir,
-                                     datafiles_GM12878_geneexpr_dir, datafiles_IMR90_geneexpr_dir, cell_table, db_user_name=db_user_name)
-
+    logit_params = WeightFeatures.get_param_weights(training_data_dir, col_names_to_weight_param, db_name,
+                                                    motif_info_col_names, cell_table, db_user_name,
+                                                    cell_name_for_tissue,
+                                                    motif_split_chr=datafiles_motifs_dir)
 
     print(logit_params.summary())
     try:
