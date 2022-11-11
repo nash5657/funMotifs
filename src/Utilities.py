@@ -64,16 +64,20 @@ def retreive_key_values_from_dict_file(dict_input_file, key_value_sep, values_se
 def cell_to_tissue_matches(dict_input_file, key_value_sep='=', value_sep=','):
     # TODO: write unit test
     value_key_dict = {}
+    key_value_dict = {}
     with open(dict_input_file, 'r') as infile:
         lines = infile.readlines()
         for line in lines:
+            cells = []
             if not line.__contains__(key_value_sep):
                 continue
             sl = line.split(key_value_sep)
             values = sl[1].split(value_sep)
             for value in values:
                 value_key_dict[value.strip('\n')] = sl[0]
-    return value_key_dict
+                cells.append(value.strip('\n'))
+            key_value_dict[sl[0]] = cells
+    return value_key_dict, key_value_dict
 
 
 def bed_to_cell_wise_dataframe(bed_file, cells_to_assay, output_columns=None):

@@ -868,7 +868,7 @@ def populate_tissue_values_from_scored_files(tissue_cell_assays, tissue_cell_all
                                    db_name, db_user_name, db_host_name, tissues_fscores_table)
             
             print(('t_to_insert: ', time.time()-t_to_insert))
-            num_rows -=len(selected_rows)
+            num_rows = len(selected_rows)
             print(('num_rows remaining: ', num_rows))
             t_for_fetch = time.time()
             selected_rows = []
