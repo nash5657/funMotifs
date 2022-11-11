@@ -166,7 +166,7 @@ if __name__ == '__main__':
         DBUtilities.start_psql_server(db_dir, logfile)
         DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
-        process_cell_table = Utilities.get_value(params['generate_cell_table'])
+        process_cell_table = Utilities.get_value(params['generate_cell_tables'])
 
         if process_cell_table:
             GenerateCellTable.generate_cell_table(db_name,

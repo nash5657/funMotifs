@@ -182,14 +182,16 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                 for col in tissue_cell_assays[tissue][assay]:
                     #col = col.encode('ascii','ignore').lower()
                     #if row[col]!="NaN" and row[col]!=float('nan') and row[col]!='nan':
-                    # TODO: check if statement below and write else statement
-                    if col in row.keys():
+                    # TODO: check try except block (checks if row[col] exists, i.e. row has object col)
+                    try:
                         if row[col] not in ["NaN", float('NaN'), float('nan'), 'nan']:
                             try:
                                 if not math.isnan(float(row[col])):
                                     values.append(float(row[col]))
                             except ValueError:
-                                values.append(row[col])              
+                                values.append(row[col])
+                    except:
+                        pass   
                 
                 value = 'NaN'
                 if len(values)>0:
