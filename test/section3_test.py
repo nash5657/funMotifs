@@ -38,7 +38,7 @@ class TestSection3(unittest.TestCase):
     Class to test the different functions in the file WeightFeatures.py
     and the called functions in GetDBData_TrainingSets.py
     Attention: the database used was manually adapted to produce outcome with the given input
-    The necessary table (cell_table) is uploaded in csv format as section3_postgres.csv.
+    The necessary table (test_table) is uploaded in csv format as section3_postgres.csv.
     """
 
     def test_funMotifs_logit(self):
@@ -98,7 +98,7 @@ class TestSection3(unittest.TestCase):
         For assertion the output file is compared with an expected output file.
         """
         MPRA_tiles_input_file = "InputTestFilesSection3/TrainingSets/tile_prom_region/HepG2/input_data/infile.txt"
-        output_file = "InputTestFilesSection3/baseprediction_test_outcome.txt"
+        output_file = "InputTestFilesSection3/baseprediction_expected_outcome.txt"
         experiment_cell_name = 'HepG2'
         x = WeightFeatures.score_per_pos(MPRA_tiles_input_file, output_file, experiment_cell_name, tile_length=145,
                                          region_pos_col=0,
@@ -114,7 +114,7 @@ class TestSection3(unittest.TestCase):
         Test for get_motif_score()
         For assertion the output file is compared with an expected output file.
         """
-        scores_per_bp_input_file = "InputTestFilesSection3/baseprediction_test_outcome.txt"
+        scores_per_bp_input_file = "InputTestFilesSection3/baseprediction_expected_outcome.txt"
         motifs_dir = "InputTestFilesSection3/motifs_split_chr"
         motifs_scored_output_file = "InputTestFilesSection3/motif_score_expected_outcome.bed"
         x = WeightFeatures.get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_file)
@@ -129,7 +129,7 @@ class TestSection3(unittest.TestCase):
         input_file = "InputTestFilesSection3/motif_score_expected_outcome.bed"
         df_output_file = "InputTestFilesSection3/output_combinedP_motifs.df"
         col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
-        cell_table = "cell_table"
+        cell_table = "test_table"
         x = get_cell_info_for_motifs(input_file, db_name="funmotifsdb", cells=['liver'], df_output_file=df_output_file,
                                      col_names=col_names, cell_table=cell_table)
         x.to_csv(df_output_file + '.tsv', sep='\t')
@@ -188,7 +188,7 @@ class TestSection3(unittest.TestCase):
         expected_outfile = "InputTestFilesSection3/Geuv_MGProbes_expectbed_outfile.bed"
         assert compare_files(output_file, expected_outfile)
         return
-
+    
     def test_run_subset(self):
         """
         Test for run_subset()
@@ -202,7 +202,7 @@ class TestSection3(unittest.TestCase):
 
         tissue_for_cell_name, cell_name_for_tissue = \
             Utilities.cell_to_tissue_matches('InputTestFilesSection3/TissueCellMatches')
-        motif_split_chr = "../datafiles/Motifs/motifs_per_chr"
+        motif_split_chr = "InputTestFilesSection3/motifs_split_chr/"
         tile_prom_region_data = WeightFeatures.get_trainings_data_dirs(tile_prom_region_path, cell_name_for_tissue,
                                                                        tissue_for_cell_name,
                                                                        motif_split_chr)
@@ -220,22 +220,22 @@ class TestSection3(unittest.TestCase):
                                       prom_unactive_data=prom_unactive_data,
                                       other_act_reg_data=other_act_reg_data,
                                       col_names_to_weight_param=col_names_to_weight_param,
-                                      db_name='funmotifsdb', db_user_name='mm99', cell_table='cell_table',
+                                      db_name='funmotifsdb', db_user_name='mm99', cell_table='test_table',
                                       col_names=motif_info_col_names, training_dir_results=training_dir_results)
-        d = {'score': [11.9703, 11.7222, 14.3636], 'tfexpr': [67.140, 1.902, 0.1597],
-             'activity_score': [10.5, '0.0', '1880.82901534565'], 'cellname': ['liver', 'liver', 'liver']}
+        d = {'score': [3.333, 1.111, 2.222], 'tfexpr': [0.1597, 1.9020,  67.1400],
+             'activity_score': [73.749, 0.0, 772.530134424223], 'cellname': ['liver', 'liver', 'liver']}
         df = pd.DataFrame(d)
         z = (x == df)
         for i in z.all():
             assert i is True
         return
-
+    
     def test_get_param_weights(self):
         """
         Test for get_param_weights()
         For assertion the expected output was computed externally and is compared with the computed output.
         """
-        cell_table = 'cell_table'
+        cell_table = 'test_table'
         datafiles_motifs_dir = 'InputTestFilesSection3/motifs_split_chr'
 
         training_data_dir = 'InputTestFilesSection3/TrainingSets'
@@ -256,8 +256,8 @@ class TestSection3(unittest.TestCase):
                                                         cell_name_for_tissue, tissues_for_cell_name,
                                                         motif_split_chr=datafiles_motifs_dir)
 
-        assert logit_params.params[0] - 0.0576878 < 0.001
-        assert logit_params.params[1] - 0.2165892 < 0.001
+        assert logit_params.params[0] - 0.630454 < 0.001
+        assert logit_params.params[1] - 0.154892 < 0.001
 
         return
 
@@ -285,11 +285,11 @@ class TestSection3(unittest.TestCase):
         For assertion the expected output is compared with the actual output.
         """
         col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
-        cell_table = "cell_table"
+        cell_table = "test_table"
         path = "InputTestFilesSection3/TrainingSets/tile_prom_region"
         tissue_for_cell_name, cell_name_for_tissue = \
             Utilities.cell_to_tissue_matches("InputTestFilesSection3/TissueCellMatches")
-        motif_split_chr = "../datafiles/Motifs/motifs_per_chr"
+        motif_split_chr = "InputTestFilesSection3/motifs_split_chr"
         data = WeightFeatures.get_trainings_data_dirs(path, cell_name_for_tissue, tissue_for_cell_name,
                                                       motif_split_chr)[0]
         MPRA_score_per_pos_outfile = data[1] + '/MPRA_score_per_pos_outfile.txt'
@@ -303,13 +303,15 @@ class TestSection3(unittest.TestCase):
                                              df_output_file=df_output_file, db_name='funmotifsdb',
                                              db_user_name='mm99', col_names=col_names,
                                              cell_table=cell_table)
-        d = {'chr': 10, 'motifstart': 21798914, 'motifend': 21798927, 'name': 'PLAG1_MA0163.1', 'score': 11.9703,
-             'pval': 0.0000651, 'strand': '-', 'liver___tfexpr': 67.14, 'Activity_Score': 10.5}
+        d = {'chr': 10, 'motifstart': 54, 'motifend': 348, 'name': 'Motif3', 'score': 3.333,
+             'pval': 0.0003, 'strand': '+', 'liver___tfexpr': 0.1597, 'Activity_Score': 73.749}
         df = pd.DataFrame(d, index=[0])
+
         z = (x == df)
         for i in z.all():
             assert i is True
         return
+
 
     def test_prom_unactive(self):
         """
@@ -329,12 +331,14 @@ class TestSection3(unittest.TestCase):
         x = WeightFeatures.prom_unactive(geneexp_infile=data[0],
                                          proms_unact_genes_outfile=proms_unact_genes_outfile,
                                          prom_df_outfile=prom_df_outfile, cells_to_extract_info_from=data[2],
-                                         db_name='funmotifsdb', db_user_name='mm99', col_names=col_names)
+                                         db_name='funmotifsdb', db_user_name='mm99', col_names=col_names,
+                                         cell_table='test_table')
 
-        d = {'chr': 10, 'motifstart': 50116528, 'motifend': 50117528, 'name': 'PPARG_MA0066.1', 'score': 11.7222,
-             'pval': 0.0000104, 'strand': '-', 'Activity_Score': '0.0'}
+        d = {'chr': 10, 'motifstart': 1, 'motifend': 1001, 'name': 'Motif1', 'score': 1.111,
+             'pval': 0.0001, 'strand': '-', 'Activity_Score': '0.0'}
         df = pd.DataFrame(d, index=[0])
         z = (x == df)
+
         for i in z.all():
             assert i is True
         return
@@ -353,17 +357,18 @@ class TestSection3(unittest.TestCase):
         other_act_reg_file = data[1] + '/output.bed'
         regions_df_outfile = data[1] + '/output_motifs.df'
         col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
-
         x = WeightFeatures.other_active_region(coordinates_infile=data[0], infile=data[2],
                                                other_act_reg_file=other_act_reg_file,
                                                cells_to_extract_info_from=data[3],
                                                regions_df_outfile=regions_df_outfile, db_name='funmotifsdb',
-                                               db_user_name='mm99', col_names=col_names)
+                                               db_user_name='mm99', col_names=col_names, cell_table='test_table')
 
-        d = {'chr': 10, 'motifstart': 101769701, 'motifend': 101769711, 'name': 'FOSL1_MA0477.1', 'score': 14.3636,
-             'pval': 0.000013, 'strand': '+', 'liver___tfexpr': 0.1597, 'Activity_Score': '1880.82901534565'}
+        d = {'chr': 10, 'motifstart': 101, 'motifend': 200, 'name': 'Motif2', 'score': 2.222,
+             'pval': 0.0002, 'strand': '-', 'liver___tfexpr': 67.14, 'Activity_Score': '772.530134424223'}
         df = pd.DataFrame(d, index=[0])
+
         z = (x == df)
+
         for i in z.all():
             assert i is True
 
@@ -373,6 +378,7 @@ class TestSection3(unittest.TestCase):
 if __name__ == '__main__':
     prev = glob("InputTestFilesSection3/*")
     unittest.main(exit=False)
+
     rm = glob("InputTestFilesSection3/TrainingSets/*/*/output_data/*")
     for i in glob("InputTestFilesSection3/TrainingSets/training_results/*"):
         rm.append(i)

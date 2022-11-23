@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
     logit_params = WeightFeatures.get_param_weights(training_data_dir, col_names_to_weight_param, db_name,
                                                     motif_info_col_names, cell_table, db_user_name,
-                                                    cell_name_for_tissue,
+                                                    cell_name_for_tissue, matching_tissue_to_cell,
                                                     motif_split_chr=datafiles_motifs_dir)
 
     print(logit_params.summary())

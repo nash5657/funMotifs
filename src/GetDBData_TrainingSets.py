@@ -70,9 +70,9 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
                              cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'],
                              df_output_file='', db_user_name='mm99'):
     conn = open_connection(db_name, db_user_name=db_user_name)
-    if os.path.exists(df_output_file):
-        close_connection(conn)
-        return pd.read_pickle(df_output_file)
+    #if os.path.exists(df_output_file):
+    #    close_connection(conn)
+    #    return pd.read_pickle(df_output_file)
 
     curs = conn.cursor()
     cells = updateColNames(cells)
@@ -83,11 +83,9 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
     results_regions = {}
     reported_col_names = col_names_to_retrieve.split(',')
     reported_col_names.extend(cols_names_to_report_from_file)
-
     number_lines_processed = 0
     with open(motifs_input_file, 'r') as motif_infile:
         line = motif_infile.readline()
-        print(('Get motif info for', cells))
         while line:
             sline = line.strip().split(sep)
             sline[7] = float(sline[7])
@@ -128,8 +126,6 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
                             results_regions[sline[-1]][i] = lrow
             line = motif_infile.readline()
             number_lines_processed += 1
-            if number_lines_processed % 500 == 0:
-                print(('number_lines_processed: ', number_lines_processed))
     close_connection(conn)
     results_lines = []
     for region in list(results_regions.keys()):
@@ -137,7 +133,6 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
             results_lines.append(motif_region)
     results_df = pd.DataFrame(data=results_lines, columns=reported_col_names)
     results_df.to_pickle(df_output_file)
-
     return results_df
 
 
@@ -169,7 +164,6 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
     number_lines_processed = 0
     with open(regions_input_file, 'r') as regions_infile:
         line = regions_infile.readline()
-        print('Get motif info for', cells)
         while line:
             sline = line.strip().split(sep)
             conds = []
@@ -231,8 +225,6 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
 
             line = regions_infile.readline()
             number_lines_processed += 1
-            if number_lines_processed % 500 == 0:
-                print(('number_lines_processed: ', number_lines_processed))
 
     close_connection(conn)
     results_lines = []
@@ -241,5 +233,4 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
             results_lines.append(motif_region)
     results_df = pd.DataFrame(data=results_lines, columns=reported_col_names)
     results_df.to_pickle(df_output_file)
-
     return results_df

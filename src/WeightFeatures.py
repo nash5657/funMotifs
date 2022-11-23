@@ -1,14 +1,16 @@
-'''
+"""
 Created on Dec 9, 2016
 
 @author: husensofteng
-'''
-import sys, os
-from pybedtools import BedTool, set_tempdir, cleanup
+@contributor: markmelzer
+"""
+
+import os
+from glob import glob
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-import numpy as np
-from glob import glob
+from pybedtools import BedTool
 
 from GetDBData_TrainingSets import get_cell_info_for_motifs, get_cell_info_for_regions
 
@@ -49,12 +51,14 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
     regions = {}
     scores_per_bp_input_file_obj = BedTool(scores_per_bp_input_file)
     for motif_file in os.listdir(motifs_dir):
-        print(motif_file)
         motif_file_obj = BedTool(motifs_dir + '/' + motif_file)
         scores_per_bp_input_file_results_tmp_inter = scores_per_bp_input_file + '_' + motif_file
+        # TODO: next command messes up the nummeration: compare scores_per_bp_input_file_results_tmp_inter
+        #  and motifs_scored_output_file; https://daler.github.io/pybedtools/intersections.html
         motif_file_obj.intersect(scores_per_bp_input_file_obj, wo=True).saveas(
             scores_per_bp_input_file_results_tmp_inter)
-        if (os.stat(scores_per_bp_input_file_results_tmp_inter).st_size != 0):
+
+        if os.stat(scores_per_bp_input_file_results_tmp_inter).st_size != 0:
 
             scores_per_bp_input_file_results_tmp_inter_sorted = scores_per_bp_input_file_results_tmp_inter + '_sorted'
             os.system("""sort -V -k1,1 -k2n,2 -k3n,3 -k4,4 -k5,5 -k6,6 -k7,7 {} > {}""".format(
@@ -64,22 +68,11 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
                                                                                          c=[11, 12, 13, 12, 14],
                                                                                          o=['distinct', 'mean', 'min',
                                                                                             'collapse', 'distinct'])
-
             scores_per_bp_input_file_results_tmp = scores_per_bp_input_file_results_tmp_inter_sorted + '_tmp'
-
-            #             scores_per_bp_input_file_results_uniq_motif =  scores_per_bp_input_file_results_tmp_inter + '_uniqMotif'
-            #             scores_per_bp_input_file_results_uniq_tmp = scores_per_bp_input_file_results_tmp_inter +'_tmp'
-            #
-            #
-            #             results.groupby(g=[1,2,3,7,8,9,10,11,12], c=[4,5,6], o=['first']).saveas(scores_per_bp_input_file_results_uniq_motif)
-            #
-
             with open(results.fn, 'r') as r, open(scores_per_bp_input_file_results_tmp, 'w') as results_outfile:
                 line = r.readline()
                 while line:
                     sl = line.strip().split('\t')
-                    # print(sl)
-                    # results_outfile.write(sl[0] + '\t' + sl[1] + '\t' + sl[2] + '\t' +sl[9] + '\t'  +'S'+sl[10]+'P'+sl[11]+'\t'+ sl[3]+ '\t'+ sl[4]+ '\t'+ sl[5]+ '\t'+ sl[6]+ '\t'+ sl[7]+ '\t'+ sl[8] + '\n')
                     results_outfile.write(
                         '\t'.join(sl[0:4]) + '\t' + 'S' + sl[4] + 'P' + sl[5] + '\t' + '\t'.join(sl[6:12]) + '\n')
                     line = r.readline()
@@ -94,8 +87,7 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
                             regions[sl[10]] = [sl[0:10]]
                         else:
                             if max_motif_score_per_region:
-                                if float(sl[7]) >= float(regions[sl[10]][0][
-                                                             7]):  # get the motif that have the highest score, this can be changed to distance from the center (index 8)
+                                if float(sl[7]) >= float(regions[sl[10]][0][7]):
                                     regions[sl[10]] = [sl[0:10]]
                             else:
                                 regions[sl[10]].append(sl[0:10])
@@ -112,7 +104,6 @@ def get_motif_scores(scores_per_bp_input_file, motifs_dir, motifs_scored_output_
             os.remove(scores_per_bp_input_file_results_tmp)
         except:
             pass
-
     return regions  # the highest scored motif for each tile region
 
 
@@ -121,8 +112,6 @@ def get_promoters_of_unactive_genes(genes_input_file, proms_of_unactive_genes_ou
     # if os.path.exists(proms_of_unactive_genes_output_file):
     #    return proms_of_unactive_genes_output_file
     with open(genes_input_file, 'r') as genes_infile, open(proms_of_unactive_genes_output_file, 'w') as outfile:
-        print(('Getting promoters (size={}) of KNOWN protein_coding genes that have expr <= {} in {}'.format(
-            num_bp_for_prom, unactive_expr_thresh, genes_input_file)))
         l = genes_infile.readline()
         while l:
             sl = l.strip().split(sep)
@@ -164,14 +153,14 @@ def tile_prom_regions(MPRA_infile, MPRA_score_per_pos_outfile, experiment_cell_n
     """
         Get MPRA (Activity) score for the motifs
     """
-    if not os.path.exists(MPRA_score_per_pos_outfile):
-        score_per_pos(MPRA_tiles_input_file=MPRA_infile, output_file=MPRA_score_per_pos_outfile,
-                      experiment_cell_name=experiment_cell_name)
+    #if not os.path.exists(MPRA_score_per_pos_outfile):
+    score_per_pos(MPRA_tiles_input_file=MPRA_infile, output_file=MPRA_score_per_pos_outfile,
+                  experiment_cell_name=experiment_cell_name)
 
-    if not os.path.exists(motifs_scored_output_file):
-        get_motif_scores(scores_per_bp_input_file=MPRA_score_per_pos_outfile,
-                         motifs_dir=motifs_dir, motifs_scored_output_file=motifs_scored_output_file,
-                         max_motif_score_per_region=max_motif_score_per_region)
+    #if not os.path.exists(motifs_scored_output_file):
+    get_motif_scores(scores_per_bp_input_file=MPRA_score_per_pos_outfile,
+                     motifs_dir=motifs_dir, motifs_scored_output_file=motifs_scored_output_file,
+                     max_motif_score_per_region=max_motif_score_per_region)
 
     df_results = get_cell_info_for_motifs(motifs_scored_output_file, db_name=db_name,
                                           cells=cells_to_extract_info_from, df_output_file=df_output_file,
@@ -183,7 +172,7 @@ def tile_prom_regions(MPRA_infile, MPRA_score_per_pos_outfile, experiment_cell_n
 
 def prom_unactive(geneexp_infile, proms_unact_genes_outfile, prom_df_outfile, cells_to_extract_info_from, db_name,
                   db_user_name, col_names, cols_indices_to_report_from_file=[9], assays=['all'], unactive_expr_thresh=0,
-                  gene_expression_index=-1, strand_index=5, sep='\t', num_bp_for_prom=1000):
+                  gene_expression_index=-1, strand_index=5, sep='\t', num_bp_for_prom=1000, cell_table='cell_table'):
     """
         Get those promoters that are inactive, i.e. promoters to unexpressed genes
     """
@@ -194,16 +183,15 @@ def prom_unactive(geneexp_infile, proms_unact_genes_outfile, prom_df_outfile, ce
                                                            strand_index=strand_index, sep=sep,
                                                            num_bp_for_prom=num_bp_for_prom)
     prom_results_df = get_cell_info_for_regions(proms_unactive_genes, db_user_name=db_user_name, db_name=db_name,
-                                                cells=cells_to_extract_info_from, assays=assays,
+                                                cells=cells_to_extract_info_from, assays=assays, cell_table=cell_table,
                                                 df_output_file=prom_df_outfile, col_names=col_names,
                                                 cols_indices_to_report_from_file=cols_indices_to_report_from_file)
     prom_results_df.to_csv(prom_df_outfile + '.tsv', sep=sep)
-
     return prom_results_df
 
 
 def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to_extract_info_from, regions_df_outfile,
-                        db_name, db_user_name, col_names, assays=['all'], sep='\t',
+                        db_name, db_user_name, col_names, assays=['all'], sep='\t', cell_table='cell_table',
                         cols_indices_to_report_from_file=[4],
                         cols_names_to_report_from_file=['Activity_Score'], region_name_index=3,
                         region_strand_index=None, region_score_index=4, motif_score_index=4,
@@ -212,9 +200,9 @@ def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to
     """
         Find other active regions in the cell
     """
-    if not os.path.exists(other_act_reg_file):
-        other_act_reg_file = getBed(coordinates_input_file=coordinates_infile, input_file=infile,
+    other_act_reg_file = getBed(coordinates_input_file=coordinates_infile, input_file=infile,
                                     output_file=other_act_reg_file)
+
 
     other_active_regions_df = get_cell_info_for_regions(
         other_act_reg_file, db_user_name=db_user_name, db_name=db_name, cells=cells_to_extract_info_from, assays=assays,
@@ -224,8 +212,8 @@ def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to
         region_score_index=region_score_index, motif_score_index=motif_score_index,
         max_number_motifs_to_report=max_number_motifs_to_report, min_dist_from_region_start=min_dist_from_region_start,
         min_dist_from_region_center=min_dist_from_region_center, max_motif_score=max_motif_score,
-        max_region_score=max_region_score, col_names=col_names)
-
+        max_region_score=max_region_score, col_names=col_names, cell_table=cell_table)
+    other_active_regions_df.to_csv(regions_df_outfile + '.tsv', sep=sep)
     return other_active_regions_df
 
 
@@ -234,7 +222,6 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
     """
         Gather the data to perform the regression on it
     """
-
 
     for data in tile_prom_region_data:
         MPRA_score_per_pos_outfile = data[1] + '/MPRA_score_per_pos_outfile.txt'
@@ -257,7 +244,7 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
         df2 = prom_unactive(geneexp_infile=data[0],
                             proms_unact_genes_outfile=proms_unact_genes_outfile,
                             prom_df_outfile=prom_df_outfile, cells_to_extract_info_from=data[2],
-                            db_name=db_name, db_user_name=db_user_name, col_names=col_names)
+                            db_name=db_name, db_user_name=db_user_name, col_names=col_names, cell_table=cell_table)
 
     for data in other_act_reg_data:
         other_act_reg_file = data[1] + '/output.bed'
@@ -267,11 +254,10 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
                                   other_act_reg_file=other_act_reg_file,
                                   cells_to_extract_info_from=data[3],
                                   regions_df_outfile=regions_df_outfile, db_name=db_name,
-                                  db_user_name=db_user_name, col_names=col_names)
-
+                                  db_user_name=db_user_name, col_names=col_names, cell_table=cell_table)
+    # TODO: check difference and use of prom_unactive and other_active_region
     # combine data frames
     combined_results = pd.concat([df1, df2, df3])
-
     # create data frame for return values
     dfout = pd.DataFrame()
     dfout_filename = "dfout_file"
@@ -315,7 +301,9 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
         dfout.rename(columns=dfout_cols, inplace=True)
         dfout.to_csv(training_dir_results + dfout_filename, sep='\t')
 
-    return dfout
+    dfout['activity_score'] = dfout['activity_score'].astype(float)
+
+    return dfout.reset_index(drop=True)
 
 
 def make_binary(x, f=0):
@@ -360,7 +348,7 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
     # create new data frame with output column
     new_df = pd.DataFrame()
     # TODO: is the order of the applys below right? (threshold for binary vs absolute)
-    new_df[outcome_col] = df[outcome_col].apply(make_abs).apply(make_binary, args=(0,))
+    new_df[outcome_col] = df[outcome_col].astype(float).apply(make_abs).apply(make_binary, args=(0,))
     # TODO: isn't this unnecessary???
     new_df[outcome_col] = new_df[outcome_col]
 
@@ -372,7 +360,8 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
             new_df[c] = df[c].apply(make_binary, args=(0,))
         elif c == 'NumOtherTFBinding'.lower():
             new_df[c] = df[c]
-        elif c == 'RepliDomain'.lower() or c == 'CellName'.lower() or c == 'name' or c == 'IndexDHS'.lower() or c == 'cCRE'.lower() or c == 'RegElem'.lower():
+        elif c == 'RepliDomain'.lower() or c == 'CellName'.lower() or c == 'name' or c == 'IndexDHS'.lower() or \
+                c == 'cCRE'.lower() or c == 'RegElem'.lower():
             df_dummies = pd.get_dummies(df[c])
             new_df = pd.concat([new_df, df_dummies], axis=1)
         elif c == 'ChromHMM'.lower():
@@ -396,19 +385,16 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
 
     del new_cols_to_weight[new_cols_to_weight.index(outcome_col)]
 
-    # compute parameters
-    # logit = sm.Logit(new_df[outcome_col], new_df[new_cols_to_weight]).fit(method='bfgs', maxiter=10000, full_output=True)# y=df[outcome_col], x=df[['intercept', 'HepG2___DNase__seq']])#sm.OLS(y,X).fit()#method='bfgs', full_output=True)#, maxiter=1000000000
-
     # compute parameters & return results
     return dfout_filename, funMotifs_logit(new_df[outcome_col], new_df[new_cols_to_weight])
 
 
 def funMotifs_logit(outcome_col, col_weight, method='bfgs', maxiter=10000, full_output=True):
-
     # TODO: this deletes all columns containing NaN's, but figure out why there are NaNs in the first place
     col_weight = col_weight.dropna(axis=1)
     # TODO: remove prints above and check how to incoporate the .astype(float) below best
-    model = sm.Logit(outcome_col.astype(float), col_weight).fit(method=method, maxiter=maxiter, full_output=full_output)
+    model = sm.Logit(outcome_col.astype(float), col_weight.astype(float)).fit(method=method, maxiter=maxiter,
+                                                                              full_output=full_output)
 
     return model
 
@@ -494,8 +480,8 @@ def get_param_weights(training_data_dir, col_names_to_weight_param, db_name, mot
                     col_names=motif_info_col_names, training_dir_results=training_dir_results)
 
     # combine training files
-    #print(len(df))
-    #combined_results = df[0].append(df[1::], ignore_index=True)
+    # print(len(df))
+    # combined_results = df[0].append(df[1::], ignore_index=True)
     combined_results = df
 
     # TODO: check why this is done in this way
