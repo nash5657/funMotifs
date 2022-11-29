@@ -2,14 +2,17 @@
 Created on Nov 13, 2016
 
 @author: Husen M. Umer
+@contributor: Mark Melzer
 
 Score motifs: collects cell-type specific data from several public resources and generates a cell-type specific score
 for each motif instance in the human genome Input: TF PWMs, human genome, TF chip-seq resources, DNase1 resources,
-ChromHMM labels, Gene expression, CAGE peaks, HIC domains, HIC loops, Replication domains Output: A list of motif
-instances with a functionality score per cell type Process: the module has three sections
+ChromHMM labels, Gene expression, CAGE peaks, HIC domains, HIC loops, Replication domains
+Output: A list of motif instances with a functionality score per cell type
+Process: the module has four sections
 1) collects and processes data from the provided resources,
 2) combines data from the collections and overlays them with motifs,
-3) computes a score for each motif instance
+3) write Annotations into database
+4) computes a score for each motif instance
 """
 import os
 import sys

@@ -19,39 +19,60 @@ import pandas as pd
 
 # TODO: check why significance based on myeloid tissue and not tissue-wise?
 
-def DHS_present() -> bool:
+def DHS_present(motif: object) -> bool:
+    # TODO: check if dnase_seq is right variable
     """
     Function that returns a boolean value to indicate whether DHSs is present for a motif
     """
-    return
+    if motif['dnase__seq'] == 'NaN' or motif['dnase_seq'] <= 0.0:
+        return False
+
+    return True
 
 
-def TFs_expressed() -> bool:
+def TFs_expressed(motif: object) -> bool:
     """
     Function that returns a boolean value to indicate whether the TF belonging to motifs is expressed
     """
-    return
+    if motif['tfexpr'] == 'NaN' or motif['tfexpr'] <= 0.0:
+        return False
+
+    return True
 
 
-def TF_ChIP_seq_data_available() -> bool:
+def TF_ChIP_seq_data_available(motif: object) -> bool:
+    # TODO: check if tfbinding is right variable
     """
     Function that returns a boolean value to indicate whether TF ChIP-seq data is available for a motif
     """
-    return
+    if motif['tfbinding'] == 'NaN':
+        return False
+
+    return True
 
 
-def TF_binding_evidence() -> bool:
+def TF_binding_evidence(motif: object) -> bool:
+    # TODO: check if tfbinding is right variable
     """
     Function that returns a boolean value to indicate whether there is evidence for binding of a matching TF to a motif
     """
-    return
+    # TODO: find out what entrance in table would be instead of checking all possiblilities
+    if motif['tfbinding'] in ['True', 'true', 'TRUE', 't', 'T', True, 1, 'YES', 'yes', 'Yes', 'y', 'Y']:
+        return True
+
+    return False
 
 
-def compute_functionality_score() -> float:
+def compute_functionality_score(motif: object, params, weighted_variable: list) -> float:
     """
     Function that computes the functionality score of a motif
     """
-    return
+    # TODO: check what x0 is called
+    score = params[0]
+    for var in weighted_variable:
+        score += motif[var] * params[var]
+
+    return score
 
 
 def get_significance_cutoff() -> float:
@@ -65,6 +86,7 @@ def get_motif_data_for_tissue(tissue, db_name, db_user_name) -> object:
     """
     Function that given a tissue returns the data of a database for this tissue as data frame
     """
+    # TODO: or only return one motif at a time
     # establish connection
     conn = psycopg2.connect(
         database=db_name, user=db_user_name)
@@ -96,12 +118,12 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     for idx, motif in motifs.iterrows():
         # TODO: check condition priority after next meeting
         if DHS_present(motif):
-            funMotifs.append(motif)
+            funMotifs.append(motif['mid'])
         elif not TFs_expressed(motif):
             continue
         elif TF_ChIP_seq_data_available():
             if TF_binding_evidence():
-                funMotifs.append(motif)
+                funMotifs.append(motif['mid'])
         else:
             compute_score.append(motif)
 
@@ -110,7 +132,7 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     cutoff = get_significance_cutoff(funMotifs)
     for motif in compute_score:
         if compute_functionality_score(motif) >= cutoff:
-            funMotifs.append(motif)
+            funMotifs.append(motif['mid'])
 
     return funMotifs
 
@@ -120,8 +142,11 @@ def get_functional_motifs_per_tissue(params, tissues: list, weighted_variables: 
     """
     Function that returns functional motifs per tissue based on annotated motifs and the regression weights
     """
-    # assert that the weighted variable (names) have same length as the weights (values)
-    assert len(params) == len(weighted_variables)
+    if weighted_variables == ['all']:
+        # noinspection PyStatementEffect
+        weighted_variables == ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(), 'NumOtherTFBinding'.lower(),
+                               'RepliDomain'.lower(), 'TFBinding'.lower(), 'TFExpr'.lower(), 'score'.lower(),
+                               'footprints'.lower(), 'cCRE'.lower(), 'IndexDHS'.lower(), 'RegElem'.lower()]
     # assert that at least one tissue is given
     assert len(tissues) > 0
 
