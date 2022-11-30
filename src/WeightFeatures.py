@@ -393,6 +393,8 @@ def funMotifs_logit(outcome_col, col_weight, method='bfgs', maxiter=10000, full_
     # TODO: this deletes all columns containing NaN's, but figure out why there are NaNs in the first place
     col_weight = col_weight.dropna(axis=1)
     # TODO: remove prints above and check how to incoporate the .astype(float) below best
+    # add intercept to df
+    col_weight['intercept'] = 1
     model = sm.Logit(outcome_col.astype(float), col_weight.astype(float)).fit(method=method, maxiter=maxiter,
                                                                               full_output=full_output)
 

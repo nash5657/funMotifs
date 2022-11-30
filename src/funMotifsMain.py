@@ -8,11 +8,13 @@ Score motifs: collects cell-type specific data from several public resources and
 for each motif instance in the human genome Input: TF PWMs, human genome, TF chip-seq resources, DNase1 resources,
 ChromHMM labels, Gene expression, CAGE peaks, HIC domains, HIC loops, Replication domains
 Output: A list of motif instances with a functionality score per cell type
-Process: the module has four sections
+Process: the module has six sections
 1) collects and processes data from the provided resources,
 2) combines data from the collections and overlays them with motifs,
 3) write Annotations into database
 4) computes a score for each motif instance
+5) computes the functional motifs per tissue
+6) overlaps the functional motifs with non-coding mutations
 """
 import os
 import sys
@@ -26,7 +28,7 @@ import ProcessTFMotifs
 import MotifAnnotation
 import GenerateMotifsTables
 import WeightFeatures
-import pandas as pd
+import GetFunMotifperTissue as gfmt
 
 
 def parse_args():
@@ -270,6 +272,7 @@ if __name__ == '__main__':
                                                           'freq numeric'],
                                                     cols_names=['name', 'position', 'allele', 'freq'])
 
+    # TODO: check at which point created files can be created
     """ Temporary: Section 3: Score motifs """
     print("check 5")
     cell_table = 'cell_table'
@@ -294,5 +297,17 @@ if __name__ == '__main__':
         print(np.exp(logit_params.params))
     except:
         print("No parameters have been computed. Check summary above for more information")
+        # TODO: section 5 cannot happen if we enter this except statement
+        pass
     print("end of funMotifs")
     cleanup()
+
+    """ Section 5: Get the functional motifs per tissue """
+
+    # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
+    funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
+                                                                 tissues=cell_name_for_tissue.keys(),
+                                                                 db_user_name=db_user_name)
+
+    """ Section 6: Overlap motifs with non-coding mutations """
+

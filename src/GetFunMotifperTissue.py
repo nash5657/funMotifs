@@ -4,8 +4,7 @@ Created on Nov 28, 2022
 @author: Mark Melzer
 
 Receives the computed regression coefficients and a database with annotated motifs.
-Output: List of Motifs that are functional according to the regression.
-Condition:
+Output: List of Motifs that are functional according to the following conditions:
     - DHSs must be present
     - TF, belonging to motif, must be expressed
     - Functional if binding evidence from matching TFs
@@ -16,6 +15,7 @@ Condition:
 """
 import psycopg2
 import pandas as pd
+
 
 # TODO: check why significance based on myeloid tissue and not tissue-wise?
 
@@ -67,19 +67,41 @@ def compute_functionality_score(motif: object, params, weighted_variable: list) 
     """
     Function that computes the functionality score of a motif
     """
-    # TODO: check what x0 is called
-    score = params[0]
+    try:
+        score = params['intercept']
+    except:
+        score = 0
+        pass
+
     for var in weighted_variable:
         score += motif[var] * params[var]
 
     return score
 
 
-def get_significance_cutoff() -> float:
+def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, motifs: object, params, weighted_variable: list)\
+        -> float:
     """
     Function that determines the cutoff value for a significant functionality score
     """
-    return
+    # get functional motifs in data frame
+    funMotifs_df = motifs.loc[funMotifs]
+    nonFunMotifs_df = nonFunMotifs.loc[nonFunMotifs]
+    funScores = []
+    nonFunScores = []
+
+    # get the functionality scores for the functional motifs
+    for idx, motif in funMotifs_df.iterrows():
+        funScores.append(motif, params, weighted_variable)
+
+    # get the functionality scores for the not functional motifs
+    for idx, motif in nonFunMotifs_df.iterrows():
+        nonFunScores.append(motif, params, weighted_variable)
+
+    # compute the significance cutoff
+    cutoff = 0
+
+    return cutoff
 
 
 def get_motif_data_for_tissue(tissue, db_name, db_user_name) -> object:
@@ -92,11 +114,11 @@ def get_motif_data_for_tissue(tissue, db_name, db_user_name) -> object:
         database=db_name, user=db_user_name)
 
     # create sql command
-    sql = f'''SELECT * from {tissue}'''
+    sql = f'''SELECT * FROM {tissue}'''
 
     # get data into data frame
     df = pd.read_sql_query(sql, conn)
-    df.reset_index()
+    df.set_index('mid', inplace=True)
 
     # close connection
     conn.close()
@@ -110,8 +132,9 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     """
     # get motifs from database (tissue tables)
     # TODO: might be more efficient to extract column by column (#motifs should be same in each tissue) and compute
-    motifs = get_motif_data_for_tissue()
+    motifs = get_motif_data_for_tissue(tissue, db_name, db_user_name)
     funMotifs = []
+    nonFunMotifs = []
     compute_score = []
 
     # loop over rows of the annotated motif data frame
@@ -120,18 +143,20 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
         if DHS_present(motif):
             funMotifs.append(motif['mid'])
         elif not TFs_expressed(motif):
-            continue
-        elif TF_ChIP_seq_data_available():
-            if TF_binding_evidence():
+            nonFunMotifs.append(motif['mid'])
+        elif TF_ChIP_seq_data_available(motif):
+            if TF_binding_evidence(motif):
                 funMotifs.append(motif['mid'])
+            else:
+                nonFunMotifs.append(motif['mid'])
         else:
             compute_score.append(motif)
 
     # TODO: if not done tissue-wise: move this to parent function and pass as argument
     # get significance cutoff for functionality score
-    cutoff = get_significance_cutoff(funMotifs)
+    cutoff = get_significance_cutoff(funMotifs, nonFunMotifs, motifs)
     for motif in compute_score:
-        if compute_functionality_score(motif) >= cutoff:
+        if compute_functionality_score(motif, params, weighted_variables) >= cutoff:
             funMotifs.append(motif['mid'])
 
     return funMotifs
@@ -146,7 +171,7 @@ def get_functional_motifs_per_tissue(params, tissues: list, weighted_variables: 
         # noinspection PyStatementEffect
         weighted_variables == ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(), 'NumOtherTFBinding'.lower(),
                                'RepliDomain'.lower(), 'TFBinding'.lower(), 'TFExpr'.lower(), 'score'.lower(),
-                               'footprints'.lower(), 'cCRE'.lower(), 'IndexDHS'.lower(), 'RegElem'.lower()]
+                               'footprints'.lower(), 'cCRE'.lower(), 'IndexDHS'.lower(), 'RegElem'.lower(), 'intercept']
     # assert that at least one tissue is given
     assert len(tissues) > 0
 
