@@ -25,5 +25,3 @@ Once the requirements above are met and the main configuration file is set corre
 cd funMotifs/src/
 
 python funMotifsMain.py param_file=../conf/main_parameters.conf
-
-hello
