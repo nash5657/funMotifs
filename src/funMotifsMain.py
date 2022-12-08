@@ -136,178 +136,204 @@ if __name__ == '__main__':
 
     """ Section 2: Overlap between the generated resources and motifs """
 
-    # summarize overlapping motifs and their annotations
-    motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = \
-        MotifAnnotation.run_overlay_resources_score_motifs(params['motif_sites_dir'],
-                                                           params['all_chromatin_makrs_all_cells_combined_dir_path'],
-                                                           params['motifs_overlapping_tracks_output_dir'],
-                                                           run_in_parallel_param,
-                                                           params['number_processes_to_run_in_parallel'],
-                                                           normal_expression_per_tissue_origin_per_TF,
-                                                           matching_tissue_to_cell, motifTFName_TFNames_matches_dict,
-                                                           cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes)
+    if args.m:
 
-    print("Finished Section 2")
+        # summarize overlapping motifs and their annotations
+        motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = \
+            MotifAnnotation.run_overlay_resources_score_motifs(params['motif_sites_dir'],
+                                                               params[
+                                                                   'all_chromatin_makrs_all_cells_combined_dir_path'],
+                                                               params['motifs_overlapping_tracks_output_dir'],
+                                                               run_in_parallel_param,
+                                                               params['number_processes_to_run_in_parallel'],
+                                                               normal_expression_per_tissue_origin_per_TF,
+                                                               matching_tissue_to_cell,
+                                                               motifTFName_TFNames_matches_dict,
+                                                               cells_assays_dict, cell_tfs, tf_cells,
+                                                               assay_cells_datatypes)
 
-    """ Section 3. DB generation """
 
-    # write results to the main cellmotifs table
-    if Utilities.get_value(params['create_database']):
-        import DBUtilities, GenerateCellTable, GenerateTissueTables
 
-        number_processes_to_run_in_parallel = int(params['number_processes_to_run_in_parallel'])
-        db_name = params['db_name'].lower()
-        db_user_name = params['db_user_name']
-        db_host_name = params['db_host_name']
-        cell_table = 'cell_table'
-        tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
-        db_dir = params['db_dir']
-        logfile = params['logfile']
+        """ Section 3. DB generation """
 
-        motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER',
-                      'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
-        motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+        # write results to the main cellmotifs table
+        if Utilities.get_value(params['create_database']):
+            import DBUtilities, GenerateCellTable, GenerateTissueTables
 
-        DBUtilities.start_psql_server(db_dir, logfile)
-        DBUtilities.create_db(db_name, db_user_name, db_host_name)
+            number_processes_to_run_in_parallel = int(params['number_processes_to_run_in_parallel'])
+            db_name = params['db_name'].lower()
+            db_user_name = params['db_user_name']
+            db_host_name = params['db_host_name']
+            cell_table = 'cell_table'
+            tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
+            db_dir = params['db_dir']
+            logfile = params['logfile']
 
-        process_cell_table = Utilities.get_value(params['generate_cell_tables'])
-        if process_cell_table:
-            GenerateCellTable.generate_cell_table(db_name,
-                                                  cell_table,
-                                                  db_user_name,
-                                                  db_host_name,
-                                                  cells_assays_dict,
-                                                  assay_cells_datatypes,
-                                                  run_in_parallel_param=run_in_parallel_param,
-                                                  number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
-                                                  scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
-                                                  motif_cols=motif_cols,
-                                                  motif_cols_names=motif_cols_names,
-                                                  cell_index_name='indexposrange',
-                                                  cell_index_method='gist',
-                                                  cell_index_cols='posrange'
-                                                  )
+            motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER',
+                          'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
+            motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
-        process_tissues = Utilities.get_value(params['generate_tissue_tables'])
-        tissues_fscores_table = "all_tissues"
-        # write results to the tissues (based on cell motifs) table
-        print("check 2")
-        if process_tissues:
-            print('Dropping and Creating tissues tables')
-            GenerateTissueTables.generate_tissue_tables(db_name,
-                                                        cell_table,
-                                                        db_user_name,
-                                                        db_host_name,
-                                                        tissues_fscores_table,
-                                                        assay_cells_datatypes,
-                                                        cell_assays,
-                                                        assay_names,
-                                                        tissue_cell_mappings_file,
-                                                        run_in_parallel_param,
-                                                        number_processes_to_run_in_parallel,
-                                                        scored_motifs_overlapping_tracks_files,
-                                                        motif_cols_names=motif_cols_names,
-                                                        number_of_rows_to_load=250000,
-                                                        annotation_weights_inputfile=params[
-                                                            'annotation_weights_inputfile'],
-                                                        skip_negative_weights=Utilities.get_value(
-                                                            params['skip_negative_weights']),
-                                                        generate_tissue_from_db=Utilities.get_value(
-                                                            params['generate_tissue_from_db'])
-                                                        )
+            DBUtilities.start_psql_server(db_dir, logfile)
+            DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
-        # TODO: remove hard-coded variable
-        # split motif table per chr
-        new_table_name = "motifs"
-
-        # if process_tissues:
-        #    motifs_table = tissues_fscores_table
-        print("check 3")
-        if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name,
-                                               new_table_name):
-
+            process_cell_table = Utilities.get_value(params['generate_cell_tables'])
             if process_cell_table:
-                motifs_table = cell_table
+                GenerateCellTable.generate_cell_table(db_name,
+                                                      cell_table,
+                                                      db_user_name,
+                                                      db_host_name,
+                                                      cells_assays_dict,
+                                                      assay_cells_datatypes,
+                                                      run_in_parallel_param=run_in_parallel_param,
+                                                      number_processes_to_run_in_parallel=number_processes_to_run_in_parallel,
+                                                      scored_motifs_overlapping_tracks_files=scored_motifs_overlapping_tracks_files,
+                                                      motif_cols=motif_cols,
+                                                      motif_cols_names=motif_cols_names,
+                                                      cell_index_name='indexposrange',
+                                                      cell_index_method='gist',
+                                                      cell_index_cols='posrange'
+                                                      )
 
-                GenerateMotifsTables.create_motifs_table(db_name,
-                                                         db_user_name,
-                                                         db_host_name,
-                                                         motifs_table=motifs_table,
-                                                         motif_cols=motif_cols_names,
-                                                         new_table_name=new_table_name)
-            else:
-                GenerateMotifsTables.create_motifs_table_from_file(db_name, db_user_name,
-                                                                   db_host_name,
-                                                                   scored_motifs_overlapping_tracks_files,
-                                                                   motif_cols=motif_cols,
-                                                                   motif_cols_names=motif_cols_names,
-                                                                   new_table_name=new_table_name,
-                                                                   run_in_parallel_param=run_in_parallel_param,
-                                                                   number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
+            process_tissues = Utilities.get_value(params['generate_tissue_tables'])
+            tissues_fscores_table = "all_tissues"
+            # write results to the tissues (based on cell motifs) table
+            print("check 2")
+            if process_tissues:
+                print('Dropping and Creating tissues tables')
+                GenerateTissueTables.generate_tissue_tables(db_name,
+                                                            cell_table,
+                                                            db_user_name,
+                                                            db_host_name,
+                                                            tissues_fscores_table,
+                                                            assay_cells_datatypes,
+                                                            cell_assays,
+                                                            assay_names,
+                                                            tissue_cell_mappings_file,
+                                                            run_in_parallel_param,
+                                                            number_processes_to_run_in_parallel,
+                                                            scored_motifs_overlapping_tracks_files,
+                                                            motif_cols_names=motif_cols_names,
+                                                            number_of_rows_to_load=250000,
+                                                            annotation_weights_inputfile=params[
+                                                                'annotation_weights_inputfile'],
+                                                            skip_negative_weights=Utilities.get_value(
+                                                                params['skip_negative_weights']),
+                                                            generate_tissue_from_db=Utilities.get_value(
+                                                                params['generate_tissue_from_db'])
+                                                            )
 
-            GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name,
-                                                   motifs_table=new_table_name,
-                                                   motif_names_table="motif_names"
-                                                   )
+            # TODO: remove hard-coded variable
+            # split motif table per chr
+            new_table_name = "motifs"
 
-            split_motifs = Utilities.get_value(params['generate_motif_tables'])
-            if split_motifs:
-                GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
-                                                               motifs_table=new_table_name,
-                                                               motif_cols=motif_cols_names,
-                                                               chr_names=list(range(1, 26)))
+            # if process_tissues:
+            #    motifs_table = tissues_fscores_table
+            print("check 3")
+            if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name,
+                                                   new_table_name):
 
-            # get PFM for motifs
-            print("check 4")
-            PFM_table_name = "motifs_pfm"
-            fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(motif_PFM_input_file=params['motif_PFM_file'])
-            GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict, PFM_table_name, db_name,
-                                                    db_user_name, db_host_name,
-                                                    cols=['name text', 'position integer', 'allele char(1)',
-                                                          'freq numeric'],
-                                                    cols_names=['name', 'position', 'allele', 'freq'])
+                if process_cell_table:
+                    motifs_table = cell_table
 
-    # TODO: check at which point created files can be created
+                    GenerateMotifsTables.create_motifs_table(db_name,
+                                                             db_user_name,
+                                                             db_host_name,
+                                                             motifs_table=motifs_table,
+                                                             motif_cols=motif_cols_names,
+                                                             new_table_name=new_table_name)
+                else:
+                    GenerateMotifsTables.create_motifs_table_from_file(db_name, db_user_name,
+                                                                       db_host_name,
+                                                                       scored_motifs_overlapping_tracks_files,
+                                                                       motif_cols=motif_cols,
+                                                                       motif_cols_names=motif_cols_names,
+                                                                       new_table_name=new_table_name,
+                                                                       run_in_parallel_param=run_in_parallel_param,
+                                                                       number_processes_to_run_in_parallel=number_processes_to_run_in_parallel)
+
+                GenerateMotifsTables.motif_names_table(db_name, db_user_name, db_host_name,
+                                                       motifs_table=new_table_name,
+                                                       motif_names_table="motif_names"
+                                                       )
+
+                split_motifs = Utilities.get_value(params['generate_motif_tables'])
+                if split_motifs:
+                    GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
+                                                                   motifs_table=new_table_name,
+                                                                   motif_cols=motif_cols_names,
+                                                                   chr_names=list(range(1, 26)))
+
+                # get PFM for motifs
+                print("check 4")
+                PFM_table_name = "motifs_pfm"
+                fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(
+                    motif_PFM_input_file=params['motif_PFM_file'])
+                GenerateMotifsTables.generate_PFM_table(fre_per_allele_per_motif_dict, PFM_table_name, db_name,
+                                                        db_user_name, db_host_name,
+                                                        cols=['name text', 'position integer', 'allele char(1)',
+                                                              'freq numeric'],
+                                                        cols_names=['name', 'position', 'allele', 'freq'])
+    else:
+        print("Use existing motif annotations from specified data base")
+        # TODO: how to integrate database in here, and something else to do in else statement?
+
+    # TODO: check at which point created files can be deleted
     """ Section 4: Score motifs """
-    print("check 5")
-    cell_table = 'cell_table'
-    datafiles_motifs_dir = params['motif_sites_dir']
 
-    training_data_dir = params['trainings_data_dir']
+    if args.r:
+        print("check 5")
+        cell_table = 'cell_table'
+        datafiles_motifs_dir = params['motif_sites_dir']
 
-    motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
+        training_data_dir = params['trainings_data_dir']
 
-    col_names_to_weight_param = ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(),
-                                 'NumOtherTFBinding'.lower(), 'RepliDomain'.lower(), 'TFBinding'.lower(),
-                                 'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
-                                 'IndexDHS'.lower(), 'RegElem'.lower()]
+        motif_info_col_names = ['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
-    logit_params = WeightFeatures.get_param_weights(training_data_dir, col_names_to_weight_param, db_name,
-                                                    motif_info_col_names, cell_table, db_user_name,
-                                                    cell_name_for_tissue, matching_tissue_to_cell,
-                                                    motif_split_chr=datafiles_motifs_dir)
+        col_names_to_weight_param = ['ChromHMM'.lower(), 'DNase__seq'.lower(), 'FANTOM'.lower(),
+                                     'NumOtherTFBinding'.lower(), 'RepliDomain'.lower(), 'TFBinding'.lower(),
+                                     'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
+                                     'IndexDHS'.lower(), 'RegElem'.lower()]
 
-    print(logit_params.summary())
-    try:
-        print(np.exp(logit_params.params))
-    except:
-        print("No parameters have been computed. Check summary above for more information")
-        # TODO: section 5 cannot happen if we enter this except statement
-        pass
-    print("end of funMotifs")
-    cleanup()
+        logit_params = WeightFeatures.get_param_weights(training_data_dir, col_names_to_weight_param, db_name,
+                                                        motif_info_col_names, cell_table, db_user_name,
+                                                        cell_name_for_tissue, matching_tissue_to_cell,
+                                                        motif_split_chr=datafiles_motifs_dir)
+
+        print(logit_params.summary())
+        try:
+            print(np.exp(logit_params.params))
+        except:
+            print("No parameters have been computed. Check summary above for more information")
+            # TODO: section 5 cannot happen if we enter this except statement: read params from file??? (--> bio wrong)
+            pass
+
+        # TODO: save parameters to file
+
+    else:
+        print("Use existing Regression output")
+        # TODO: load weights from file
 
     """ Section 5: Get the functional motifs per tissue """
 
-    # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
-    funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
-                                                                 tissues=cell_name_for_tissue.keys(),
-                                                                 db_user_name=db_user_name)
+    if args.f:
+        # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
+        funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
+                                                                     tissues=cell_name_for_tissue.keys(),
+                                                                     db_user_name=db_user_name)
+        # TODO: save output to database
+    else:
+        print("Use existing functional Motifs")
+        # TODO: load functional motifs from file or data base
 
     """ Section 6: Overlap motifs with non-coding mutations """
 
-    # crate output files containing functional motifs containing variant for each tissue
-    FindMotifMutations.find_funMotif_variants(funMotifs=funMotifs_per_Tissue, tissues=cell_name_for_tissue.keys(),
-                                              variant_file="", output_file="../results/funMotif_variants/overlap_in_",
-                                              db_user_name=db_user_name)
+    if args.v:
+        # crate output files containing functional motifs containing variant for each tissue
+        FindMotifMutations.find_funMotif_variants(funMotifs=funMotifs_per_Tissue, tissues=cell_name_for_tissue.keys(),
+                                                  variant_file="",
+                                                  output_file="../results/funMotif_variants/overlap_in_",
+                                                  db_user_name=db_user_name)
+        # TODO: save output to database
+    # no else needed, only previous functions were interesting to exectute
+
+    cleanup()
