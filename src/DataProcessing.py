@@ -19,14 +19,10 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
         print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
             for f in glob(data_track):
-                print(f)
                 if os.path.exists(f):
                     # on linux use awk to generate a file per chr
                     if sys.platform == "linux" or sys.platform == "linux2":
-                        print("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
                         os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
-                    else:  # otherwise use readline (it is much slower than awk)
-                        # read the file content and add each line to the chrX file based on col1
                         with open(f, 'r') as fi:
                             l = fi.readline()
                             sl = l.strip().split(sep)
@@ -38,6 +34,7 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
 
         print("Combined data from the listed tracks.")
     else:
+        # TODO: integrate into force_overwrite
         print("Using existing data tracks from: " + data_dir)
     return data_dir
 

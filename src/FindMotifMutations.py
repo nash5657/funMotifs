@@ -104,4 +104,5 @@ def find_funMotif_variants(funMotifs: dict, tissues: list, variant_file: str, db
                                              output_file_tissue, motif_BedTool_file)
 
     # TODO: check where return values are needed (save_as, intersect, etc.)
+    # TODO: can make it once for all functional motifs and prevent computing motifs multiple times
     return

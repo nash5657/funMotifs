@@ -35,7 +35,7 @@ class TestSection1(unittest.TestCase):
         data_dir = DataProcessing.collect_all_data(all_chromatin_makrs_all_cells_combined_dir_path2, data_tracks)
         # check if the created file is the expected output
 
-        with open('InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/chr10.bed', 'r') as a, open(data_dir + '/chr10.bed', 'r') as b:
+        with open('InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/motifs_split_chr_10.bed', 'r') as a, open(data_dir + '/motifs_split_chr_10.bed', 'r') as b:
             differ = difflib.Differ()
             for line in differ.compare(a.readlines(), b.readlines()):
                 print(line)

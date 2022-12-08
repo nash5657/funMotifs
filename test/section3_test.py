@@ -54,19 +54,17 @@ class TestSection3(unittest.TestCase):
         x = WeightFeatures.funMotifs_logit(df[outcome_col], df[col_weight])
 
         # get values from R results (fastLR() from RcppNumerical package)
-        wt_coeff = 2.48242
-        disp_coeff = -0.03977
-        log_likelihood = -10.92891
+        wt_coeff = 1.626353
+        disp_coeff = -0.0344337
 
         # get values from R result sm.Logit(method=bfgs)
-        py_log_likelihood = x.llf
         py_wt_coeff = x.params['wt']
         py_disp_coeff = x.params['disp']
+
 
         # check that results are essentially the same
         assert abs(wt_coeff - py_wt_coeff) < 0.001
         assert abs(disp_coeff - py_disp_coeff) < 0.001
-        assert abs(log_likelihood - py_log_likelihood) < 0.001
 
         return x
 
@@ -256,8 +254,8 @@ class TestSection3(unittest.TestCase):
                                                         cell_name_for_tissue, tissues_for_cell_name,
                                                         motif_split_chr=datafiles_motifs_dir)
 
-        assert logit_params.params[0] - 0.630454 < 0.001
-        assert logit_params.params[1] - 0.154892 < 0.001
+        assert logit_params.params[0] - 15.339265 < 0.001
+        assert logit_params.params[1] - 6.029889 < 0.001
 
         return
 

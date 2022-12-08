@@ -17,7 +17,6 @@ Process: the module has six sections
 6) overlaps the functional motifs with non-coding mutations
 """
 import os
-import sys
 from pybedtools import BedTool, set_tempdir, cleanup
 import argparse
 import numpy as np
@@ -29,10 +28,11 @@ import MotifAnnotation
 import GenerateMotifsTables
 import WeightFeatures
 import GetFunMotifperTissue as gfmt
+import FindMotifMutations
 
 
 def parse_args():
-    '''Parse command line arguments'''
+    """Parse command line arguments"""
     print('funMotifsMain')
     parser = argparse.ArgumentParser(description='funMotifs Main script')
     parser.add_argument('--param_file', default='', help='')
@@ -58,11 +58,9 @@ if __name__ == '__main__':
     set_tempdir(args.temp_dir)
 
     # if force_overwrite, delete results directory to compute section 1 and 2 again
-    #print("Overwrite is: " + args.force_overwrite + " as type ", type(args.force_overwrite))
     if Utilities.get_value(args.force_overwrite):
         # TODO: use specified results directory
         os.system("""rm -rf ../results""")
-        #os.removedirs("../results")
 
     # get run in parallel
     run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
@@ -115,42 +113,27 @@ if __name__ == '__main__':
                                                                     tissues_with_gene_expression=tissues_with_gene_expression)
 
     # Generate mapping from cell types to tissue
-    matching_tissue_to_cell, cell_name_for_tissue = Utilities.cell_to_tissue_matches(params['TissueCellInfo_matches_dict'])
+    matching_tissue_to_cell, cell_name_for_tissue = Utilities.cell_to_tissue_matches(
+        params['TissueCellInfo_matches_dict'])
 
     print("Finished Section 1")
+
     """ Section 2: Overlap between the generated resources and motifs """
 
     # summarize overlapping motifs and their annotations
-    motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = MotifAnnotation.run_overlay_resources_score_motifs(
-        params['motif_sites_dir'],
-        params['all_chromatin_makrs_all_cells_combined_dir_path'],
-        params['motifs_overlapping_tracks_output_dir'],
-        run_in_parallel_param,
-        params['number_processes_to_run_in_parallel'],
-        normal_expression_per_tissue_origin_per_TF,
-        matching_tissue_to_cell,
-        motifTFName_TFNames_matches_dict,
-        cells_assays_dict,
-        cell_tfs,
-        tf_cells,
-        assay_cells_datatypes)
+    motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = \
+        MotifAnnotation.run_overlay_resources_score_motifs(params['motif_sites_dir'],
+                                                           params['all_chromatin_makrs_all_cells_combined_dir_path'],
+                                                           params['motifs_overlapping_tracks_output_dir'],
+                                                           run_in_parallel_param,
+                                                           params['number_processes_to_run_in_parallel'],
+                                                           normal_expression_per_tissue_origin_per_TF,
+                                                           matching_tissue_to_cell, motifTFName_TFNames_matches_dict,
+                                                           cells_assays_dict, cell_tfs, tf_cells, assay_cells_datatypes)
 
     print("Finished Section 2")
 
-    """ Section 3: Score motifs """
-
-    '''
-    Annotation Scores:
-    Collect motifs from the training sets
-    Use the cell_table above to annotate the motifs in the same cell lines
-    Run a log model to generate coeff for each annotation
-    '''
-
-
-
-    # TODO: check if necessary to switch Section 3 and 4
-
-    """ Section 4. DB generation """
+    """ Section 3. DB generation """
 
     # write results to the main cellmotifs table
     if Utilities.get_value(params['create_database']):
@@ -231,13 +214,10 @@ if __name__ == '__main__':
             if process_cell_table:
                 motifs_table = cell_table
 
-                # comment out motif_cols_names as not declared in function definition 
                 GenerateMotifsTables.create_motifs_table(db_name,
                                                          db_user_name,
                                                          db_host_name,
                                                          motifs_table=motifs_table,
-                                                         # motif_cols=motif_cols,
-                                                         # use only the simplified list to prevent syntax error 
                                                          motif_cols=motif_cols_names,
                                                          new_table_name=new_table_name)
             else:
@@ -273,7 +253,7 @@ if __name__ == '__main__':
                                                     cols_names=['name', 'position', 'allele', 'freq'])
 
     # TODO: check at which point created files can be created
-    """ Temporary: Section 3: Score motifs """
+    """ Section 4: Score motifs """
     print("check 5")
     cell_table = 'cell_table'
     datafiles_motifs_dir = params['motif_sites_dir']
@@ -311,3 +291,7 @@ if __name__ == '__main__':
 
     """ Section 6: Overlap motifs with non-coding mutations """
 
+    # crate output files containing functional motifs containing variant for each tissue
+    FindMotifMutations.find_funMotif_variants(funMotifs=funMotifs_per_Tissue, tissues=cell_name_for_tissue.keys(),
+                                              variant_file="", output_file="../results/funMotif_variants/overlap_in_",
+                                              db_user_name=db_user_name)
