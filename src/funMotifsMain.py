@@ -34,9 +34,25 @@ import FindMotifMutations
 def parse_args():
     """Parse command line arguments"""
     print('funMotifsMain')
-    parser = argparse.ArgumentParser(description='funMotifs Main script')
-    parser.add_argument('--param_file', default='', help='')
-    parser.add_argument('--temp_dir', default='', help='')
+    parser = argparse.ArgumentParser(description='Pipeline for funMotifs. Use the flags -M, -R, -F, and -V to specify,'
+                                                 'which parts of the pipeline should be executed. If you use none of'
+                                                 'those, nothing will be executed. Also, specify a file containing the '
+                                                 'necessary parameters and a temporary directory.')
+    parser.add_argument('-m', '--annotateMotifs', action='store_true', help="Set this flag to annotate Motifs and save"
+                                                                            " them to the database. Otherwise the"
+                                                                            " program assumes that a data base of"
+                                                                            " annotated motifs exists already.")
+    parser.add_argument('-r', '--regression', action='store_true', help="Set this flag to run the logistic regression."
+                                                                        " Otherwise previously computed weights will be"
+                                                                        " used from the specified directory.")
+    parser.add_argument('-f', '--findFunMotifs', action='store_true', help="Set this flag to identify functional motifs"
+                                                                           " based on input data and regression "
+                                                                           "output.")
+    parser.add_argument('-v', '--findFunMotifVariants', action='store_true', help="Set this flag to overlap the"
+                                                                                  " functional motifs with the given"
+                                                                                  " genomic variants.")
+    parser.add_argument('-p', '--param_file', help='', required=True)
+    parser.add_argument('-d', '--temp_dir', default='', help='')
     parser.add_argument('--force_overwrite', default=False, type=bool, help="If true, the specified output path will "
                                                                             "be overwritten if it already exists. Else"
                                                                             " the files in the existing path will be"
