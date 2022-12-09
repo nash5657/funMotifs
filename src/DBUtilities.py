@@ -135,3 +135,40 @@ def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
     # print "Created", tissue
     curs.close()
     conn.close()
+
+
+def get_number_of_motifs(table: str, db_name: str, db_user_name: str):
+    """
+    Function that returns the total number of motifs saved in the table
+    """
+    conn = psycopg2.connect(database=db_name, user=db_user_name)
+    curs = conn.cursor()
+    curs.execute(f"""SELECT count(*) from {table}""")
+    num = curs.fetchone()[0]
+    return num
+
+
+def add_column_to_tissue_table(table: str, db_name: str, db_user_name: str, col_name: str, col_type: str):
+    """
+    Function adds an additional column name to the annotated motif data of a tissue
+    """
+    conn = psycopg2.connect(database=db_name, user=db_user_name)
+    cur = conn.cursor()
+    cur.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
+    conn.commit()
+    cur.close()
+    return
+
+
+def update_db_value(value, mid, column, table, db_name, db_user_name):
+    """
+    Function to update a value in a Postgres database
+    """
+    sql = f"UPDATE {table} SET {column} = {value} WHERE mid = {mid}"
+    conn = psycopg2.connect(database=db_name, db_user_name=db_user_name)
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    cur.close()
+    return
+
