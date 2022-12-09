@@ -38,8 +38,10 @@ def get_BedTool_for_functional_motifs(funMotifs: dict, tissue: str, db_user_name
         motifs = motifs + f"{funMotif}, "
     motifs = motifs[:-2] + ")"
 
+    # TODO: remove necessity of motifs, but somehow contain tissue-dependency
     # create sql command
-    sql = f"SELECT chr, motifstart, motifend, name, strand, mid FROM motifs WHERE mid IN {motifs}"
+    sql = f"SELECT chr, motifstart, motifend, name, strand, mid FROM motifs WHERE mid IN {motifs} " \
+          f"AND functionality = 'YES'"
 
     # get data into data frame
     df = pd.read_sql_query(sql, conn)

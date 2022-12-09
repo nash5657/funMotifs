@@ -15,6 +15,7 @@ Output: List of Motifs that are functional according to the following conditions
 """
 import psycopg2
 import pandas as pd
+from DBUtilities import get_number_of_motifs, add_column_to_tissue_table, update_db_value
 
 
 # TODO: check why significance based on myeloid tissue and not tissue-wise?
@@ -63,7 +64,8 @@ def TF_binding_evidence(motif_info) -> bool:
     return False
 
 
-def compute_functionality_score(motif: object, params, weighted_variable: list) -> float:
+def compute_functionality_score(motif: object, params, weighted_variable: list, tissue: str, db_name: str,
+                                db_user_name: str) -> float:
     """
     Function that computes the functionality score of a motif
     """
@@ -74,12 +76,14 @@ def compute_functionality_score(motif: object, params, weighted_variable: list) 
         pass
 
     for var in weighted_variable:
+        # TODO: check type sensitivity
         if motif[var] == "NaN":
-            # TODO: is there a better way to do this?
+            # TODO: is there a better way to do this? --> values should be imputed before this step already
             continue
         # float removes information from data frame that is not necessary (like data type)
         score += float(motif[var]) * float(params[var])
 
+    update_db_value(score, motif['mid'], 'funScore', tissue, db_name, db_user_name)
     return score
 
 
@@ -97,11 +101,12 @@ def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, params, weighte
 
     # get the functionality scores for the functional motifs
     for idx, motif in funMotifs_df.iterrows():
-        funScores.append(compute_functionality_score(motif, params, weighted_variable))
+        funScores.append(compute_functionality_score(motif, params, weighted_variable, tissue, db_name, db_user_name))
 
     # get the functionality scores for the not functional motifs
     for idx, motif in nonFunMotifs_df.iterrows():
-        nonFunScores.append(compute_functionality_score(motif, params, weighted_variable))
+        nonFunScores.append(compute_functionality_score(motif, params, weighted_variable, tissue, db_name,
+                                                        db_user_name))
 
     # compute the significance cutoff
     cutoff = 0
@@ -159,24 +164,15 @@ def get_motif_data_for_tissue(tissue, columns, db_name, db_user_name, mid=None, 
     return result
 
 
-def get_number_of_motifs(table, db_name, db_user_name):
-    """
-    Function that returns the total number of motifs saved in the table
-    """
-    conn = psycopg2.connect(database=db_name, user=db_user_name)
-    curs = conn.cursor()
-    curs.execute(f"""SELECT count(*) from {table}""")
-    num = curs.fetchone()[0]
-    return num
-
-
-# noinspection PyTypeChecker
 def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str, db_user_name: str) -> list:
     """
     Function that returns functional motifs (mid value) based on annotated motifs and the regression weights
     """
-    # get motifs from database (tissue tables)
-    motifs = get_motif_data_for_tissue(tissue, db_name, db_user_name)
+    # add two columns to tissue tables to save functionality score and whether the motif is functional
+    add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="funScore", col_type="real")
+    add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="functionality", col_type="text")
+
+    # lists to store mids of motifs
     funMotifs = []
     nonFunMotifs = []
     compute_score = []
@@ -194,19 +190,28 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
                                         [0][0]):
             if TF_binding_evidence(get_motif_data_for_tissue(tissue, 'tfbinding', db_name, db_user_name, motif)[0][0]):
                 funMotifs.append(motif)
+                update_db_value('YES', motif, 'functionality', tissue, db_name, db_user_name)
+                update_db_value('YES', 'motifs', 'functionality', tissue, db_name, db_user_name)
+
             else:
                 nonFunMotifs.append(motif)
+                update_db_value('NO', motif, 'functionality', tissue, db_name, db_user_name)
         else:
             compute_score.append(motif)
 
     # TODO: if not done tissue-wise: move this to parent function and pass as argument
     # get significance cutoff for functionality score
-    cutoff = get_significance_cutoff(funMotifs, nonFunMotifs, motifs, params, weighted_variables, tissue, db_name,
+    cutoff = get_significance_cutoff(funMotifs, nonFunMotifs, params, weighted_variables, tissue, db_name,
                                      db_user_name)
     for mid in compute_score:
         motif = get_motif_data_for_tissue(tissue, '*', db_name, db_user_name, mid)
-        if compute_functionality_score(motif, params, weighted_variables) >= cutoff:
+        # TODO: save functionality score to database
+        if compute_functionality_score(motif, params, weighted_variables, tissue, db_name, db_user_name) >= cutoff:
             funMotifs.append(motif['mid'])
+            update_db_value('YES', motif, 'functionality', tissue, db_name, db_user_name)
+            update_db_value('YES', 'motifs', 'functionality', tissue, db_name, db_user_name)
+        else:
+            update_db_value('NO', motif, 'functionality', tissue, db_name, db_user_name)
 
     return funMotifs
 
@@ -222,6 +227,8 @@ def get_functional_motifs_per_tissue(params, tissues: list, weighted_variables=N
                               'footprints'.lower(), 'cCRE'.lower(), 'IndexDHS'.lower(), 'RegElem'.lower(), 'intercept']
     # assert that at least one tissue is given
     assert len(tissues) > 0
+
+    add_column_to_tissue_table('motifs', db_name, db_user_name, col_name="functionality", col_type="text")
 
     # TODO: assertion that the column names of the tissue tables (except mid) corresponds to the weighted_variable list
 
