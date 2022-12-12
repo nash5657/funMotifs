@@ -16,19 +16,20 @@ Process: the module has six sections
 5) computes the functional motifs per tissue
 6) overlaps the functional motifs with non-coding mutations
 """
-import os
-from pybedtools import BedTool, set_tempdir, cleanup
 import argparse
-import numpy as np
+import os
 
-import Utilities
+import numpy as np
+from pybedtools import set_tempdir, cleanup
+
 import DataProcessing
-import ProcessTFMotifs
-import MotifAnnotation
-import GenerateMotifsTables
-import WeightFeatures
-import GetFunMotifperTissue as gfmt
 import FindMotifMutations
+import GenerateMotifsTables
+import GetFunMotifperTissue as gfmt
+import MotifAnnotation
+import ProcessTFMotifs
+import Utilities
+import WeightFeatures
 
 
 def parse_args():
@@ -82,6 +83,7 @@ if __name__ == '__main__':
     run_in_parallel_param = Utilities.get_value(params['run_in_parallel_param'])
 
     """Section 1: Collect resources"""
+    # TODO: check which parts of section 1 can be made voluntarily with one of the flags
 
     # Combine all data tracks into a bed4 files one per chr, also record assay types
     data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'],
@@ -152,32 +154,36 @@ if __name__ == '__main__':
                                                                cells_assays_dict, cell_tfs, tf_cells,
                                                                assay_cells_datatypes)
 
-
-
         """ Section 3. DB generation """
 
-        # write results to the main cellmotifs table
+        # write results to the main cell motifs table
+        # TODO: that if statement and parameter should be removed as it is already stated with the flag args.m
         if Utilities.get_value(params['create_database']):
             import DBUtilities, GenerateCellTable, GenerateTissueTables
 
+            # load parameters from parameter file
             number_processes_to_run_in_parallel = int(params['number_processes_to_run_in_parallel'])
             db_name = params['db_name'].lower()
             db_user_name = params['db_user_name']
             db_host_name = params['db_host_name']
+            # TODO: remove hardcoded variable
             cell_table = 'cell_table'
             tissue_cell_mappings_file = params['TissueCellInfo_matches_dict']
             db_dir = params['db_dir']
             logfile = params['logfile']
 
+            # set data base table column names for motif information and their names
             motif_cols = ['mid serial unique', 'posrange int4range', 'chr INTEGER', 'motifstart INTEGER',
                           'motifend INTEGER', 'name text', 'score real', 'pval real', 'strand char(1)']
             motif_cols_names = ['mid', 'posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
 
-            DBUtilities.start_psql_server(db_dir, logfile)
-            DBUtilities.create_db(db_name, db_user_name, db_host_name)
+            # TODO: start psql server
+            # start the psql server
+            # DBUtilities.start_psql_server(db_dir, logfile)
+            # DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
-            process_cell_table = Utilities.get_value(params['generate_cell_tables'])
-            if process_cell_table:
+            # generate cell tables
+            if Utilities.get_value(params['generate_cell_tables']):
                 GenerateCellTable.generate_cell_table(db_name,
                                                       cell_table,
                                                       db_user_name,
@@ -194,11 +200,10 @@ if __name__ == '__main__':
                                                       cell_index_cols='posrange'
                                                       )
 
-            process_tissues = Utilities.get_value(params['generate_tissue_tables'])
+            # TODO: remove hard-coded variable
             tissues_fscores_table = "all_tissues"
-            # write results to the tissues (based on cell motifs) table
-            print("check 2")
-            if process_tissues:
+            # generate tissue tables
+            if Utilities.get_value(params['generate_tissue_tables']):
                 print('Dropping and Creating tissues tables')
                 GenerateTissueTables.generate_tissue_tables(db_name,
                                                             cell_table,
@@ -226,13 +231,10 @@ if __name__ == '__main__':
             # split motif table per chr
             new_table_name = "motifs"
 
-            # if process_tissues:
-            #    motifs_table = tissues_fscores_table
-            print("check 3")
             if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name,
                                                    new_table_name):
 
-                if process_cell_table:
+                if Utilities.get_value(params['generate_cell_tables']):
                     motifs_table = cell_table
 
                     GenerateMotifsTables.create_motifs_table(db_name,
@@ -256,15 +258,13 @@ if __name__ == '__main__':
                                                        motif_names_table="motif_names"
                                                        )
 
-                split_motifs = Utilities.get_value(params['generate_motif_tables'])
-                if split_motifs:
+                if Utilities.get_value(params['generate_motif_tables']):
                     GenerateMotifsTables.split_motifs_table_by_chr(db_name, db_user_name, db_host_name,
                                                                    motifs_table=new_table_name,
                                                                    motif_cols=motif_cols_names,
                                                                    chr_names=list(range(1, 26)))
 
                 # get PFM for motifs
-                print("check 4")
                 PFM_table_name = "motifs_pfm"
                 fre_per_allele_per_motif_dict = Utilities.get_freq_per_motif(
                     motif_PFM_input_file=params['motif_PFM_file'])
