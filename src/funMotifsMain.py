@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
     """ Section 2: Overlap between the generated resources and motifs """
 
-    if args.m:
+    if args.annotateMotifs:
 
         # summarize overlapping motifs and their annotations
         motifs_overlapping_tracks_files, scored_motifs_overlapping_tracks_files = \
@@ -180,7 +180,7 @@ if __name__ == '__main__':
             # TODO: start psql server
             # start the psql server
             # DBUtilities.start_psql_server(db_dir, logfile)
-            # DBUtilities.create_db(db_name, db_user_name, db_host_name)
+            DBUtilities.create_db(db_name, db_user_name, db_host_name)
 
             # generate cell tables
             if Utilities.get_value(params['generate_cell_tables']):
@@ -280,7 +280,7 @@ if __name__ == '__main__':
     # TODO: check at which point created files can be deleted
     """ Section 4: Score motifs """
 
-    if args.r:
+    if args.regression:
         print("check 5")
         cell_table = 'cell_table'
         datafiles_motifs_dir = params['motif_sites_dir']
@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
     """ Section 5: Get the functional motifs per tissue """
 
-    if args.f:
+    if args.findFunMotifs:
         # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
         funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
                                                                      tissues=cell_name_for_tissue.keys(),
@@ -327,7 +327,7 @@ if __name__ == '__main__':
 
     """ Section 6: Overlap motifs with non-coding mutations """
 
-    if args.v:
+    if args.findFunMotifVariants:
         # crate output files containing functional motifs containing variant for each tissue
         FindMotifMutations.find_funMotif_variants(funMotifs=funMotifs_per_Tissue, tissues=cell_name_for_tissue.keys(),
                                                   variant_file="",

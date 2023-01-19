@@ -16,6 +16,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
                       motif_col_names,
                       motif_cols,
                       ):
+    print("Create Cell Table")
     field_names = []
     col_names = []
     field_names.extend(motif_cols)
@@ -36,7 +37,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
             field_names.append(feature + " " + data_type)
 
             col_names.append(feature)
-    print(field_names)
+    print('field_names: \n', field_names)
     # curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
@@ -63,6 +64,9 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
             try:
                 value_marks = ['%s' for i in range(0, len(lines_as_lists[0]))]
                 try:
+                    print("This is here! l.67")
+                    print('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names),
+                                                                             ', '.join(value_marks)), lines_as_lists)
                     curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names),
                                                                              ', '.join(value_marks)), lines_as_lists)
                     conn.commit()
