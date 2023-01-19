@@ -15,6 +15,7 @@ Output: List of Motifs that are functional according to the following conditions
 """
 import psycopg2
 import pandas as pd
+import numpy as np
 from DBUtilities import get_number_of_motifs, add_column_to_tissue_table, update_db_value
 
 
@@ -91,6 +92,8 @@ def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, params, weighte
                             tissue, db_name, db_user_name) -> float:
     """
     Function that determines the cutoff value for a significant functionality score
+    It is assumed that the funScore is normally distributed for functional and non-functional motifs.
+    As cutoff, the interception between both distribution functions (density) is computed.
     """
     # get functional motifs in data frame
     funMotifs_df = get_motif_data_for_tissue(tissue, '*', db_name, db_user_name, mid=funMotifs, df=True)
@@ -98,6 +101,8 @@ def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, params, weighte
 
     funScores = []
     nonFunScores = []
+
+    # TODO: number of motifs here must be sufficiently high
 
     # get the functionality scores for the functional motifs
     for idx, motif in funMotifs_df.iterrows():
@@ -108,10 +113,18 @@ def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, params, weighte
         nonFunScores.append(compute_functionality_score(motif, params, weighted_variable, tissue, db_name,
                                                         db_user_name))
 
-    # compute the significance cutoff
-    cutoff = 0
+    # compute mean and std of scores
+    mu2 = np.mean(funScores)
+    sig2 = np.std(funScores)
+    mu1 = np.mean(nonFunScores)
+    sig1 = np.std(nonFunScores)
 
-    return cutoff
+    # compute the significance cutoff
+    up = sig1 * sig2 * np.sqrt(
+        2 * (sig2 ** 2 - sig1 ** 2) * np.log(sig2 / sig1) + (mu1 - mu2) ** 2) - sig1 ** 2 * mu2 + sig2 ** 2 * mu1
+    low = sig2 ** 2 - sig1 ** 2
+
+    return up / low
 
 
 def make_string_from_list(lst):
@@ -169,6 +182,7 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     Function that returns functional motifs (mid value) based on annotated motifs and the regression weights
     """
     # add two columns to tissue tables to save functionality score and whether the motif is functional
+    # TODO: check that the right values is added to the right columns
     add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="funScore", col_type="real")
     add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="functionality", col_type="text")
 
@@ -206,7 +220,7 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     for mid in compute_score:
         motif = get_motif_data_for_tissue(tissue, '*', db_name, db_user_name, mid)
         # TODO: save functionality score to database
-        if compute_functionality_score(motif, params, weighted_variables, tissue, db_name, db_user_name) >= cutoff:
+        if compute_functionality_score(motif, params, weighted_variables, tissue, db_name, db_user_name) > cutoff:
             funMotifs.append(motif['mid'])
             update_db_value('YES', motif, 'functionality', tissue, db_name, db_user_name)
             update_db_value('YES', 'motifs', 'functionality', tissue, db_name, db_user_name)
