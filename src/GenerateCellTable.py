@@ -57,24 +57,31 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
     with open(i_file, 'r') as ifile:
         print(i_file)
         while True:
-            lines_as_lists = [l.strip().split('\t') for l in list(islice(ifile, n))]
+            # TODO: check change below: [1:] 
+            lines_as_lists = [l.strip().split('\t') for l in list(islice(ifile, n))[1:]]
+            
             if not lines_as_lists:
                 break
             n_processed += len(lines_as_lists)
             try:
-                value_marks = ['%s' for i in range(0, len(lines_as_lists[0]))]
+                # TODO: check change below (len(field_names))
+                value_marks = ['%s' for i in range(0, len(lines_as_lists[1]))]
                 try:
+                    # TODO: %s and types of variables (probably in lines as lists) do not match
                     print("This is here! l.67")
-                    print('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names),
-                                                                             ', '.join(value_marks)), lines_as_lists)
-                    curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names),
-                                                                             ', '.join(value_marks)), lines_as_lists)
+                    # print('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ','.join(value_marks)))
+                    print(len(lines_as_lists[1]), len(value_marks), lines_as_lists[1])
+                    print(len(field_names), len(value_marks), len(lines_as_lists))
+                    # TODO: check change below
+                    curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ','.join(value_marks)), lines_as_lists)
                     conn.commit()
                     print(("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)))
-                except:
+                except Exception as e:
+                    print(e)
                     print(("Thread {} coundn't insert to DB ({})".format(thread_num, i_file)))
             except (ValueError, IndexError):
                 print(("Empty file" + i_file + "in thread" + str(thread_num)))
+                sys.exit()
     curs.close()
     conn.close()
     return

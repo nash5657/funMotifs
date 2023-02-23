@@ -40,7 +40,7 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
             # print(sl)
             key_value = '_'.join(
                 sl[0].strip().replace('(', '').replace(')', '').replace('-', '__').replace('.', '').split())
-            print(key_value)
+            #print(key_value)
             if key_value not in list(tissue_cell_assays.keys()):
                 tissue_cell_assays[key_value] = {}
                 tissue_cell_allassays[key_value] = {}
@@ -1118,7 +1118,7 @@ def generate_tissue_tables(db_name,
                                                                                    assay_names,
                                                                                    tissue_cell_mappings_file,
                                                                                    motif_cols=motif_cols_names)
-    print(col_list)
+    #print(col_list)
     tissue_cols = db_setup_tissues(tissue_cell_allassays,
                                    assay_cells_datatypes,
                                    motif_cols=['mid INTEGER', 'fscore NUMERIC'],

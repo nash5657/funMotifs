@@ -19,7 +19,9 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
         print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
             for f in glob(data_track):
+                print("next data track is ", f, " in ", data_track)
                 if os.path.exists(f):
+                    print("and its path exists")
                     # on linux use awk to generate a file per chr
                     if sys.platform == "linux" or sys.platform == "linux2":
                         os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
