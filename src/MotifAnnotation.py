@@ -124,7 +124,7 @@ def process_scored_motif_per_cell_per_assay(motif_info,
                                             scored_motif_per_cell_per_assay,
                                             cells_assays_dict):
     "Adds values from the dict to a list and imputate values for NaNs from the other tissues when possible "
-
+    
     field_values = ['[{},{})'.format(motif_info[1], str(int(motif_info[2]) + 1))]
     field_values.append(motif_info[0].replace("X", '23').replace('Y', '24').replace('M', '25').replace('chr', ''))
     field_values.append(str(int(motif_info[1])))
@@ -200,8 +200,10 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
             line = motifs_overlapping_tracks_readfile.readline()
             while line:
                 split_line = line.strip().split(sep)
-                # TODO: check if statement
+                
+                # TODO: check if statemen
                 if len(split_line) >= max(index_motif_name, index_track_names) + 1:
+                    
                     reset_cells_assays_dict = reset_cells_assays_matrix(
                         split_line[index_motif_name].split('_')[0].upper(),
                         cells_assays_dict,
@@ -217,14 +219,13 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
                                                                       reset_cells_assays_dict,
                                                                       index_track_names,
                                                                       index_motif_name)  # , run_training, weights_per_param_dict, log_base)
-
                     field_values = process_scored_motif_per_cell_per_assay(split_line[0:index_track_names],
                                                                            scored_motif_per_cell_per_assay,
                                                                            cells_assays_dict)
 
                     scored_motifs_writefile.write('\t'.join(field_values) + '\n')
                     line = motifs_overlapping_tracks_readfile.readline()
-
+                    
     return scored_motifs_chromatin_tracks_output_file
 
 
@@ -253,14 +254,20 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
 
                 print(("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file))
-
-                os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(motif_sites_input_file,
-                                                                        motif_sites_input_file_sorted))
+                motif_sites_unsorted = BedTool(motif_sites_input_file)
+                motif_sites_file_obj = motif_sites_unsorted.sort()
+                #os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(motif_sites_input_file,
+                                                                        #motif_sites_input_file_sorted))
+                #os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file,
+                                                                        #chromatin_tracks_input_file_sorted))
+                # TODO: check - below does not sort numerically as BedTool.sort does not do that either
                 os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file,
                                                                         chromatin_tracks_input_file_sorted))
                 # TODO: chromatin_tracks_input_file contains non Bed-format lines that cause an error in the next line
 
-                motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
+                #motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
+                #print("BedTool object is: ", motif_sites_file_obj)
+                #print("Second BedTool is: ", BedTool(chromatin_tracks_input_file_sorted))
                 motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['collapse']).saveas(
                     motifs_overlapping_tracks_file_tmp)
 
@@ -271,8 +278,8 @@ def overlay_resources_score_motifs(motif_sites_input_file,
 
                         sline = line.split('\t')
                         if len(sline) > 6:
-                            if sline[6] != '.' and sline[6] != ".\n":
-                                my_list = sline[6].split(',')
+                            if sline[7] != '.' and sline[7] != ".\n":
+                                my_list = sline[7].split(',')
                                 cell_assay_values_dict_ChromHMM = {}
                                 cell_assay_values_dict_cCRE = {}
                                 cell_assay_values_dict_IndexDHS = {}
@@ -339,10 +346,10 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                         cell + "#DNase-seq#" + str(max(cell_assay_values_dict_DNaseq[cell])))
 
                                 # TODO: changed 7 to 6 --> control
-                                outfile.write('\t'.join(sline[0:6]) + '\t' + ','.join(elem_list) + '\n')
+                                outfile.write('\t'.join(sline[0:7]) + '\t' + ','.join(elem_list) + '\n')
 
                         line = infile.readline()
-                os.remove(motif_sites_input_file_sorted)
+                #os.remove(motif_sites_input_file_sorted)
                 os.remove(chromatin_tracks_input_file_sorted)
                 os.remove(motifs_overlapping_tracks_file_tmp)
                 print("Finished intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
@@ -350,7 +357,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                 print("Use existing data files in " + motifs_overlapping_tracks_file)
         else:
             print("Specified chromatin track file " + chr_n_file + " cannot be found and will be ignored.")
-
+            return None
         cleanup()
     return motifs_overlapping_tracks_file
 
@@ -427,13 +434,15 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
     print("Finished overlay_resources_score_motifs")
     scored_motifs_overlapping_tracks_files = []
     for motifs_overlapping_tracks_file in motifs_overlapping_tracks_files:
+        if motifs_overlapping_tracks_file is None:
+            continue
         scored_motifs_chromatin_tracks_output_file = '.'.join(
             motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10'
         # create or overwrite scored motif (chromatin-wise) files
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
             print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
             # TODO: control change below
-            index_track_names = 6
+            index_track_names = 7
             index_motif_name = 3
             with open(scored_motifs_chromatin_tracks_output_file, 'w') as scored_motifs_writefile:
                 header_line = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand']
