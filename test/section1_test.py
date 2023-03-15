@@ -18,24 +18,15 @@ import Utilities
 
 
 class TestSection1(unittest.TestCase):
-    '''def test_collect_all_data1(self):
-        """ Test with existing data directory """
-        args = parse_args()
-        params = Utilities.get_params(args.param_file)
-        data_dir = DataProcessing.collect_all_data(params['all_chromatin_makrs_all_cells_combined_dir_path'],
-                                                   params['data_tracks'])
 
-        return'''
-
-    '''
-    def test_collect_all_data2(self):
+    def test_collect_all_data(self):
         """ Test without existing data directory """
         data_tracks = "./InputTestFilesSection1/DataTracks/CAGE_expr_per_peak_all_cells_promoters_enhancers.bed4,./InputTestFilesSection1/DataTracks/RoaDomainsAllGrouped.bed4,./InputTestFilesSection1/DataTracks/RoaLoopsAllGrouped.bed4,./InputTestFilesSection1/DataTracks/ReplicationDomains.bed4,./InputTestFilesSection1/DataTracks/*ChIP-seq.bed4,./InputTestFilesSection1/DataTracks/*_DNase-seq.bed4,./InputTestFilesSection1/DataTracks/*_ChromatinStates.bed4"
-        all_chromatin_makrs_all_cells_combined_dir_path2='./ InputTestFilesSection1 / chromatin_marks_all_cells_onlynarrowpeaks2'
-        data_dir = DataProcessing.collect_all_data(all_chromatin_makrs_all_cells_combined_dir_path2, data_tracks)
+        all_chromatin_makrs_all_cells_combined_dir_path='./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks'
+        data_dir = DataProcessing.collect_all_data(all_chromatin_makrs_all_cells_combined_dir_path, data_tracks)
         # check if the created file is the expected output
 
-        with open('InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/motifs_split_chr_10.bed', 'r') as a, open(data_dir + '/motifs_split_chr_10.bed', 'r') as b:
+        with open('./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/chr10.bed', 'r') as a, open('./InputTestFilesSection1/CollectDataOutput', 'r') as b:
             differ = difflib.Differ()
             for line in differ.compare(a.readlines(), b.readlines()):
                 print(line)
@@ -43,7 +34,7 @@ class TestSection1(unittest.TestCase):
                 self.assertNotEqual(line[0], '+')
         return
    
-
+    '''
     def test_retreive_TFFamilyName_for_motifNames(self):
         # TODO: create further working and not working tests (space-separated, self written column?)
         outcome = {'KEY1': ['KEY1', 'VALUE1'], 'KEY2': ['KEY2', 'VALUE2A', 'VALUE2B'],
@@ -112,7 +103,7 @@ class TestSection1(unittest.TestCase):
         print(x)
         # TODO: implement assert statements
         return x
-    '''
+    
 
     def test_cell_to_tissue_matches(self):
         dict_input_file = "./InputTestFilesSection1/TissueCellMatches"
@@ -121,7 +112,7 @@ class TestSection1(unittest.TestCase):
         assert x == y
 
         return
-
+    '''
 
 if __name__ == '__main__':
     unittest.main()
