@@ -34,48 +34,53 @@ def get_expression_level_per_originType_per_TF(motifTFName_TFNames_matches_dict,
                                                force_overwrite=False):
     tissue_origin_gene_expression_values = {}
 
-    if not force_overwrite or os.path.exists(origin_gene_expression_values_outputfile):
+    if not force_overwrite and os.path.exists(origin_gene_expression_values_outputfile):
         with open(origin_gene_expression_values_outputfile, 'r') as origin_gene_expression_values_infile:
-            # TODO: file format
+            # TODO: check file format
             tissue_origin_gene_expression_values = json.load(origin_gene_expression_values_infile)
         return tissue_origin_gene_expression_values
+
     else:
-        tf_names_to_extract_gene_expression_for = []#list_tf_names_from_tracks#get names of TFs from the TFFamily file and the dirs contaning ChIP-seq datasets
-        for k in list(motifTFName_TFNames_matches_dict.keys()):
+        # reverse motifTFName_TFNames_matches dict to consider all possible names of TFs
+        reversed_motifTFNames_dict = {}
+        for key, values in motifTFName_TFNames_matches_dict.items():
+            for value in values:
+                reversed_motifTFNames_dict[value] = key
+        # list_tf_names_from_tracks
+        # get names of TFs from the TFFamily file and the dirs contaning ChIP-seq datasets
+        tf_names_to_extract_gene_expression_for = []
+        for k in list(reversed_motifTFNames_dict.keys()):
             tf_names_to_extract_gene_expression_for.append(k)
         tf_names_to_extract_gene_expression_for = list(set(tf_names_to_extract_gene_expression_for))
         TFs_extract_expression = get_TFs_extract_expression(tf_names_to_extract_gene_expression_for)
         with open(normal_gene_expression_inputfile) as normal_gene_expression_infile:
             for i in range(0, index_tissues_names_row_start):
-                line = normal_gene_expression_infile.readline()#skip until it gets to the tissue names row
+                line = normal_gene_expression_infile.readline()# skip until it gets to the tissue names row
             tissue_names = normal_gene_expression_infile.readline().strip().split(sep)[index_gene_names_col+1::]
             line = normal_gene_expression_infile.readline()
-            print(tissue_names)
-            print(line)
             
-            #iniatilze the tissue_origin_gene_expression_values matrix
+            # iniatilze the tissue_origin_gene_expression_values matrix
             for tissue in tissue_names:
                 tissue_origin_gene_expression_values[tissue] = {}
                 for tf in TFs_extract_expression:
-                    tissue_origin_gene_expression_values[tissue][tf] = 'NaN'
+                    tissue_origin_gene_expression_values[tissue][reversed_motifTFNames_dict[tf]] = 'NaN'
             while line:
                 gene_name = line.strip().split(sep)[index_gene_names_col].upper()
                 gene_values = line.strip().split(sep)[index_gene_names_col+1::]
                 motif_tf_names_corresponding_to_this_gene = get_tfName_fromGeneName(TFs_extract_expression, gene_name)
-                if len(motif_tf_names_corresponding_to_this_gene)>0:
+                if len(motif_tf_names_corresponding_to_this_gene) > 0:
                     for tf_name in motif_tf_names_corresponding_to_this_gene:
                         for i in range(0, len(tissue_names)):
-                            if tissue_origin_gene_expression_values[tissue][tf_name] == 'NaN':
-                                tissue_origin_gene_expression_values[tissue_names[i]][tf_name] = float(gene_values[i])
+                            if tissue_origin_gene_expression_values[tissue][reversed_motifTFNames_dict[tf_name]] == 'NaN':
+                                tissue_origin_gene_expression_values[tissue_names[i]][reversed_motifTFNames_dict[tf_name]] = float(gene_values[i])
                             else:
-                                tissue_origin_gene_expression_values[tissue_names[i]][tf_name] += float(gene_values[i])
+                                tissue_origin_gene_expression_values[tissue_names[i]][reversed_motifTFNames_dict[tf_name]] += float(gene_values[i])
                 line = normal_gene_expression_infile.readline()
-        #write the results to output file
+        # write the results to output file
         with open(origin_gene_expression_values_outputfile, 'w') as origin_gene_expression_values_outfile:
-            json.dump(tissue_origin_gene_expression_values,origin_gene_expression_values_outfile)
-            #for tissue_name in tissue_origin_gene_expression_values:
-            #    for gene_name in tissue_origin_gene_expression_values[tissue_name]:
-            #        origin_gene_expression_values_outfile.write(tissue_name + sep + gene_name + sep + str(tissue_origin_gene_expression_values[tissue_name][gene_name]) + '\n')
+            json.dump(tissue_origin_gene_expression_values, origin_gene_expression_values_outfile)
+    return tissue_origin_gene_expression_values
+
 
 def get_tfName_fromGeneName(TFs_extract_expression, gene_name):
     motif_tf_names_corresponding_to_this_gene = []
