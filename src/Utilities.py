@@ -56,7 +56,7 @@ def retreive_key_values_from_dict_file(dict_input_file, key_value_sep, values_se
                     values = sl[1].strip().split(values_sep)
                     for value in values:
                         if value not in list(value_key_dict.keys()):
-                            value_key_dict[value] = sl[0].strip()
+                            value_key_dict[value.strip()] = sl[0].strip()
 
     return rep_cell_names, value_key_dict
 

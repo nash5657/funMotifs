@@ -124,11 +124,13 @@ if __name__ == '__main__':
     assay_names = list(assay_cells.keys())
 
     # Generate a default dict based on the information obtained from the tracks in data_dir
-    # TODO: unittest for function
+    # TODO: cell names below only considers the representative names not the alternative ones --> check
+    # work if it is not supposed to contain values , but only 0.0 or 'NO'
     cells_assays_dict = DataProcessing.generate_cells_assays_matrix(cell_assays,
                                                                     cell_names=representative_cell_name,
                                                                     assay_cells_datatypes=assay_cells_datatypes,
-                                                                    tissues_with_gene_expression=tissues_with_gene_expression)
+                                                                    tissues_with_gene_expression=
+                                                                    tissues_with_gene_expression)
 
     # Generate mapping from cell types to tissue
     matching_tissue_to_cell, cell_name_for_tissue = Utilities.cell_to_tissue_matches(

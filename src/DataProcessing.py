@@ -201,8 +201,8 @@ def generate_cells_assays_matrix(cell_assays,
     ''' Generate a default dict based on the information obtained from the tracks in data_dir '''
     cells_assays_dict = {}
     for cell_name in list(cell_assays.keys()):
-        if not (
-                cell_name in cell_names or cell_name in tissues_with_gene_expression):  # only consider cells that are listed in the dict or the gene expr file
+        if not (cell_name in cell_names or cell_name in tissues_with_gene_expression):
+            # only consider cells that are listed in the dict or the gene expr file
             continue
         cells_assays_dict[cell_name] = {}
         for assay_name in cell_assays[cell_name]:
