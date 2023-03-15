@@ -236,7 +236,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
     """intersect motifs with chromatin tracks, sort and group the tracks per motif
     Input: motif instances file (motif pos, name_id, scorePval, strand)
            chromatin data collection file in bed4 format; track pos, track cell#assaytype#value or cell#TFname in case of chip-seq
-    Return a file in bed7 format (motif info (6cols), overlapping_tracks. 
+    Return a file in bed7 format (motif info (6cols), overlapping_tracks).
     """
 
     # for motif_sites_input_file in motif_sites_input_files:
@@ -249,26 +249,14 @@ def overlay_resources_score_motifs(motif_sites_input_file,
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             # create or overwrite output files
             if not os.path.exists(motifs_overlapping_tracks_file):
-                motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
                 chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
-                chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
 
-                print(("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file))
+                print("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
                 motif_sites_unsorted = BedTool(motif_sites_input_file)
                 motif_sites_file_obj = motif_sites_unsorted.sort()
-                #os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(motif_sites_input_file,
-                                                                        #motif_sites_input_file_sorted))
-                #os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file,
-                                                                        #chromatin_tracks_input_file_sorted))
-                # TODO: check - below does not sort numerically as BedTool.sort does not do that either
-                os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file,
-                                                                        chromatin_tracks_input_file_sorted))
-                # TODO: chromatin_tracks_input_file contains non Bed-format lines that cause an error in the next line
+                # TODO: check BedTool sorts below and above
 
-                #motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
-                #print("BedTool object is: ", motif_sites_file_obj)
-                #print("Second BedTool is: ", BedTool(chromatin_tracks_input_file_sorted))
-                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['collapse']).saveas(
+                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file).sort(), c=4, o=['collapse']).saveas(
                     motifs_overlapping_tracks_file_tmp)
 
                 with open(motifs_overlapping_tracks_file_tmp, 'r') as infile, open(motifs_overlapping_tracks_file,
@@ -349,8 +337,7 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                 outfile.write('\t'.join(sline[0:7]) + '\t' + ','.join(elem_list) + '\n')
 
                         line = infile.readline()
-                #os.remove(motif_sites_input_file_sorted)
-                os.remove(chromatin_tracks_input_file_sorted)
+
                 os.remove(motifs_overlapping_tracks_file_tmp)
                 print("Finished intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
             else:
