@@ -1,1 +1,1 @@
-{"TissueA": {"KEY2": "NaN", "KEY4": "NaN", "KEY5": 0.0, "KEY3": 8.294, "KEY1": 0.0}, "TissueB": {"KEY2": "NaN", "KEY4": "NaN", "KEY5": 0.0, "KEY3": 7.283, "KEY1": 0.0}, "TissueC": {"KEY2": "NaN", "KEY4": "NaN", "KEY5": 0.0, "KEY3": 6.109, "KEY1": 0.0}}
+{"TissueA": {"KEY5": 0.0, "KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 8.294}, "TissueB": {"KEY5": 0.0, "KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 7.283}, "TissueC": {"KEY5": 0.0, "KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 6.109}}
