@@ -20,16 +20,18 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
             for f in glob(data_track):
                 if os.path.exists(f):
                     # on linux use awk to generate a file per chr
-                    if sys.platform == "linux" or sys.platform == "linux2":
-                        os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
-                        with open(f, 'r') as fi:
+                    with open(f, 'r') as fi:
+                        l = fi.readline()
+                        sl = l.strip().split(sep)
+                        while len(sl) > 1:
+                            with open(data_dir + '/' + sl[0] + '.bed', 'a') as fo:
+                                # TODO: check if statement below
+                                # add new line if not there to prevent writing two motifs in one line
+                                if l[-1] != '\n':
+                                    l += '\n'
+                                fo.write(l)
                             l = fi.readline()
                             sl = l.strip().split(sep)
-                            while len(sl) > 1:
-                                with open(data_dir + '/' + sl[0] + '.bed', 'a') as fo:
-                                    fo.write(l)
-                                l = fi.readline()
-                                sl = l.strip().split(sep)
 
         print("Combined data from the listed tracks.")
     else:
