@@ -22,34 +22,33 @@ class TestSection1(unittest.TestCase):
     def test_collect_all_data(self):
         """ Test without existing data directory """
         data_tracks = "./InputTestFilesSection1/DataTracks/CAGE_expr_per_peak_all_cells_promoters_enhancers.bed4,./InputTestFilesSection1/DataTracks/RoaDomainsAllGrouped.bed4,./InputTestFilesSection1/DataTracks/RoaLoopsAllGrouped.bed4,./InputTestFilesSection1/DataTracks/ReplicationDomains.bed4,./InputTestFilesSection1/DataTracks/*ChIP-seq.bed4,./InputTestFilesSection1/DataTracks/*_DNase-seq.bed4,./InputTestFilesSection1/DataTracks/*_ChromatinStates.bed4"
-        all_chromatin_makrs_all_cells_combined_dir_path='./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks'
+        all_chromatin_makrs_all_cells_combined_dir_path = './InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks'
         data_dir = DataProcessing.collect_all_data(all_chromatin_makrs_all_cells_combined_dir_path, data_tracks)
         # check if the created file is the expected output
 
-        with open('./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/chr10.bed', 'r') as a, open('./InputTestFilesSection1/CollectDataOutput', 'r') as b:
+        with open('./InputTestFilesSection1/chromatin_marks_all_cells_onlynarrowpeaks/chr10.bed', 'r') as a, open(
+                './InputTestFilesSection1/CollectDataOutput', 'r') as b:
             differ = difflib.Differ()
             for line in differ.compare(a.readlines(), b.readlines()):
                 print(line)
                 self.assertNotEqual(line[0], '-')
                 self.assertNotEqual(line[0], '+')
         return
-   
-    '''
+
     def test_retreive_TFFamilyName_for_motifNames(self):
         # TODO: create further working and not working tests (space-separated, self written column?)
-        outcome = {'KEY1': ['KEY1', 'VALUE1'], 'KEY2': ['KEY2', 'VALUE2A', 'VALUE2B'],
-                   'KEY3': ['KEY3', 'VALUE3A', 'VALUE3B'], 'KEY4': ['KEY4', 'VALUE4'],
+        outcome = {'KEY1': ['KEY1', 'VALUE1'], 'KEY2': ['KEY2', '#VALUE2A', 'VALUE2B'],
+                   'KEY3': ['KEY3', 'VALUE3A', 'VALUE3B'], 'KEY4': ['KEY4', '#VALUE4'],
                    'KEY5': ['KEY5', 'VALUE5A', 'VALUE5B']}
-        TF_family_matches_file = "./InputTestFilesSection1/TFNames_motifNames_mapping"
-        # for unittest purpose when function below is not needed:
-        # TF_family_matches_file = "./InputTestFilesSection1/TFNames_motifNames_mapping"
-        x = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(TF_family_matches_file)
-        # assert x == outcome
+        TF_family_matches_file_test = "./InputTestFilesSection1/TFNames_motifNames_mapping_test"
+        x = ProcessTFMotifs.retreive_TFFamilyName_for_motifNames(TF_family_matches_file_test)
+        assert x == outcome
+        # add return value to call this function in next one
         return x
 
     def test_get_expression_level_per_originType_per_TF(self):
         inputfile = \
-            "./InputTestFilesSection1/GeneExp/GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_median_rpkm_test.gct"
+            "./InputTestFilesSection1/GeneExp/GTEx_Analysis_test.gct"
         motifTFName_TFNames_matches_dict = self.test_retreive_TFFamilyName_for_motifNames()
         x = ProcessTFMotifs.get_expression_level_per_originType_per_TF(
             motifTFName_TFNames_matches_dict,
@@ -58,10 +57,13 @@ class TestSection1(unittest.TestCase):
             index_tissues_names_row_start=2,
             index_gene_names_col=1,
             index_gene_values_start=2,
-            sep='\t')
-        # TODO: create output that actually is output
+            sep='\t', force_overwrite=True)
+        exp_outcome = {"TissueA": {"KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 8.294, "KEY5": 0.0},
+                       "TissueB": {"KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 7.283, "KEY5": 0.0},
+                       "TissueC": {"KEY1": 0.0, "KEY2": "NaN", "KEY4": "NaN", "KEY3": 6.109, "KEY5": 0.0}}
+        assert exp_outcome == x
         return x
-
+'''
     # TODO: write more test files
     def test_retreive_key_values_from_dict_file(self):
         # use this file when testing this function only and use assert statements
