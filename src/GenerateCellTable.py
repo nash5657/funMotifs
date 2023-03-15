@@ -37,7 +37,7 @@ def create_cell_table(db_name, db_user_name, db_host_name,
             field_names.append(feature + " " + data_type)
 
             col_names.append(feature)
-    print('field_names: \n', field_names)
+    
     # curs.execute("DROP TABLE IF EXISTS {}".format(cell_table))
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
@@ -55,11 +55,10 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
     conn = DBUtilities.open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     with open(i_file, 'r') as ifile:
-        print(i_file)
+        list(islice(ifile, 1))
         while True:
-            # TODO: check change below: [1:] 
-            lines_as_lists = [l.strip().split('\t') for l in list(islice(ifile, n))[1:]]
-            
+            lines_as_lists = [l.strip().split('\t') for l in list(islice(ifile, n))]
+                       
             if not lines_as_lists:
                 break
             n_processed += len(lines_as_lists)
@@ -67,12 +66,6 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
                 # TODO: check change below (len(field_names))
                 value_marks = ['%s' for i in range(0, len(lines_as_lists[1]))]
                 try:
-                    # TODO: %s and types of variables (probably in lines as lists) do not match
-                    print("This is here! l.67")
-                    # print('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ','.join(value_marks)))
-                    print(len(lines_as_lists[1]), len(value_marks), lines_as_lists[1])
-                    print(len(field_names), len(value_marks), len(lines_as_lists))
-                    # TODO: check change below
                     curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ','.join(value_marks)), lines_as_lists)
                     conn.commit()
                     print(("Thread {} for ({}) has processed: {}".format(thread_num, i_file, n_processed)))
@@ -111,7 +104,7 @@ def insert_into_db(field_names, db_name, db_user_name, db_host_name,
         p.close()
         p.join()
 
-    print(("Data insertion into {} is done".format(cell_table)))
+    print("Data insertion into {} is done".format(cell_table))
     return
 
 
@@ -127,7 +120,7 @@ def generate_cell_table(db_name,
                         motif_cols,
                         motif_cols_names,
                         cell_index_name, cell_index_method, cell_index_cols):
-    # TODO: should be taken care of by a command line option
+    # TODO: should be taken care of by a command line option)
     if not DBUtilities.table_contains_data(db_name, db_user_name, db_host_name,
                                            cell_table):
         field_names = create_cell_table(db_name, db_user_name, db_host_name,
