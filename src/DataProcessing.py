@@ -16,12 +16,9 @@ def collect_all_data(data_dir, data_tracks, sep='\t'):
     if not os.path.exists(data_dir):
         # delete previous data_dir to prevent errors
         os.makedirs(data_dir)
-        print("Generating chromatin data for all the cells")
         for data_track in data_tracks.split(','):
             for f in glob(data_track):
-                print("next data track is ", f, " in ", data_track)
                 if os.path.exists(f):
-                    print("and its path exists")
                     # on linux use awk to generate a file per chr
                     if sys.platform == "linux" or sys.platform == "linux2":
                         os.system("""awk '{print $0 >> \"""" + data_dir + """/"$1".bed"}' """ + f)
@@ -63,7 +60,6 @@ def get_assay_cell_info(data_dir,
 
         for chr_file in os.listdir(data_dir):
             if "chr" in chr_file:
-                print('reading from: ' + data_dir + '/' + chr_file)
                 with open(data_dir + '/' + chr_file, 'r') as data_infile:
                     l = data_infile.readline()
                     while l:
@@ -95,11 +91,14 @@ def get_assay_cell_info(data_dir,
 
                             try:  # get the cell's rep-name
                                 if cell_name in matching_rep_cell_names_dict[0]:
-                                    rep_cell_names = cell_name
+                                    rep_cell_names = [cell_name]
+                                     
                                 else:
-                                    rep_cell_names = matching_rep_cell_names_dict[1][cell_name]
+                                    rep_cell_names = [matching_rep_cell_names_dict[1][cell_name]]
+                                    
                             except KeyError:
                                 rep_cell_names = [info_col[0]]
+                                
 
                             for cell in rep_cell_names:
                                 try:  # add the cell name to the corresponding assay list in assay_cells
