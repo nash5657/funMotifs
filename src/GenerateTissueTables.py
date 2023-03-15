@@ -23,8 +23,10 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
                              key_value_sep='=',
                              values_sep=',',
                              cell_assay_sepe=':',
-                             motif_cols=['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval',
-                                         'strand']):
+                             motif_cols=None):
+    if motif_cols is None:
+        motif_cols = ['posrange', 'chr', 'motifstart', 'motifend', 'name', 'score', 'pval',
+                      'strand']
     tissue_cell_allassays = {}
     tissue_cell_assays = {}
     col_list = []
@@ -72,8 +74,8 @@ def get_tissue_cell_mappings(cell_assays, assay_names,
                     cell_updated_name = '_'.join(
                         cell_updated.replace('(', '').replace(')', '').replace('-', '__').replace('.', '').replace("'",
                                                                                                                    "").split())
-                    print(cell_updated_name)
-                    print((cell_assays[cell]))
+                    # print(cell_updated_name)
+                    # print((cell_assays[cell]))
                     if ':' in s:
                         assay = s.split(':')[1]
 

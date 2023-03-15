@@ -63,7 +63,6 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
                 break
             n_processed += len(lines_as_lists)
             try:
-                # TODO: check change below (len(field_names))
                 value_marks = ['%s' for i in range(0, len(lines_as_lists[1]))]
                 try:
                     curs.executemany('insert into {} ({}) values({})'.format(cell_table, ', '.join(field_names), ','.join(value_marks)), lines_as_lists)
@@ -74,7 +73,7 @@ def insert_from_file(field_names, i_file, n, db_name, db_user_name,
                     print(("Thread {} coundn't insert to DB ({})".format(thread_num, i_file)))
             except (ValueError, IndexError):
                 print(("Empty file" + i_file + "in thread" + str(thread_num)))
-                sys.exit()
+                # TODO: check: sys.exit()
     curs.close()
     conn.close()
     return
