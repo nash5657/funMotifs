@@ -64,15 +64,14 @@ def get_motif_score(split_line,
                     cells_assays_dict,
                     index_track_names,
                     index_motif_name):  # , run_training, weights_per_param_dict, log_base)
-    """Calculates a score for a given motif per cell line."""
+    """Calculates a score (???) for a given motif per cell line."""
     # fill in the matrix according to the values in track names column
     tf_name_from_motif = split_line[index_motif_name].split('_')[0].upper()
-
     """Get expression value for the current TF in all tissues"""
     for representative_cell in cells_assays_dict:
         try:
             if 'TFExpr' in cells_assays_dict[representative_cell]:
-                if tf_name_from_motif in normal_expression_per_tissue_origin_per_TF[representative_cell]:
+                if tf_name_from_motif in list(normal_expression_per_tissue_origin_per_TF[representative_cell].keys()):
                     if normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif] != 'NaN':
                         cells_assays_dict[representative_cell]['TFExpr'] = float(
                             normal_expression_per_tissue_origin_per_TF[representative_cell][tf_name_from_motif])
@@ -86,11 +85,6 @@ def get_motif_score(split_line,
             matching_tissues_cell = matching_tissue_to_cell[ts[0]]
         except KeyError:
             # skip tracks of cells that have no matching in the rep_cell dict file
-            continue
-        type(matching_tissues_cell)
-        if type(matching_tissues_cell) is not list:
-            matching_tissues_cell = [matching_tissues_cell]
-        if not matching_tissues_cell in list(cells_assays_dict.keys()):
             continue
         for matching_tissue_cell in matching_tissues_cell:
             if len(ts) == 2:
@@ -117,14 +111,17 @@ def get_motif_score(split_line,
                     else:
                         cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] += 1.0
                         cells_assays_dict[matching_tissue_cell]['OtherTFBinding'].append(ts[2])
+
     return cells_assays_dict
 
 
 def process_scored_motif_per_cell_per_assay(motif_info,
                                             scored_motif_per_cell_per_assay,
                                             cells_assays_dict):
-    "Adds values from the dict to a list and imputate values for NaNs from the other tissues when possible "
-    
+    """
+    Adds values from the dict to a list and imputes values for NaNs from the other tissues when possible
+    """
+
     field_values = ['[{},{})'.format(motif_info[1], str(int(motif_info[2]) + 1))]
     field_values.append(motif_info[0].replace("X", '23').replace('Y', '24').replace('M', '25').replace('chr', ''))
     field_values.append(str(int(motif_info[1])))
@@ -200,10 +197,9 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
             line = motifs_overlapping_tracks_readfile.readline()
             while line:
                 split_line = line.strip().split(sep)
-                
-                # TODO: check if statemen
+
+                # TODO: check if statement
                 if len(split_line) >= max(index_motif_name, index_track_names) + 1:
-                    
                     reset_cells_assays_dict = reset_cells_assays_matrix(
                         split_line[index_motif_name].split('_')[0].upper(),
                         cells_assays_dict,
@@ -225,7 +221,7 @@ def score_motifs_per_cell(motifs_overlapping_tracks_file,
 
                     scored_motifs_writefile.write('\t'.join(field_values) + '\n')
                     line = motifs_overlapping_tracks_readfile.readline()
-                    
+
     return scored_motifs_chromatin_tracks_output_file
 
 
@@ -333,12 +329,12 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                                     elem_list.append(
                                         cell + "#DNase-seq#" + str(max(cell_assay_values_dict_DNaseq[cell])))
 
-                                # TODO: changed 7 to 6 --> control
                                 outfile.write('\t'.join(sline[0:7]) + '\t' + ','.join(elem_list) + '\n')
 
                         line = infile.readline()
 
                 os.remove(motifs_overlapping_tracks_file_tmp)
+
                 print("Finished intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
             else:
                 print("Use existing data files in " + motifs_overlapping_tracks_file)
@@ -382,7 +378,6 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
 
     # get list of paths to all motif files
     motif_files_full_path = [motif_sites_dir + '/' + s for s in motif_files]
-    print(motif_files_full_path)
 
     # get list of all files of combined tracks
     chromatin_tracks_files = os.listdir(all_chromatin_makrs_all_cells_combined_dir_path)
@@ -406,7 +401,6 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
         p.join()
     else:
         print("Do not run overlay_resources_score_motifs in parallel")
-        print(motif_files_full_path)
         motifs_overlapping_tracks_files = []
         for i in motif_files_full_path:
             if os.path.exists(i):
@@ -427,7 +421,7 @@ def run_overlay_resources_score_motifs(motif_sites_dir,
             motifs_overlapping_tracks_file.split('.')[0:-1]) + '_scored.bed10'
         # create or overwrite scored motif (chromatin-wise) files
         if not os.path.exists(scored_motifs_chromatin_tracks_output_file):  # score each motif-track_overlapping file
-            print(("computing scores to: " + scored_motifs_chromatin_tracks_output_file))
+            print("computing scores to: " + scored_motifs_chromatin_tracks_output_file)
             # TODO: control change below
             index_track_names = 7
             index_motif_name = 3
