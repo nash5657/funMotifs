@@ -151,7 +151,8 @@ if __name__ == '__main__':
                                                                run_in_parallel_param,
                                                                params['number_processes_to_run_in_parallel'],
                                                                normal_expression_per_tissue_origin_per_TF,
-                                                               matching_tissue_to_cell,
+                                                               #matching_tissue_to_cell,
+                                                               matching_cell_name_representative_dict,
                                                                motifTFName_TFNames_matches_dict,
                                                                cells_assays_dict, cell_tfs, tf_cells,
                                                                assay_cells_datatypes)
