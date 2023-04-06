@@ -83,35 +83,41 @@ def get_motif_score(split_line,
         # check for matching cell names
         try:
             matching_tissues_cell = matching_tissue_to_cell[ts[0]]
+            if isinstance(matching_tissues_cell, str):
+                matching_tissues_cell = [matching_tissues_cell]
         except KeyError:
             # skip tracks of cells that have no matching in the rep_cell dict file
             continue
         for matching_tissue_cell in matching_tissues_cell:
-            if len(ts) == 2:
-                cells_assays_dict[matching_tissue_cell][ts[1]] = 1
-            elif len(ts) == 3 and ts[1] != "TFBinding":
-                if cells_assays_dict[matching_tissue_cell][ts[1]] == 0.0 or cells_assays_dict[matching_tissue_cell][
-                    ts[1]] == 'NO':
-                    try:
-                        cells_assays_dict[matching_tissue_cell][ts[1]] = float(ts[2])
-                    except ValueError:
-                        cells_assays_dict[matching_tissue_cell][ts[1]] = ts[2]
-            elif ts[1] == "TFBinding" and (len(ts) == 3 or len(ts) == 4):
-                # a sample motif name is: ZBTB18_MA0698.1 (name_id) only the first is the factor name
-                if ts[2].upper() == tf_name_from_motif or ts[2].upper() in motifTFName_TFNames_matches_dict[
-                    tf_name_from_motif]:
-                    binding_value = 1.0
-                    if len(ts) == 4:
-                        binding_value = float(ts[3])
-                    cells_assays_dict[matching_tissue_cell][ts[1]] = binding_value
-                else:
-                    if cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] == 0.0:
-                        cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] = 1.0
-                        cells_assays_dict[matching_tissue_cell]['OtherTFBinding'] = [ts[2]]
+            try:
+                if len(ts) == 2:
+                    cells_assays_dict[matching_tissue_cell][ts[1]] = 1
+                elif len(ts) == 3 and ts[1] != "TFBinding":
+                    if cells_assays_dict[matching_tissue_cell][ts[1]] == 0.0 or cells_assays_dict[matching_tissue_cell][
+                        ts[1]] == 'NO':
+                        try:
+                            cells_assays_dict[matching_tissue_cell][ts[1]] = float(ts[2])
+                        except ValueError:
+                            cells_assays_dict[matching_tissue_cell][ts[1]] = ts[2]
+                elif ts[1] == "TFBinding" and (len(ts) == 3 or len(ts) == 4):
+                    # a sample motif name is: ZBTB18_MA0698.1 (name_id) only the first is the factor name
+                    if ts[2].upper() == tf_name_from_motif or ts[2].upper() in motifTFName_TFNames_matches_dict[
+                        tf_name_from_motif]:
+                        binding_value = 1.0
+                        if len(ts) == 4:
+                            binding_value = float(ts[3])
+                        cells_assays_dict[matching_tissue_cell][ts[1]] = binding_value
                     else:
-                        cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] += 1.0
-                        cells_assays_dict[matching_tissue_cell]['OtherTFBinding'].append(ts[2])
-
+                        if cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] == 0.0:
+                            cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] = 1.0
+                            cells_assays_dict[matching_tissue_cell]['OtherTFBinding'] = [ts[2]]
+                        else:
+                            cells_assays_dict[matching_tissue_cell]['NumOtherTFBinding'] += 1.0
+                            cells_assays_dict[matching_tissue_cell]['OtherTFBinding'].append(ts[2])
+            except KeyError:
+                print(matching_tissue_cell, '\t', matching_tissues_cell, '\t', ts)
+                continue
+    #print(cells_assays_dict)
     return cells_assays_dict
 
 
