@@ -278,13 +278,14 @@ if __name__ == '__main__':
                                                         cols_names=['name', 'position', 'allele', 'freq'])
     else:
         print("Use existing motif annotations from specified data base")
+        db_name = params['db_name'].lower()
+        db_user_name = params['db_user_name']
         # TODO: how to integrate database in here, and something else to do in else statement?
 
     # TODO: check at which point created files can be deleted
     """ Section 4: Score motifs """
 
     if args.regression:
-        print("check 5")
         cell_table = 'cell_table'
         datafiles_motifs_dir = params['motif_sites_dir']
 
