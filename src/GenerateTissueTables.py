@@ -147,7 +147,7 @@ def db_setup_tissues(tissue_cell_assays,
 def get_score_from_value(value, assay, feature_weights_dict):
     # TODO: remove function and save original values to database, compute regression values later
     # for now: make function to identity function for value variable
-    """score = 0.0
+    score = 0.0
     try:
         score = feature_weights_dict[value.upper()]  # where the value/label is present in the weights conf file
     except (KeyError, AttributeError):
@@ -164,8 +164,7 @@ def get_score_from_value(value, assay, feature_weights_dict):
         except (KeyError, ValueError):
             #return score
             return value
-    #return score"""
-    return value
+    return score
 
 
 def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays, assay_names,
@@ -220,7 +219,6 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
 
                 tissue_cell_allassays[tissue][assay] = value
                 # value_current_row.append(value)
-
         # values_to_write.append(value_current_row)
         # TODO: check imputing of values below
         # impute missing values
@@ -236,7 +234,7 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                         tissues_with_values.append(float(tissue_cell_allassays[tissue][assay]))
                     except ValueError:
                         tissues_with_values.append(tissue_cell_allassays[tissue][assay])
-
+                        pass
             if len(tissues_with_NaN_values) > 0:
                 if len(tissues_with_values) >= 4:
                     value = 'NaN'
@@ -247,28 +245,25 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
                         value = sum(tissues_with_values) / float(len(tissues_with_values))
                     except TypeError:
                         value = Counter(tissues_with_values).most_common(1)[0][0]
+                        pass
                     if value != 'NaN':
                         for tissue in tissues_with_NaN_values:
                             tissue_cell_allassays[tissue][assay] = value
-
         fscores_per_tissues = [row['mid']]
         for tissue in sorted(tissue_cell_allassays.keys()):
             values_selected_row = [row['mid'], 0.0]
             fscore = 0.0
             for assay in sorted(tissue_cell_allassays[tissue].keys()):
                 values_selected_row.append(tissue_cell_allassays[tissue][assay])
-
                 # compute the final score
                 value = tissue_cell_allassays[tissue][assay]
                 fscore += get_score_from_value(value, assay, feature_weights_dict)
-
             values_selected_row[1] = fscore
             tissues_values[tissue].append(values_selected_row)
             # for the tissues_fscores table
             fscores_per_tissues.append(fscore)
         fscores_per_tissues_allrows.append(fscores_per_tissues)
     print(('t_process (func): ', time.time() - t_process))
-
     # insert all collected values to their respective tables/tissues
     t_insert = time.time()
     for tissue in sorted(tissues_values.keys()):
@@ -278,11 +273,11 @@ def insert_into_tissues(selected_rows, tissue_cell_assays, tissue_cell_allassays
         t_tissues_values = tuple(tissues_values[tissue])
         dataText = ','.join(
             '(' + curs_for_insertion.mogrify(s_chars, row).decode("utf-8") + ')' for row in t_tissues_values)
-        curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue,
-                                                                                                     field_names=field_names,
-                                                                                                     values=dataText))
+        
+        curs_for_insertion.execute('insert into {table_name} ({field_names}) values {values}'.format(table_name=tissue, field_names=field_names, values=dataText))
 
         # insert into tissues_fscores table
+    
     tissues_names_for_fscores = ['mid']
     tissues_names_for_fscores.extend(sorted(tissue_cell_allassays.keys()))
     s_chars_for_fscores = ','.join('%s' for i in range(0, len(tissues_names_for_fscores)))
@@ -432,7 +427,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
             fscores_per_tissues_allrows.append(fscores_per_tissues)
             i += 1
             l = data_infile.readline()
-    print(('t_process (func): ', time.time() - t_process))
+    #print(('t_process (func): ', time.time() - t_process))
 
     # insert all collected values to their respective tables/tissues
     t_insert = time.time()
@@ -467,7 +462,7 @@ def insert_into_tissues_from_file(scored_motifs_overlapping_tracks_files_tissue,
                                                                                       tissues_names_for_fscores),
                                                                                   values=fscores_per_tissues_dataText))
 
-            print(('t_insert (func): ', time.time() - t_insert))
+            #print(('t_insert (func): ', time.time() - t_insert))
             conn.commit()
             print("Data inserted into DB")
         except:
@@ -1025,7 +1020,7 @@ def generate_tissue_tables(db_name,
                                                                                    assay_names,
                                                                                    tissue_cell_mappings_file,
                                                                                    motif_cols=motif_cols_names)
-    # print(col_list)
+    print(col_list, '\n', tissue_cell_assays, '\n', tissue_cell_allassays)
     tissue_cols = db_setup_tissues(tissue_cell_allassays,
                                    assay_cells_datatypes,
                                    motif_cols=['mid INTEGER', 'fscore NUMERIC'],
@@ -1035,6 +1030,7 @@ def generate_tissue_tables(db_name,
     col_list.append('mid')
     feature_weights_dict = get_weights_per_feature(annotation_weights_inputfile=annotation_weights_inputfile,
                                                    skip_negative_weights=skip_negative_weights)
+    print(tissue_cols)
     print('Inserting data into tissues tables')
     if generate_tissue_from_db:
         populate_tissue_values(tissue_cell_assays,
