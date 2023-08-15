@@ -49,7 +49,10 @@ def compute_entropy(infile, outfile, db_name, db_user_name):
     """
     # read file
     with open(infile, 'r') as infile, open(outfile, 'w') as outfile:
-        reader = csv.DictReader(infile, delimiter='\t')
+        header = ["Chr", "Motif_Start", "Motif_End", "Name", "Strand", "mid", "Chr", "Variant_Start", "Variant_End",
+                  "Variant_Classification", "Variant_Type", "Reference_Allele", "Mutated_Allele",
+                  "Tumour_Sample_Barcode", "#Overlapping_Base_Pairs"]
+        reader = csv.DictReader(infile, delimiter='\t', fieldnames=header)
         fieldnames = reader.fieldnames + ['Entropy']
 
         writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter='\t')

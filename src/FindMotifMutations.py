@@ -59,7 +59,7 @@ def get_BedTool_from_variant_file(variant_file: str):
     Function that extracts the essential information of a variant file and returns it as BedTool object
     """
     # TODO: create checks for file format
-    os.system(f"grep -v '#' {variant_file} " + "| awk -F '\t' '{print substr($2, 4), $3, $4, $9}' " +
+    os.system(f"grep -v '#' {variant_file} " + "| awk -F '\t' '{print substr($2, 4), $3, $4, $5, $6, $7, $8, $9}' " +
               f" >{variant_file}_tmp")
     pybedtools.BedTool(variant_file + "_tmp").saveas(variant_file + ".bed_tmp")
     os.system(f"perl -p -i -e 's/ /\t/g' {variant_file}.bed_tmp")
