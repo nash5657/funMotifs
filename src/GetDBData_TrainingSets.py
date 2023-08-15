@@ -64,7 +64,7 @@ def get_col_names_from_cells_assays(col_names, cells, assays, col_names_from_db)
     return ','.join(col_names)
 
 
-def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_table='motifs', cells=['HepG2'],
+def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_table='cell_table', cells=['HepG2'],
                              assays=['all'], number_rows_select='all', sep='\t',
                              col_names=['chr', 'motifstart', 'motifend', 'name', 'score', 'pval', 'strand'],
                              cols_indices_to_report_from_file=[7], cols_names_to_report_from_file=['Activity_Score'],
@@ -73,7 +73,6 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
     #if os.path.exists(df_output_file):
     #    close_connection(conn)
     #    return pd.read_pickle(df_output_file)
-
     curs = conn.cursor()
     cells = updateColNames(cells)
     assays = updateColNames(assays)
@@ -107,6 +106,7 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
             cond_stmt = get_cond_stmt(conds)
             rows = run_query(col_names_to_retrieve, cond_stmt, limit_stmt, cell_table, curs)
             cols_to_report_from_file = []
+            
             for c in cols_indices_to_report_from_file:
                 cols_to_report_from_file.append(sline[c])
             for row in rows:
@@ -115,7 +115,9 @@ def get_cell_info_for_motifs(motifs_input_file, db_name='funmotifsdb', cell_tabl
                 if 'NaN' in lrow or 'nan' in lrow or str(float('nan')) in [str(x) for x in lrow]:
                     # postgres converts NaNs to float('nan') by default
                     continue
+                
                 lrow.extend(cols_to_report_from_file)
+                
                 if lrow[-1] not in list(results_regions.keys()):
                     results_regions[sline[-1]] = [lrow]
                 elif len(results_regions[sline[-1]]) < 1:
@@ -155,6 +157,7 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
     limit_stmt = get_limit_smt(number_rows_select=number_rows_select)
     col_names_to_retrieve = get_col_names_from_cells_assays(col_names, cells, assays, col_names_from_db)
     results_regions = {}
+    
     reported_col_names = col_names_to_retrieve.split(',')
     reported_col_names.extend(cols_names_to_report_from_file)
     #if os.path.exists(df_output_file):
@@ -162,21 +165,24 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
     #    return pd.read_pickle(df_output_file)
 
     number_lines_processed = 0
+    
     with open(regions_input_file, 'r') as regions_infile:
         line = regions_infile.readline()
         while line:
+            
             sline = line.strip().split(sep)
             conds = []
             motif_info_to_query = [sline[0], sline[1], sline[2]]
             # get it from the file
 
             if len(motif_info_to_query) >= 3:
-                conds.append('(chr={} and (posrange = int4range({},{})))'.format(
+                conds.append('(chr={} and (posrange && int4range({},{})))'.format(
                     int(sline[0].replace('X', '23').replace('Y', '24').replace('M', '25').replace('chr', '')),
                     int(sline[1]), int(sline[2]) + 1))
             cond_stmt = get_cond_stmt(conds)
             rows = run_query(col_names_to_retrieve, cond_stmt, limit_stmt, cell_table, curs)
             cols_to_report_from_file = []
+            
             for c in cols_indices_to_report_from_file:
                 cols_to_report_from_file.append(sline[c])
 
@@ -185,6 +191,7 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
                 if 'NaN' in lrow or 'nan' in lrow or (str(float('nan')) in [str(x) for x in lrow]):
                     continue
                 lrow.extend(cols_to_report_from_file)
+                #print("lrow is: ", lrow)
                 if sline[region_name_index] not in list(results_regions.keys()):
                     results_regions[sline[region_name_index]] = [lrow]
                 elif max_number_motifs_to_report == 'all':
@@ -192,7 +199,7 @@ def get_cell_info_for_regions(regions_input_file, db_user_name='', db_name='test
                 elif len(results_regions[sline[region_name_index]]) < max_number_motifs_to_report:
                     results_regions[sline[region_name_index]].append(lrow)
                 else:
-                    # if more than the require motifs was already reported then try to replace reported ones
+                    # TODO: if more than the require motifs was already reported then try to replace reported ones
                     # with better (how?) motifs.
                     for i in range(0, len(results_regions[sline[region_name_index]])):
                         if min_dist_from_region_start:
