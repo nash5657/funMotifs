@@ -149,7 +149,7 @@ def getBed(coordinates_input_file, input_file, output_file):
 
 def tile_prom_regions(MPRA_infile, MPRA_score_per_pos_outfile, experiment_cell_name, cells_to_extract_info_from,
                       motifs_dir, motifs_scored_output_file, df_output_file, db_name, col_names, cell_table,
-                      db_user_name, max_motif_score_per_region=False, sep='\t'):
+                      db_user_name, max_motif_score_per_region=False, sep='\t', col_names_to_weight_param=[]):
     """
         Get MPRA (Activity) score for the motifs
     """
@@ -167,12 +167,12 @@ def tile_prom_regions(MPRA_infile, MPRA_score_per_pos_outfile, experiment_cell_n
                                           col_names=col_names, cell_table=cell_table, db_user_name=db_user_name)
     df_results.to_csv(df_output_file + '.tsv', sep=sep)
 
-    return df_results
+    return change_col_names(df_results, col_names_to_weight_param)
 
 
 def prom_unactive(geneexp_infile, proms_unact_genes_outfile, prom_df_outfile, cells_to_extract_info_from, db_name,
                   db_user_name, col_names, cols_indices_to_report_from_file=[9], assays=['all'], unactive_expr_thresh=0,
-                  gene_expression_index=-1, strand_index=5, sep='\t', num_bp_for_prom=1000, cell_table='cell_table'):
+                  gene_expression_index=-1, strand_index=5, sep='\t', num_bp_for_prom=1000, cell_table='cell_table', col_names_to_weight_param=[]):
     """
         Get those promoters that are inactive, i.e. promoters to unexpressed genes
     """
@@ -186,8 +186,9 @@ def prom_unactive(geneexp_infile, proms_unact_genes_outfile, prom_df_outfile, ce
                                                 cells=cells_to_extract_info_from, assays=assays, cell_table=cell_table,
                                                 df_output_file=prom_df_outfile, col_names=col_names,
                                                 cols_indices_to_report_from_file=cols_indices_to_report_from_file)
+    
     prom_results_df.to_csv(prom_df_outfile + '.tsv', sep=sep)
-    return prom_results_df
+    return change_col_names(prom_results_df, col_names_to_weight_param)
 
 
 def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to_extract_info_from, regions_df_outfile,
@@ -196,7 +197,7 @@ def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to
                         cols_names_to_report_from_file=['Activity_Score'], region_name_index=3,
                         region_strand_index=None, region_score_index=4, motif_score_index=4,
                         max_number_motifs_to_report=1, min_dist_from_region_start=False,
-                        min_dist_from_region_center=True, max_motif_score=False, max_region_score=False):
+                        min_dist_from_region_center=True, max_motif_score=False, max_region_score=False, col_names_to_weight_param=[]):
     """
         Find other active regions in the cell
     """
@@ -214,60 +215,21 @@ def other_active_region(coordinates_infile, infile, other_act_reg_file, cells_to
         min_dist_from_region_center=min_dist_from_region_center, max_motif_score=max_motif_score,
         max_region_score=max_region_score, col_names=col_names, cell_table=cell_table)
     other_active_regions_df.to_csv(regions_df_outfile + '.tsv', sep=sep)
-    return other_active_regions_df
+    return change_col_names(other_active_regions_df, col_names_to_weight_param)
 
 
-def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_reg_data: list,
-               col_names_to_weight_param, db_name, training_dir_results, col_names, cell_table, db_user_name):
+def change_col_names(input_df, col_names_to_weight_param):
     """
-        Gather the data to perform the regression on it
+        Create cell name column in data frame and unify column names
     """
-
-    for data in tile_prom_region_data:
-        MPRA_score_per_pos_outfile = data[1] + '/MPRA_score_per_pos_outfile.txt'
-        motifs_scored_output_file = data[1] + '/motifs_scored_output_file.bed'
-        df_output_file = data[1] + '/motifs_scored_output_dataframe.df'
-
-        df1 = tile_prom_regions(MPRA_infile=data[0],
-                                MPRA_score_per_pos_outfile=MPRA_score_per_pos_outfile,
-                                experiment_cell_name=data[2], cells_to_extract_info_from=data[3],
-                                motifs_dir=data[4],
-                                motifs_scored_output_file=motifs_scored_output_file,
-                                df_output_file=df_output_file, db_name=db_name,
-                                db_user_name=db_user_name, col_names=col_names,
-                                cell_table=cell_table)
-
-    for data in prom_unactive_data:
-        proms_unact_genes_outfile = data[1] + '/' + data[0].split('/')[-1].split('.')[0] + '_unactive_proms.bed'
-        prom_df_outfile = data[1] + '/' + data[0].split('/')[-1].split('.')[0] + '_unactive_proms.df'
-
-        df2 = prom_unactive(geneexp_infile=data[0],
-                            proms_unact_genes_outfile=proms_unact_genes_outfile,
-                            prom_df_outfile=prom_df_outfile, cells_to_extract_info_from=data[2],
-                            db_name=db_name, db_user_name=db_user_name, col_names=col_names, cell_table=cell_table)
-
-    for data in other_act_reg_data:
-        other_act_reg_file = data[1] + '/output.bed'
-        regions_df_outfile = data[1] + '/output_motifs.df'
-
-        df3 = other_active_region(coordinates_infile=data[0], infile=data[2],
-                                  other_act_reg_file=other_act_reg_file,
-                                  cells_to_extract_info_from=data[3],
-                                  regions_df_outfile=regions_df_outfile, db_name=db_name,
-                                  db_user_name=db_user_name, col_names=col_names, cell_table=cell_table)
-    # TODO: check difference and use of prom_unactive and other_active_region
-    # combine data frames
-    combined_results = pd.concat([df1, df2, df3])
-    # create data frame for return values
     dfout = pd.DataFrame()
     dfout_filename = "dfout_file"
     cell_name = ""
-
     # get columns that should be weighted
-    if len(combined_results) > 0:
+    if len(input_df) > 0:
         outcome_col = 'Activity_Score'
         cols_to_weight = []
-        for c in combined_results.columns:
+        for c in input_df.columns:
             if c.split('___')[-1] in col_names_to_weight_param:
                 cols_to_weight.append(c)
 
@@ -280,9 +242,8 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
                 break
 
         # add columns that shall be weighted into data frame
-        dfout = combined_results.loc[:, cols_to_weight]
-        dfout[outcome_col] = combined_results.loc[:, outcome_col]
-
+        dfout = input_df.loc[:, cols_to_weight]
+        dfout[outcome_col] = input_df.loc[:, outcome_col]
         # add cell names to data frame
         cell_name_series = pd.Series([cell_name for x in range(0, len(dfout))], name='CellName')
         dfout['CellName'] = cell_name_series
@@ -296,14 +257,65 @@ def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_
                 dfout_cols[c.encode('ascii', 'ignore')] = c.encode('ascii', 'ignore').lower()
 
         # format data frame and convert to csv
-        if not os.path.exists(training_dir_results):
-            os.makedirs(training_dir_results)
+        #if not os.path.exists(training_dir_results):
+        #    os.makedirs(training_dir_results)
+        
         dfout.rename(columns=dfout_cols, inplace=True)
-        dfout.to_csv(training_dir_results + dfout_filename, sep='\t')
+        #dfout.to_csv(training_dir_results + dfout_filename, sep='\t')
 
-    dfout['activity_score'] = dfout['activity_score'].astype(float)
+    dfout['activity_score'] = dfout['activity_score'].astype(float) 
+    
+    return dfout
 
-    return dfout.reset_index(drop=True)
+def run_subset(tile_prom_region_data: list, prom_unactive_data: list, other_act_reg_data: list,
+               col_names_to_weight_param, db_name, training_dir_results, col_names, cell_table, db_user_name):
+    """
+        Gather the data to perform the regression on it
+    """
+    df1 = pd.DataFrame()
+    df2 = pd.DataFrame()
+    df3 = pd.DataFrame()
+    print("Run subset:", tile_prom_region_data, '\t', prom_unactive_data, '\t', other_act_reg_data)
+    # TODO: identify error and remove - this is a work-around. At some point col_names gets modified, which it should not
+    orig_col = col_names.copy()
+    for data in tile_prom_region_data:
+        orig_col = col_names.copy()
+        MPRA_score_per_pos_outfile = data[1] + '/MPRA_score_per_pos_outfile.txt'
+        motifs_scored_output_file = data[1] + '/motifs_scored_output_file.bed'
+        df_output_file = data[1] + '/motifs_scored_output_dataframe.df'
+        df1 = pd.concat([df1, tile_prom_regions(MPRA_infile=data[0],
+                                MPRA_score_per_pos_outfile=MPRA_score_per_pos_outfile,
+                                experiment_cell_name=data[2], cells_to_extract_info_from=data[3],
+                                motifs_dir=data[4],
+                                motifs_scored_output_file=motifs_scored_output_file,
+                                df_output_file=df_output_file, db_name=db_name,
+                                db_user_name=db_user_name, col_names=orig_col,
+                                cell_table=cell_table, col_names_to_weight_param=col_names_to_weight_param)], ignore_index = True, join = 'outer')
+
+    for data in prom_unactive_data:
+        orig_col = col_names.copy()
+        proms_unact_genes_outfile = data[1] + '/' + data[0].split('/')[-1].split('.')[0] + '_unactive_proms.bed'
+        prom_df_outfile = data[1] + '/' + data[0].split('/')[-1].split('.')[0] + '_unactive_proms.df'
+        
+        df2 = pd.concat([df2, prom_unactive(geneexp_infile=data[0],
+                            proms_unact_genes_outfile=proms_unact_genes_outfile,
+                            prom_df_outfile=prom_df_outfile, cells_to_extract_info_from=data[2],
+                            db_name=db_name, db_user_name=db_user_name, col_names=orig_col, cell_table=cell_table, col_names_to_weight_param=col_names_to_weight_param)], ignore_index = True, join = 'outer')
+
+    for data in other_act_reg_data:
+        other_act_reg_file = data[1] + '/output.bed'
+        regions_df_outfile = data[1] + '/output_motifs.df'
+        orig_col = col_names.copy()
+        df3 = pd.concat([df3, other_active_region(coordinates_infile=data[0], infile=data[2],
+                                  other_act_reg_file=other_act_reg_file,
+                                  cells_to_extract_info_from=data[3],
+                                  regions_df_outfile=regions_df_outfile, db_name=db_name,
+                                  db_user_name=db_user_name, col_names=orig_col, cell_table=cell_table, col_names_to_weight_param=col_names_to_weight_param)], ignore_index = True, join = 'outer')
+    
+    # combine data frames
+    combined_results = pd.concat([df1, df2, df3], ignore_index = True, axis = 0, join = "outer")
+    
+    return combined_results.reset_index(drop=True)
 
 
 def make_binary(x, f=0):
@@ -329,6 +341,9 @@ def inf_to_zero(x):
 
 
 def combine_lables(x):
+    #print("combine labels - x is: ", x)
+    # TODO: check change below
+    x = str(x)
     if 'Tss' in x or 'Tx' in x or 'BivFlnk' in x:
         return 'TSS'
     elif 'Enh' in x:
@@ -352,36 +367,58 @@ def get_coeff(df, cols_to_weight, outcome_col, col_names_to_weight_param, dfout_
     # TODO: isn't this unnecessary???
     new_df[outcome_col] = new_df[outcome_col]
 
+    print("new df is: \n", new_df)
     # prepare values for parameter calculation (make binary etc.)
     for c in cols_to_weight:
+        print("c is:", c)
+        print("df[c] is: ", df[c])
+        print("with d types: ", df[c].dtypes)
+        # TODO: sometimes new df is newly defined - why? - error?
         if c not in col_names_to_weight_param:
+            print("c not in cols to weight: ", c)
             continue
         if c == 'DNase__seq'.lower() or c == 'TFBinding'.lower() or c == 'FANTOM'.lower() or c == 'footprints'.lower():
             new_df[c] = df[c].apply(make_binary, args=(0,))
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
         elif c == 'NumOtherTFBinding'.lower():
             new_df[c] = df[c]
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
         elif c == 'RepliDomain'.lower() or c == 'CellName'.lower() or c == 'name' or c == 'IndexDHS'.lower() or \
                 c == 'cCRE'.lower() or c == 'RegElem'.lower():
             df_dummies = pd.get_dummies(df[c])
+            print("df_dummies is: ", df_dummies)
             new_df = pd.concat([new_df, df_dummies], axis=1)
+            #new_df[c] = df_dummies
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
         elif c == 'ChromHMM'.lower():
             df[c] = df[c].apply(combine_lables)
             df_dummies = pd.get_dummies(df[c])
+            print("df_dummies is: ", df_dummies)
             new_df = pd.concat([new_df, df_dummies], axis=1)
+            #new_df[c] = df_dummies
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
         elif c == 'score'.lower():
             new_df[c] = df[c]
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
         elif c == 'TFExpr'.lower():
             new_df[c] = df[c].apply(float).apply(np.log10).apply(inf_to_zero)
-
+            print("in loop: c is: ", c, " and new_df is: \n", new_df)
+    
     new_cols_to_weight = [c for c in new_df.columns]
-
+    print("now new df is: \n", new_df)
+    print("new cols to weight: \n", new_cols_to_weight)
     # new_cols_to_weight = [c.encode('ascii','ignore') for c in new_df.columns]
 
     while 'NO' in new_cols_to_weight:  # remove NO == no overlap labels
         del new_cols_to_weight[new_cols_to_weight.index('NO')]
+    # TODO: check where NO and nan are coming from and where are remaining cols not in this array
+    while 'nan' in new_cols_to_weight:
+        del new_cols_to_weight[new_cols_to_weight.index('nan')]
 
+    print("now new cols to weight: \n", new_cols_to_weight)
     df.to_csv(dfout_filename + '_raw.tsv', sep='\t')
     new_df.to_csv(dfout_filename, sep='\t')
+    print("new df saved at: ", dfout_filename)
 
     del new_cols_to_weight[new_cols_to_weight.index(outcome_col)]
 
@@ -470,7 +507,7 @@ def get_param_weights(training_data_dir, col_names_to_weight_param, db_name, mot
     prom_unactive_path = training_data_dir + '/prom_unactive'
     other_act_reg_path = training_data_dir + '/other_active_region'
     training_dir_results = training_data_dir + '/training_results/'
-
+    
     tile_prom_region_data = get_trainings_data_dirs(tile_prom_region_path, cell_name_for_tissue, tissue_for_cell_name,
                                                     motif_split_chr)
     prom_unactive_data = get_trainings_data_dirs(prom_unactive_path, cell_name_for_tissue, tissue_for_cell_name)
