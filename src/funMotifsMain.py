@@ -20,7 +20,7 @@ import argparse
 import os
 
 import numpy as np
-from pybedtools import set_tempdir, cleanup
+from pybedtools import set_tempdir
 
 import DataProcessing
 import FindMotifMutations
@@ -30,6 +30,8 @@ import MotifAnnotation
 import ProcessTFMotifs
 import Utilities
 import WeightFeatures
+import Entropy
+import glob
 
 
 def parse_args():
@@ -151,7 +153,7 @@ if __name__ == '__main__':
                                                                run_in_parallel_param,
                                                                params['number_processes_to_run_in_parallel'],
                                                                normal_expression_per_tissue_origin_per_TF,
-                                                               #matching_tissue_to_cell,
+                                                               # matching_tissue_to_cell,
                                                                matching_cell_name_representative_dict,
                                                                motifTFName_TFNames_matches_dict,
                                                                cells_assays_dict, cell_tfs, tf_cells,
@@ -323,13 +325,14 @@ if __name__ == '__main__':
         # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
         funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
                                                                      tissues=cell_name_for_tissue.keys(),
+                                                                     db_name=db_name,
                                                                      db_user_name=db_user_name)
         # TODO: save output to database
     else:
         print("Use existing functional Motifs")
         # TODO: load functional motifs from file or data base
 
-    """ Section 6: Overlap motifs with non-coding mutations """
+    """ Section 6: Overlap motifs with non-coding mutations and compute entropy """
 
     if args.findFunMotifVariants:
         # crate output files containing functional motifs containing variant for each tissue
@@ -337,7 +340,9 @@ if __name__ == '__main__':
                                                   variant_file="",
                                                   output_file="../results/funMotif_variants/overlap_in_",
                                                   db_user_name=db_user_name)
+        # compute entropy for each tissue
+        for file in glob.glob("../results/funMotif_variants/overlap_in_*"):
+            Entropy.compute_entropy(infile=file, outfile=file + "_with_Entropy", db_name=db_name,
+                                    db_user_name=db_user_name)
         # TODO: save output to database
-    # no else needed, only previous functions were interesting to exectute
-
-    cleanup()
+    # no else needed, only previous functions were interesting to execute
