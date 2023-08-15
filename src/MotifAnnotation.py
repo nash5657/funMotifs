@@ -93,12 +93,15 @@ def get_motif_score(split_line,
                 if len(ts) == 2:
                     cells_assays_dict[matching_tissue_cell][ts[1]] = 1
                 elif len(ts) == 3 and ts[1] != "TFBinding":
+                    print("track is: ", ts)
                     if cells_assays_dict[matching_tissue_cell][ts[1]] == 0.0 or cells_assays_dict[matching_tissue_cell][
                         ts[1]] == 'NO':
                         try:
                             cells_assays_dict[matching_tissue_cell][ts[1]] = float(ts[2])
+                            print("try successful with: ", cells_assays_dict[matching_tissue_cell][ts[1]])
                         except ValueError:
                             cells_assays_dict[matching_tissue_cell][ts[1]] = ts[2]
+                            print("try not successful with: ", cells_assays_dict[matching_tissue_cell][ts[1]])
                 elif ts[1] == "TFBinding" and (len(ts) == 3 or len(ts) == 4):
                     # a sample motif name is: ZBTB18_MA0698.1 (name_id) only the first is the factor name
                     if ts[2].upper() == tf_name_from_motif or ts[2].upper() in motifTFName_TFNames_matches_dict[
@@ -251,16 +254,20 @@ def overlay_resources_score_motifs(motif_sites_input_file,
             motifs_overlapping_tracks_file_tmp = motifs_overlapping_tracks_file + '_tmp'
             # create or overwrite output files
             if not os.path.exists(motifs_overlapping_tracks_file):
-                chromatin_tracks_input_file = chromatin_tracks_dir_path + '/' + chr_n_file
-
+                                
+                motif_sites_input_file_sorted = motif_sites_input_file + '_sorted'
+                chromatin_tracks_input_file = chromatin_tracks_dir_path +'/'+ chr_n_file
+                chromatin_tracks_input_file_sorted = chromatin_tracks_input_file + '_sorted'
+                
                 print("intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
-                motif_sites_unsorted = BedTool(motif_sites_input_file)
-                motif_sites_file_obj = motif_sites_unsorted.sort()
-                # TODO: check BedTool sorts below and above
+                
+                os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(motif_sites_input_file, motif_sites_input_file_sorted))
+                os.system("""sort -k1,1 -k2,2n -k3,3n {} > {}""".format(chromatin_tracks_input_file, chromatin_tracks_input_file_sorted))
+                
 
-                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file).sort(), c=4, o=['collapse']).saveas(
-                    motifs_overlapping_tracks_file_tmp)
-
+                motif_sites_file_obj = BedTool(motif_sites_input_file_sorted)
+                motif_sites_file_obj.map(BedTool(chromatin_tracks_input_file_sorted), c=4, o=['collapse']).saveas(motifs_overlapping_tracks_file_tmp)
+                
                 with open(motifs_overlapping_tracks_file_tmp, 'r') as infile, open(motifs_overlapping_tracks_file,
                                                                                    'w') as outfile:
                     line = infile.readline()
@@ -340,6 +347,8 @@ def overlay_resources_score_motifs(motif_sites_input_file,
                         line = infile.readline()
 
                 os.remove(motifs_overlapping_tracks_file_tmp)
+                os.remove(motif_sites_input_file_sorted)
+                os.remove(chromatin_tracks_input_file_sorted)
 
                 print("Finished intersecting: " + motif_sites_input_file + ' and ' + chromatin_tracks_input_file)
             else:
