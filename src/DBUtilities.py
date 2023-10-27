@@ -137,24 +137,28 @@ def create_table_stmt_parallel(db_name, db_user_name, db_host_name,
     conn.close()
 
 
-def get_number_of_motifs(table: str, db_name: str, db_user_name: str):
+def get_number_of_motifs(table: str, db_name: str, db_user_name: str, db_host_name: str):
     """
     Function that returns the total number of motifs saved in the table
     """
-    conn = psycopg2.connect(database=db_name, user=db_user_name)
+    #conn = psycopg2.connect(database=db_name, user=db_user_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     curs = conn.cursor()
     curs.execute(f"""SELECT count(*) from {table}""")
     num = curs.fetchone()[0]
+    conn.commit()
+    curs.close()
     return num
 
 
-def add_column_to_tissue_table(table: str, db_name: str, db_user_name: str, col_name: str, col_type: str):
+def add_column_to_tissue_table(table: str, db_name: str, db_user_name: str, db_host_name: str, col_name: str, col_type: str):
     """
     Function adds an additional column name to the annotated motif data of a tissue
     """
-    conn = psycopg2.connect(database=db_name, user=db_user_name)
+    #conn = psycopg2.connect(database=db_name, user=db_user_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     cur = conn.cursor()
-    cur.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
+    cur.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col_name} {col_type}")
     conn.commit()
     cur.close()
     return
