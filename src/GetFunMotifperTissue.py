@@ -16,7 +16,7 @@ Output: List of Motifs that are functional according to the following conditions
 import psycopg2
 import pandas as pd
 import numpy as np
-from DBUtilities import get_number_of_motifs, add_column_to_tissue_table, update_db_value
+from DBUtilities import get_number_of_motifs, add_column_to_tissue_table, update_db_value, open_connection
 
 
 # TODO: check why significance based on myeloid tissue and not tissue-wise?
@@ -31,6 +31,7 @@ def DHS_present(motif_info) -> bool:
     elif motif_info == 'YES':
         return True
     else:
+        print("DHS:", motif_info)
         raise Exception("Unexpected DHS format")
 
 
@@ -119,7 +120,7 @@ def get_significance_cutoff(funMotifs: list, nonFunMotifs: list, params, weighte
     mu1 = np.mean(nonFunScores)
     sig1 = np.std(nonFunScores)
 
-    # compute the significance cutoff
+    # compute the significance cutoff (intersection of distributions of scores of functional vs. non-functional motifs)
     up = sig1 * sig2 * np.sqrt(
         2 * (sig2 ** 2 - sig1 ** 2) * np.log(sig2 / sig1) + (mu1 - mu2) ** 2) - sig1 ** 2 * mu2 + sig2 ** 2 * mu1
     low = sig2 ** 2 - sig1 ** 2
@@ -141,13 +142,14 @@ def make_string_from_list(lst):
     return sql
 
 
-def get_motif_data_for_tissue(tissue, columns, db_name, db_user_name, mid=None, df: bool = False) -> object:
+def get_motif_data_for_tissue(tissue, columns, db_name, db_user_name, db_host_name, mid=None, df: bool = False) -> object:
     """
     Function that given a tissue returns the data of a database for this tissue as data frame
     """
     # TODO: or only return one motif at a time
     # establish connection
-    conn = psycopg2.connect(database=db_name, user=db_user_name)
+    #conn = psycopg2.connect(database=db_name, user=db_user_name)
+    conn = open_connection(db_name, db_user_name, db_host_name)
     cur = conn.cursor()
 
     col = make_string_from_list(columns)
@@ -173,18 +175,18 @@ def get_motif_data_for_tissue(tissue, columns, db_name, db_user_name, mid=None, 
 
     # close connection
     conn.close()
-
+    print("result of get motif data from tissue", tissue, "for motif ", mid, "  is: \n", result)
     return result
 
 
-def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str, db_user_name: str) -> list:
+def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str, db_user_name: str, db_host_name: str) -> list:
     """
     Function that returns functional motifs (mid value) based on annotated motifs and the regression weights
     """
     # add two columns to tissue tables to save functionality score and whether the motif is functional
     # TODO: check that the right values is added to the right columns
-    add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="funScore", col_type="real")
-    add_column_to_tissue_table(tissue, db_name, db_user_name, col_name="functionality", col_type="text")
+    add_column_to_tissue_table(tissue, db_name, db_user_name, db_host_name, col_name="funScore", col_type="real")
+    add_column_to_tissue_table(tissue, db_name, db_user_name, db_host_name, col_name="functionality", col_type="text")
 
     # lists to store mids of motifs
     funMotifs = []
@@ -193,16 +195,19 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
 
     # get number of motifs
     # TODO: remove hard-coded motifs
-    num_motifs = get_number_of_motifs("motifs", db_name, db_user_name)
+    num_motifs = get_number_of_motifs("motifs", db_name, db_user_name, db_host_name)
 
     # loop over motifs
     for motif in range(1, num_motifs + 1):
-        if not DHS_present(get_motif_data_for_tissue(tissue, 'dnase__seq', db_name, db_user_name, motif)[0][0]) or not \
-                TFs_expressed(get_motif_data_for_tissue(tissue, 'tfexpr', db_name, db_user_name, motif)[0][0]):
+        if get_motif_data_for_tissue(tissue, 'dnase__seq', db_name, db_user_name, db_host_name, motif) == []:
+            print("empty")
+            continue
+        if not DHS_present(get_motif_data_for_tissue(tissue, 'indexdhs', db_name, db_user_name, db_host_name, motif)[0][0]) or not \
+                TFs_expressed(get_motif_data_for_tissue(tissue, 'tfexpr', db_name, db_user_name, db_host_name, motif)[0][0]):
             nonFunMotifs.append(motif)
-        elif TF_ChIP_seq_data_available(get_motif_data_for_tissue(tissue, 'tfbinding', db_name, db_user_name, motif)
+        elif TF_ChIP_seq_data_available(get_motif_data_for_tissue(tissue, 'tfbinding', db_name, db_user_name, db_host_name, motif)
                                         [0][0]):
-            if TF_binding_evidence(get_motif_data_for_tissue(tissue, 'tfbinding', db_name, db_user_name, motif)[0][0]):
+            if TF_binding_evidence(get_motif_data_for_tissue(tissue, 'tfbinding', db_name, db_user_name, db_host_name, motif)[0][0]):
                 funMotifs.append(motif)
                 update_db_value('YES', motif, 'functionality', tissue, db_name, db_user_name)
                 update_db_value('YES', 'motifs', 'functionality', tissue, db_name, db_user_name)
@@ -218,7 +223,7 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
     cutoff = get_significance_cutoff(funMotifs, nonFunMotifs, params, weighted_variables, tissue, db_name,
                                      db_user_name)
     for mid in compute_score:
-        motif = get_motif_data_for_tissue(tissue, '*', db_name, db_user_name, mid)
+        motif = get_motif_data_for_tissue(tissue, '*', db_name, db_user_name, db_host_name, mid)
         # TODO: save functionality score to database
         if compute_functionality_score(motif, params, weighted_variables, tissue, db_name, db_user_name) > cutoff:
             funMotifs.append(motif['mid'])
@@ -231,7 +236,7 @@ def get_functional_motifs(params, tissue, weighted_variables: list, db_name: str
 
 
 def get_functional_motifs_per_tissue(params, tissues: list, weighted_variables=None,
-                                     db_name: str = "funmotifsdb", db_user_name: str = "") -> dict:
+                                     db_name: str = "funmotifsdb", db_user_name: str = "", db_host_name: str = "") -> dict:
     """
     Function that returns functional motifs per tissue based on annotated motifs and the regression weights
     """
@@ -242,13 +247,15 @@ def get_functional_motifs_per_tissue(params, tissues: list, weighted_variables=N
     # assert that at least one tissue is given
     assert len(tissues) > 0
 
-    add_column_to_tissue_table('motifs', db_name, db_user_name, col_name="functionality", col_type="text")
+    add_column_to_tissue_table('motifs', db_name, db_user_name, db_host_name, col_name="functionality", col_type="text")
 
     # TODO: assertion that the column names of the tissue tables (except mid) corresponds to the weighted_variable list
 
     funMotifs_per_tissue = {}
 
     for tissue in tissues:
-        funMotifs_per_tissue[tissue] = get_functional_motifs(params, tissue, weighted_variables, db_name, db_user_name)
+        print("tissue: ", tissue)
+        print(funMotifs_per_tissue)
+        funMotifs_per_tissue[tissue] = get_functional_motifs(params, tissue, weighted_variables, db_name, db_user_name, db_host_name)
 
     return funMotifs_per_tissue
