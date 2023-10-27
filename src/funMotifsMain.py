@@ -282,6 +282,7 @@ if __name__ == '__main__':
         print("Use existing motif annotations from specified data base")
         db_name = params['db_name'].lower()
         db_user_name = params['db_user_name']
+        db_host_name = params['db_host_name']
         # TODO: how to integrate database in here, and something else to do in else statement?
 
     # TODO: check at which point created files can be deleted
@@ -326,7 +327,8 @@ if __name__ == '__main__':
         funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
                                                                      tissues=cell_name_for_tissue.keys(),
                                                                      db_name=db_name,
-                                                                     db_user_name=db_user_name)
+                                                                     db_user_name=db_user_name,
+                                                                     db_host_name=db_host_name)
         # TODO: save output to database
     else:
         print("Use existing functional Motifs")
