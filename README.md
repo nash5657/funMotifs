@@ -8,12 +8,14 @@ A complete set of datafiles is prodvided to re-generate the annotated motifs tha
 
 The pipeline creates a postgreSQL database and inserts the annotated motifs into a single table where each row represents a motif and the columns represent information about the motif (position, name, p-value, score) and the remaining columns are showing annotations per cell type. In order to perform this task, PostgreSQL has to be accessible on the host that is specified in the main configuration file (default is localhost). Also, the database name and login information have to be given. 
 
+Afterwards, it can perform a logistic regression to identify functional motifs in different tissues. Finally, a variant file can be compared with those motifs to find potential harmful mutations in the motifs.
+
 The following packages are required to run the funMotifs pipeline:
-- bedtools v25.9
-- Python 2.7: we recommend installing it from anaconda.com
+- bedtools 2.30.0
+- Python 3.10.6: we recommend installing it from anaconda.com
 - The following python packages are required to run the pipeline
-	- pybedtools (v0.7.8): for processing the annotation data files (e.g. conda install pybedtools=0.7.8 -c bioconda)
-	- psycopg2 (v2.6.2): for connecting with the PostgreSQL database (conda install -c anaconda psycopg2)
+	- pybedtools (v0.9.0): for processing the annotation data files (e.g. conda install pybedtools=0.7.8 -c bioconda)
+	- psycopg2 (v2.9.3): for connecting with the PostgreSQL database (conda install -c anaconda psycopg2)
 
 	- The following python packages are also required to run the helper modules:
 		- requests
@@ -24,4 +26,6 @@ Once the requirements above are met and the main configuration file is set corre
 
 cd funMotifs/src/
 
-python funMotifsMain.py param_file=../conf/main_parameters.conf
+python3 funMotifsMain.py [-m|-r|-f|-v] --param_file='../conf/main_parameters_MM.conf' --temp_dir='tmp'
+
+You can check python3 funMotifsMain.py -h for more information.
