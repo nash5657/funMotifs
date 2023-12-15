@@ -3,6 +3,7 @@ Created on Nov 13, 2016
 
 @author: Husen M. Umer
 @contributor: Mark Melzer
+@contributer: Naser Shabani
 
 Score motifs: collects cell-type specific data from several public resources and generates a cell-type specific score
 for each motif instance in the human genome Input: TF PWMs, human genome, TF chip-seq resources, DNase1 resources,
