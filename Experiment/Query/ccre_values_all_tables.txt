@@ -1,0 +1,15 @@
+blood, NO
+brain, NO
+breast, NO
+cervix, NO
+colon, NO
+esophagus, NO
+kidney, NO
+liver, NO
+lung, NO
+myeloid, NO
+pancreas, NO
+prostate, NO
+skin, NO
+stomach, NO
+uterus, NO

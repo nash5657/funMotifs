@@ -1,0 +1,360 @@
+Table: blood
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: brain
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: breast
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: cervix
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: colon
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: esophagus
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: kidney
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: liver
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: lung
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: myeloid
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: pancreas
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: prostate
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: skin
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: stomach
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+
+Table: uterus
+    Column: chromhmm
+        NO
+
+    Column: indexdhs
+        NO
+
+    Column: othertfbinding
+        NaN
+
+    Column: regelem
+        NO
+
+    Column: replidomain
+        DTZ
+        NO
+        UTZ
+        LRD
+        ERD
+
+    Column: ccre
+        NO
+
+

@@ -1,0 +1,9 @@
+mid
+fscore
+contactingdomain
+dnase__seq
+fantom
+numothertfbinding
+tfbinding
+tfexpr
+footprints

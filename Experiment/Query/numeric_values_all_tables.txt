@@ -1,0 +1,435 @@
+Table: blood
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        False
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        False
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: brain
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: breast
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: cervix
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: colon
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: esophagus
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: kidney
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: liver
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        False
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: lung
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: myeloid
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: pancreas
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: prostate
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: skin
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        False
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: stomach
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
+Table: uterus
+    Column: mid
+        True
+
+    Column: fscore
+        True
+
+    Column: contactingdomain
+        True
+
+    Column: dnase__seq
+        False
+
+    Column: fantom
+        True
+
+    Column: numothertfbinding
+        True
+
+    Column: tfbinding
+        True
+
+    Column: tfexpr
+        True
+
+    Column: footprints
+        False
+
+
