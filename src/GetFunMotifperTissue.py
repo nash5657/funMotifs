@@ -2,6 +2,7 @@
 Created on Nov 28, 2022
 
 @author: Mark Melzer
+@contributer: Naser Shabani
 
 Receives the computed regression coefficients and a database with annotated motifs.
 Output: List of Motifs that are functional according to the following conditions:
