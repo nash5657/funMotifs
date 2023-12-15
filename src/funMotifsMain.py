@@ -18,6 +18,9 @@ Process: the module has six sections
 """
 import argparse
 import os
+import psycopg2
+import json
+import re
 
 import numpy as np
 from pybedtools import set_tempdir
@@ -65,7 +68,51 @@ def parse_args():
     return args
 
 
+# Define the function to save parameters to a file
+def save_parameters_to_file(params, file_path):
+    # Convert parameters to a dictionary if they are not already in one
+    # This step depends on the format of your params
+    if not isinstance(params, dict):
+        params_dict = params.to_dict()
+    else:
+        params_dict = params
+
+    # Write the dictionary to a file in JSON format
+    with open(file_path, 'w') as file:
+        json.dump(params_dict, file, indent=4)
+    
+    print(f"Parameters successfully saved to {file_path}")
+
+#extract values of annotation_wights file to a list to use in section 5
+def extract_variables_from_file(file_path):
+    """ Extracts variables and their values from a file and returns them as a dictionary. """
+    variable_dict = {}
+
+    # Regular expression pattern to identify variable names and values
+    pattern = r'([\w/,]+)=([-+]?\d*\.\d+|\d+)'
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            # Find all matches in the line
+            matches = re.findall(pattern, line)
+            for vars, val in matches:
+                # Splitting multiple variables if they exist
+                vars_split = vars.split(',')
+                for var in vars_split:
+                    # Adding to the dictionary
+                    variable_dict[var] = float(val)
+
+    return variable_dict
+
+
 if __name__ == '__main__':
+
+    # Establish database connection
+    database_name = 'funmotifsdb'
+    user_name = 'naser'
+    host_address = '127.0.0.1'
+    conn = psycopg2.connect(database=database_name, user=user_name, host=host_address)
+    cursor = conn.cursor()
 
     # to run this program add param_file=main_parameters.conf as an argument
     args = parse_args()
@@ -286,6 +333,7 @@ if __name__ == '__main__':
         # TODO: how to integrate database in here, and something else to do in else statement?
 
     # TODO: check at which point created files can be deleted
+
     """ Section 4: Score motifs """
 
     if args.regression:
@@ -300,39 +348,58 @@ if __name__ == '__main__':
                                      'NumOtherTFBinding'.lower(), 'RepliDomain'.lower(), 'TFBinding'.lower(),
                                      'TFExpr'.lower(), 'score'.lower(), 'footprints'.lower(), 'cCRE'.lower(),
                                      'IndexDHS'.lower(), 'RegElem'.lower()]
+        logit_params = WeightFeatures.get_param_weights(
+        training_data_dir, col_names_to_weight_param, db_name,
+        motif_info_col_names, cell_table, db_user_name,
+        cell_name_for_tissue, matching_tissue_to_cell,
+        motif_split_chr=datafiles_motifs_dir
+    )
 
-        logit_params = WeightFeatures.get_param_weights(training_data_dir, col_names_to_weight_param, db_name,
-                                                        motif_info_col_names, cell_table, db_user_name,
-                                                        cell_name_for_tissue, matching_tissue_to_cell,
-                                                        motif_split_chr=datafiles_motifs_dir)
+    #print(logit_params.summary())
+    try:
+        exp_params = np.exp(logit_params.params)
+        print(exp_params)
 
-        print(logit_params.summary())
-        try:
-            print(np.exp(logit_params.params))
-        except:
-            print("No parameters have been computed. Check summary above for more information")
-            # TODO: section 5 cannot happen if we enter this except statement: read params from file??? (--> bio wrong)
-            pass
+        # Call function to save parameters
+        save_parameters_to_file(exp_params, 'logit_parameters.json')
 
-        # TODO: save parameters to file
+    except Exception as e:
+        print("Error in computing parameters:", e)
+        # Handle other exceptions or errors here
 
-    else:
-        print("Use existing Regression output")
-        # TODO: load weights from file
 
     """ Section 5: Get the functional motifs per tissue """
-
     if args.findFunMotifs:
-        # return a dictionary of the form: {Tissue: List of functional motifs (motif id/mid)}
-        funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(params=logit_params.params,
-                                                                     tissues=cell_name_for_tissue.keys(),
-                                                                     db_name=db_name,
-                                                                     db_user_name=db_user_name,
-                                                                     db_host_name=db_host_name)
-        # TODO: save output to database
-    else:
-        print("Use existing functional Motifs")
-        # TODO: load functional motifs from file or data base
+    #     # Existing code for getting functional motifs
+    #     funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(
+    #         params=logit_params.params,
+    #         tissues=cell_name_for_tissue.keys(),
+    #         cursor=cursor  # Passing the cursor instead of db credentials
+    #     )
+    #     # TODO: save output to database
+    # else:
+    #     print("Use existing functional Motifs")
+    #     # Load functional motifs from file
+        try:
+            file_path = 'annotation_wights.txt'
+            variables = extract_variables_from_file(file_path)
+            loaded_params = list(variables.values())
+            # Use loaded_params as needed
+            # Call function using loaded parameters
+            funMotifs_per_Tissue = gfmt.get_functional_motifs_per_tissue(
+                params=loaded_params,
+                tissues=cell_name_for_tissue.keys(),
+                cursor=cursor
+        )
+        except FileNotFoundError:
+            print("Parameters file not found. Please check the file path.")
+        except json.JSONDecodeError:
+            print("Error decoding the JSON file. Please check the file contents.")
+
+    # Close the cursor and connection after all operations
+    cursor.close()
+    conn.close()
+    
 
     """ Section 6: Overlap motifs with non-coding mutations and compute entropy """
 
